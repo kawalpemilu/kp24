@@ -88,6 +88,23 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {
+            "version": 2
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "kp24:build:production",
+              "serveTarget": "kp24:serve:production"
+            },
+            "development": {
+              "buildTarget": "kp24:build:development",
+              "serveTarget": "kp24:serve:development"
+            }
+          },
+          "defaultConfiguration": "production"
         }
       }
     }

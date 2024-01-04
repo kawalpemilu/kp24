@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "kp24-fd486": {
+      "hosting": {
+        "kp24": [
+          "kp24"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "kp24-fd486"
+  }
+}
