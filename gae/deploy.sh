@@ -1,0 +1,1 @@
+gcloud app deploy --project kp24-fd486 app.yaml
