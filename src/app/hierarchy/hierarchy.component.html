@@ -1,17 +1,42 @@
-<h2>Kawal Pemilu 2024</h2>
+<h2 style="padding: 10px">Kawal Pemilu 2024</h2>
 
-<div style="padding: 10px" *ngIf="lokasi$ | async as lokasi">
+<div style="padding-left: 10px" *ngIf="lokasi$ | async as lokasi">
 @for (p of parents; track p[0]; let last = $last) {
     <a [routerLink]="['/h', p[0]]" routerLinkActive="active">{{ p[1] }}</a>
     @if (!last) { &gt; }
 }
-<ul>
+
+<br><br>
+<table class="collapsed_border">
+<tr bgcolor="lightgrey">
+    <th>Lokasi</th>
+    <th>Pas1</th>
+    <th>Pas2</th>
+    <th>Pas3</th>
+    <th>Sah</th>
+    <th>~Sah</th>
+    <th>COV</th>
+</tr>
 @for (c of children; track c[0];) {
+    <tr>
     @if (lokasi.id.length === 10) {
-        <li><a [routerLink]="['/u', lokasi.id + c[0]]">TPS #{{ c[1] }}</a></li>
+        <td><a [routerLink]="['/u', lokasi.id + c[0]]">TPS #{{ c[1].name }}</a></td>
     } @else {
-        <li><a [routerLink]="['/h', c[0]]">{{ c[1] }}</a></li>
+        <td><a [routerLink]="['/h', c[0]]">{{ c[1].name }}</a></td>
     }
+    @if (c[1].idLokasi && c[1].idLokasi.length > 0) {
+        <td>{{ c[1].pas1 }}</td>
+        <td>{{ c[1].pas2 }}</td>
+        <td>{{ c[1].pas3 }}</td>
+        <td>{{ c[1].sah }}</td>
+        <td>{{ c[1].tidakSah }}</td>
+    } @else {
+        <td colspan="5">
+            &lt;- Click to upload photo.
+        </td>
+    }
+    <td>{{ c[1].totalCompletedTps }} / {{ c[1].totalTps }}</td>
+    </tr>
 }
-</ul>
+</table>
 </div>

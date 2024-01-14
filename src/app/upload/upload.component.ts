@@ -1,14 +1,16 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
-import { Auth, getRedirectResult, signOut, User, user } from '@angular/fire/auth';
-import { mergeAll, Observable, of, Subscription, switchMap } from 'rxjs';
+import { Auth, getRedirectResult, signOut, user } from '@angular/fire/auth';
+import { combineLatest, mergeAll, Observable, of, switchMap } from 'rxjs';
 import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
-import { Functions, httpsCallable, connectFunctionsEmulator } from '@angular/fire/functions';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FormsModule } from '@angular/forms';
+import { AggregateVotes, Lokasi, UploadRequest } from '../../../functions/src/interfaces';
 
 /** Returns a random n-character identifier containing [a-zA-Z0-9]. */
 export function autoId(n = 20): string {
@@ -24,42 +26,64 @@ export function autoId(n = 20): string {
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, FormsModule,
+    MatIconModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './upload.component.html',
   styleUrl: './upload.component.css'
 })
-export class UploadComponent implements OnInit, OnDestroy {
+export class UploadComponent implements OnInit {
   private functions: Functions = inject(Functions);
 
   auth: Auth = inject(Auth);
   user$ = user(this.auth);
-  userSubscription: Subscription;
 
   provider = new GoogleAuthProvider();
-  imageUrl = '';
   loading = true;
   uploading = false;
 
   id$!: Observable<string>;
   id = '';
 
-  constructor(private route: ActivatedRoute) {
-    this.userSubscription = this.user$.subscribe((aUser: User | null) => {
-      if (aUser) {
-        console.log('Logged in user', aUser);
-        this.loadImage();
-      } else {
-        console.log('The user is not logged in');
-      }
-    });
-  }
+  latest: AggregateVotes = {
+    idLokasi: '',
+    name: '',
+    pas1: 0,
+    pas2: 0,
+    pas3: 0,
+    sah: 0,
+    tidakSah: 0,
+    photoUrl: '',
+    totalTps: 0,
+    totalCompletedTps: 0,
+    uploadTimeMs: -1
+  };
+
+  constructor(private route: ActivatedRoute) { }
 
   async ngOnInit() {
-    this.id$ = this.route.paramMap.pipe(
-      switchMap(async params => {
+    this.id$ = combineLatest([this.route.paramMap, this.user$]).pipe(
+      switchMap(async ([params, user]) => {
         this.id = params.get('id') || '';
         if (!(/^\d{11,13}$/.test(this.id))) {
           alert('Invalid id: ' + this.id);
+          return of();
+        }
+        if (!user) {
+          console.log('The user is not logged in');
+          return of();
+        }
+        console.log('Logged in user', user);
+
+        try {
+          const callable = httpsCallable(this.functions, 'hierarchy');
+          const lokasi = (await callable({ id: this.id })).data as Lokasi;
+          for (const agg of Object.values(lokasi.aggregated)) {
+            if (this.latest.uploadTimeMs < agg.uploadTimeMs) {
+              this.latest = agg;
+            }
+          }
+          console.log('latest', this.latest);
+        } catch (e) {
           return of();
         }
         return of(this.id);
@@ -74,11 +98,7 @@ export class UploadComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.userSubscription.unsubscribe();
-  }
-
-  async upload(event: any) {
+  async handleUpload(event: any) {
     if (event.target.files.length === 0) {
       console.log('No file to be uploaded');
       return;
@@ -110,15 +130,24 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.uploading = false;
     this.loading = true;
 
-    await this.loadImage(imageId);
+    await this.upload(imageId);
   }
 
-  async loadImage(imageId?: string) {
+  async upload(imageId = 'preserve') {
     try {
-      // connectFunctionsEmulator(this.functions, "127.0.0.1", 5001);
-      const callable = httpsCallable(this.functions, 'photos');
-      this.imageUrl = (await callable({ tpsId: this.id, imageId })).data as string;
-      console.log(this.imageUrl);
+      const request: UploadRequest = {
+        tpsId: this.id,
+        imageId,
+        pas1: this.latest.pas1,
+        pas2: this.latest.pas2,
+        pas3: this.latest.pas3,
+        sah: this.latest.sah,
+        tidakSah: this.latest.tidakSah,
+      };
+      const callable = httpsCallable(this.functions, 'upload');
+      const agg = (await callable(request)).data as AggregateVotes;
+      console.log('upload', request, agg);
+      this.latest = agg;
     } catch (e) {
       console.error(e);
     }

@@ -2,11 +2,13 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { mergeAll, switchMap } from 'rxjs/operators';
-import { Functions, httpsCallable, connectFunctionsEmulator } from '@angular/fire/functions';
-import { Lokasi } from '../../../functions/src/interfaces';
+import { Functions, httpsCallable } from '@angular/fire/functions';
+import { AggregateVotes, Lokasi } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 
 const idLengths = [2, 4, 6, 10];
+
+type IdAndAggVotes = [id: string, agg: AggregateVotes];
 
 @Component({
   selector: 'app-hierarchy',
@@ -20,7 +22,7 @@ export class HierarchyComponent implements OnInit {
 
   lokasi$!: Observable<Lokasi>;
   parents: string[][] = [];
-  children: string[][] = [];
+  children: IdAndAggVotes[] = [];
 
   constructor(private route: ActivatedRoute, private router: Router) { }
 
@@ -29,7 +31,6 @@ export class HierarchyComponent implements OnInit {
       switchMap(async params => {
         let id = params.get('id') || '';
         if (!(/^\d{0,13}$/.test(id))) id = '';
-        // connectFunctionsEmulator(this.functions, "127.0.0.1", 5001);
         try {
           const callable = httpsCallable(this.functions, 'hierarchy');
           const lokasi = (await callable({ id })).data as Lokasi;
@@ -37,13 +38,10 @@ export class HierarchyComponent implements OnInit {
           for (let i = 0; i < lokasi.names.length; i++) {
             this.parents.push([lokasi.id.substring(0, idLengths[i]), lokasi.names[i]]);
           }
-          this.children = [];
-          for (const [id, agg] of Object.entries(lokasi.aggregated)) {
-            this.children.push([id, agg.name]);
-          }
+          this.children = Object.entries<AggregateVotes>(lokasi.aggregated);
           this.children.sort((a, b) => {
-            if (lokasi.id.length === 10) return +a[1] - +b[1];
-            return (a[1] < b[1]) ? -1 : (a[1] > b[1]) ? 1 : 0;
+            if (lokasi.id.length === 10) return +a[1].name - +b[1].name;
+            return a[1].name.localeCompare(b[1].name);
           });
           return of(lokasi);
         } catch (e) {

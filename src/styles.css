@@ -2,3 +2,14 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+table.collapsed_border {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.collapsed_border td,
+.collapsed_border th {
+    padding: 7px;
+    border: 1px solid gray;
+}

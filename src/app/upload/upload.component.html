@@ -14,19 +14,53 @@
         Uploading your photo<br>
         <mat-spinner></mat-spinner>
     } @else {
-        <input #u type="file" (change)="upload($event)" style="display: none" />
+        <table class="collapsed_border">
+            <tr>
+                <td>Paslon #1</td>
+                <td><input type="number" style="width: 50px;" [(ngModel)]="latest.pas1"></td>
+            </tr>
+            <tr>
+                <td>Paslon #2</td>
+                <td><input type="number" style="width: 50px;" [(ngModel)]="latest.pas2"></td>
+            </tr>
+            <tr>
+                <td>Paslon #3</td>
+                <td><input type="number" style="width: 50px;" [(ngModel)]="latest.pas3"></td>
+            </tr>
+            <tr>
+                <td>Sah</td>
+                <td><input type="number" style="width: 50px;" [(ngModel)]="latest.sah"></td>
+            </tr>
+            <tr>
+                <td>Tidak Sah</td>
+                <td><input type="number" style="width: 50px;" [(ngModel)]="latest.tidakSah"></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button mat-raised-button color="primary" (click)="upload()">
+                        Submit Votes
+                    </button>
+                </td>
+            </tr>
+        </table>
+
+        <br><br>
+
+        <input #u type="file" (change)="handleUpload($event)" style="display: none" />
         <button mat-raised-button color="primary" (click)="u.click()">Upload Photo</button>
     }
-    <br>
-    <br>
-    <button mat-raised-button color="warn" (click)="logout()">Sign Out</button>
 }
 
 <br>
 <br>
-@if (imageUrl.length > 0) {
+@if (latest.photoUrl.length > 0) {
     <p>Uploaded Photo:</p>
-    <img [src]="imageUrl" width="100%" />
+    <img [src]="latest.photoUrl" width="100%" />
 }
 
+@if (auth.currentUser) {
+    <br><br><br>
+    <button mat-raised-button color="warn" (click)="logout()">Sign Out</button>
+    <br><br><br>
+}
 </div>

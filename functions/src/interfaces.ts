@@ -82,11 +82,15 @@ export function getIdProvinsi(id: string) {
 }
 
 export declare interface AggregateVotes {
+  idLokasi: string;
+
   // The name of this location.
   name: string;
 
   // The number of votes for each paslon.
-  votes: number[];
+  pas1: number;
+  pas2: number;
+  pas3: number;
 
   // Total valid votes.
   sah: number;
@@ -101,7 +105,10 @@ export declare interface AggregateVotes {
   totalCompletedTps: number;
 
   // The photo at this location.
-  photoUrl?: string;
+  photoUrl: string;
+
+  // The upload timestamp.
+  uploadTimeMs: number;
 }
 
 export declare interface Lokasi {
@@ -124,4 +131,24 @@ export declare interface Lokasi {
   // If the current id is idProvinsi, then the cid is idKabupaten.
   // If the current id is idDesa, then the cid is the tpsNo.
   aggregated: {[cid: string]: AggregateVotes};
+}
+
+export declare interface UploadRequest {
+  // The idDesa + tpsNo
+  tpsId: string;
+
+  // The blobId in the cloud storage.
+  // If unset, then the image is not overriden.
+  imageId?: string;
+
+  // Number of votes for paslon 1, 2, 3
+  pas1: number;
+  pas2: number;
+  pas3: number;
+
+  // Number of valid votes.
+  sah: number;
+
+  // Number of invalid votes.
+  tidakSah: number;
 }

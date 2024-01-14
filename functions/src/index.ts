@@ -4,6 +4,7 @@ import * as logger from "firebase-functions/logger";
 import * as fs from "fs";
 import {
   AggregateVotes, Hierarchy, Lokasi,
+  UploadRequest,
   getChildrenIds, getParentNames
 } from "./interfaces";
 
@@ -43,11 +44,36 @@ function getTpsList(lokasi: Lokasi) {
 }
 
 async function getTpsImages(lokasi: Lokasi) {
-  const snapshot = await firestore.collection(`p/${lokasi.id}`).get();
+  const snapshot = await firestore.collection(`t/${lokasi.id}/p`).get();
   snapshot.forEach(doc => {
-    lokasi.aggregated[doc.id] = { photoUrl: doc.data().photoUrl } as AggregateVotes;
+    lokasi.aggregated[doc.id] = doc.data() as AggregateVotes;
   });
   return lokasi;
+}
+
+async function getLatestVote(request: UploadRequest): Promise<AggregateVotes> {
+  let latest: AggregateVotes | undefined = undefined;
+  const lokasi: Lokasi = await getTpsImages(
+    { id: request.tpsId, names: [], aggregated: {} });
+  for (const agg of Object.values(lokasi.aggregated)) {
+    if (!latest || latest.uploadTimeMs < agg.uploadTimeMs) {
+      latest = agg;
+    }
+  }
+  return {
+    name: request.tpsId.substring(10),
+    pas1: request.pas1,
+    pas2: request.pas2,
+    pas3: request.pas3,
+    sah: request.sah,
+    tidakSah: request.tidakSah,
+    uploadTimeMs: Date.now(),
+    // To be overriden.
+    idLokasi: latest?.idLokasi ?? 'noImage',
+    photoUrl: latest?.photoUrl ?? '',
+    totalTps: 0,
+    totalCompletedTps: 0,
+  };
 }
 
 export const hierarchy = onCall(
@@ -62,29 +88,23 @@ export const hierarchy = onCall(
   });
 
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
-export const photos = onCall(
+export const upload = onCall(
   { cors: true },
-  async (request: CallableRequest<{ tpsId: string, imageId?: string }>) => {
+  async (request: CallableRequest<UploadRequest>) => {
     // TODO: add retry using tasks.
     const tpsId = request.data.tpsId;
     const tpsColRef = firestore.collection(`t/${tpsId}/p`);
-    const imageId = request.data.imageId;
-    if (!imageId) {
-      const snapshot = await tpsColRef.get();
-      let imageUrl = '';
-      snapshot.forEach(doc => {
-        console.log('dapet', doc.data());
-        imageUrl = doc.data().photoUrl;
-      });
-      return imageUrl;
-    } 
-    const objectName = `uploads/${tpsId}/${request.auth?.uid}/${imageId}`;
-    logger.info("Get serving url", objectName);
-    const servingUrl = await getServingUrl(objectName);
-    logger.info("GOT GSU: ", servingUrl);
-    if (servingUrl.length == 0) return '';
-    await tpsColRef.doc(imageId).set({ photoUrl: servingUrl });
-    return servingUrl;
+    const latest = await getLatestVote(request.data);
+    if (request.data.imageId?.length) {
+      if (request.data.imageId !== 'preserve') {
+        latest.idLokasi = request.data.imageId;
+        const path = `uploads/${tpsId}/${request.auth?.uid}/${latest.idLokasi}`;
+        logger.info("Get serving url", path);
+        latest.photoUrl = await getServingUrl(path);
+      }
+      await tpsColRef.doc(latest.idLokasi).set(latest);
+    }
+    return latest;
   });
 
 /**
