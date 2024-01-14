@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  emulatorHost: "127.0.0.1",
   firebaseConfig: {
     "projectId": "kp24-fd486",
     "appId": "1:887593210576:web:b697f44855185de4f784d5",

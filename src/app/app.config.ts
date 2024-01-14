@@ -20,14 +20,14 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(provideFirestore(() => {
       const f = getFirestore();
       if (!environment.production) {
-        connectFirestoreEmulator(f, "127.0.0.1", 8084);
+        connectFirestoreEmulator(f, environment.emulatorHost, 8084);
       }
       return f;
     })),
     importProvidersFrom(provideFunctions(() => {
       const f = getFunctions();
       if (!environment.production) {
-        connectFunctionsEmulator(f, "127.0.0.1", 5001);
+        connectFunctionsEmulator(f, environment.emulatorHost, 5001);
       }
       return f;
     })),
