@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
-import { Auth, User, user } from '@angular/fire/auth';
+import { Auth, getRedirectResult, signOut, User, user } from '@angular/fire/auth';
 import { mergeAll, Observable, of, Subscription, switchMap } from 'rxjs';
 import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
@@ -31,7 +31,7 @@ export function autoId(n = 20): string {
 export class UploadComponent implements OnInit, OnDestroy {
   private functions: Functions = inject(Functions);
 
-  private auth: Auth = inject(Auth);
+  auth: Auth = inject(Auth);
   user$ = user(this.auth);
   userSubscription: Subscription;
 
@@ -49,13 +49,12 @@ export class UploadComponent implements OnInit, OnDestroy {
         console.log('Logged in user', aUser);
         this.loadImage();
       } else {
-        console.log('Try logging in');
-        signInWithRedirect(this.auth, this.provider);
+        console.log('The user is not logged in');
       }
     });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.id$ = this.route.paramMap.pipe(
       switchMap(async params => {
         this.id = params.get('id') || '';
@@ -66,6 +65,13 @@ export class UploadComponent implements OnInit, OnDestroy {
         return of(this.id);
       }), mergeAll()
     );
+    try {
+      const result = await getRedirectResult(this.auth);
+      console.log('RedirectResult', result);
+      this.loading = false;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   ngOnDestroy() {
@@ -117,5 +123,18 @@ export class UploadComponent implements OnInit, OnDestroy {
       console.error(e);
     }
     this.loading = false;
+  }
+
+  login() {
+    console.log('Try logging in');
+    signInWithRedirect(this.auth, this.provider);
+  }
+
+  async logout() {
+    signOut(this.auth).then(() => {
+      console.log('Sign-out successful');
+    }).catch((error) => {
+      console.error('Signout failed', error);
+    });
   }
 }

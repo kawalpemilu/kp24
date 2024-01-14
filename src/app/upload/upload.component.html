@@ -5,21 +5,28 @@
 
 <br>
 
-<p>
 @if (loading) {
     <mat-spinner></mat-spinner>
-} @else if (uploading) {
-    Uploading your photo<br>
-    <mat-spinner></mat-spinner>
+} @else if (!auth.currentUser) {
+    <button mat-raised-button color="warn" (click)="login()">Sign In to Upload Photo</button>
 } @else {
-    <input #u type="file" (change)="upload($event)" style="display: none" />
-    <button mat-raised-button color="primary" (click)="u.click()">Upload Photo</button>
+    @if (uploading) {
+        Uploading your photo<br>
+        <mat-spinner></mat-spinner>
+    } @else {
+        <input #u type="file" (change)="upload($event)" style="display: none" />
+        <button mat-raised-button color="primary" (click)="u.click()">Upload Photo</button>
+    }
+    <br>
+    <br>
+    <button mat-raised-button color="warn" (click)="logout()">Sign Out</button>
 }
-</p>
 
 <br>
+<br>
 @if (imageUrl.length > 0) {
-    <p>Uploaded Photos:</p>
+    <p>Uploaded Photo:</p>
     <img [src]="imageUrl" width="100%" />
 }
+
 </div>
