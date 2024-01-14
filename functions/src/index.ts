@@ -1,27 +1,90 @@
-import {
-  onRequest, Request,
-  onCall, CallableRequest,
-} from "firebase-functions/v2/https";
+import { onCall, CallableRequest } from "firebase-functions/v2/https";
+import * as admin from 'firebase-admin';
 import * as logger from "firebase-functions/logger";
-import * as express from "express";
+import * as fs from "fs";
+import {
+  AggregateVotes, Hierarchy, Lokasi,
+  getChildrenIds, getParentNames
+} from "./interfaces";
 
-/** Trigger calls to the getServingUrl. */
-export const gsu = onRequest(
-  async (request: Request, response: express.Response) => {
-    // TODO: add retry using tasks.
-    const objectName = "mountains.jpg";
-    logger.info("Get serving url", JSON.stringify(request.params, null, 2));
-    response.send(await getServingUrl(objectName));
+admin.initializeApp();
+const firestore = admin.firestore();
+
+const H = JSON.parse(
+  fs.readFileSync("lib/hierarchy.js", "utf-8")) as Hierarchy;
+
+const C = getChildrenIds(H);
+
+function getSubLokasi(lokasi: Lokasi) {
+  for (const suffixId of C[lokasi.id]) {
+    const cid = lokasi.id + suffixId;
+    lokasi.aggregated[cid] = {
+      name: H.id2name[cid],
+    } as AggregateVotes;
+  }
+  return lokasi;
+}
+
+function getTpsList(lokasi: Lokasi) {
+  const [maxTpsNo, extBegin, extEnd] = H.tps[lokasi.id];
+  for (let i = 1; i <= maxTpsNo; i++) {
+    lokasi.aggregated[i] = {
+      name: `${i}`,
+    } as AggregateVotes;
+  }
+  if (extBegin) {
+    for (let i = extBegin; i <= extEnd; i++) {
+      lokasi.aggregated[i] = {
+        name: `${i}`,
+      } as AggregateVotes;
+    }
+  }
+  return lokasi;
+}
+
+async function getTpsImages(lokasi: Lokasi) {
+  const snapshot = await firestore.collection(`p/${lokasi.id}`).get();
+  snapshot.forEach(doc => {
+    lokasi.aggregated[doc.id] = { photoUrl: doc.data().photoUrl } as AggregateVotes;
+  });
+  return lokasi;
+}
+
+export const hierarchy = onCall(
+  { cors: true },
+  async (request: CallableRequest<{ id: string }>) => {
+    let id = request.data.id;
+    if (!(/^\d{0,13}$/.test(id))) id = '';
+    const lokasi: Lokasi = { id, names: getParentNames(H, id), aggregated: {} };
+    if (id.length > 10) return getTpsImages(lokasi);
+    if (id.length === 10) return getTpsList(lokasi);
+    return getSubLokasi(lokasi);
   });
 
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
-export const gsuc = onCall(
-  {cors: true},
-  async (request: CallableRequest<string>) => {
+export const photos = onCall(
+  { cors: true },
+  async (request: CallableRequest<{ tpsId: string, imageId?: string }>) => {
     // TODO: add retry using tasks.
-    logger.info("Get serving url", request.auth?.uid);
-    const objectName = request.auth?.uid + ".jpg";
-    return await getServingUrl(objectName);
+    const tpsId = request.data.tpsId;
+    const tpsColRef = firestore.collection(`t/${tpsId}/p`);
+    const imageId = request.data.imageId;
+    if (!imageId) {
+      const snapshot = await tpsColRef.get();
+      let imageUrl = '';
+      snapshot.forEach(doc => {
+        console.log('dapet', doc.data());
+        imageUrl = doc.data().photoUrl;
+      });
+      return imageUrl;
+    } 
+    const objectName = `uploads/${tpsId}/${request.auth?.uid}/${imageId}`;
+    logger.info("Get serving url", objectName);
+    const servingUrl = await getServingUrl(objectName);
+    logger.info("GOT GSU: ", servingUrl);
+    if (servingUrl.length == 0) return '';
+    await tpsColRef.doc(imageId).set({ photoUrl: servingUrl });
+    return servingUrl;
   });
 
 /**
@@ -32,8 +95,7 @@ export const gsuc = onCall(
 async function getServingUrl(objectName: string) {
   const path = encodeURIComponent(`kp24-fd486.appspot.com/${objectName}`);
   const data = await fetch(`https://kp24-fd486.et.r.appspot.com/gsu?path=${path}`);
-  if (!data.startsWith("http")) throw new Error("GSU failed: " + path);
-  return data;
+  return data.startsWith("http") ? data : '';
 }
 
 import * as https from "https";

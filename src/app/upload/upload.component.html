@@ -1,0 +1,25 @@
+<div *ngIf="id$ | async as id" style="padding: 20px">
+<p>
+    <a [routerLink]="['/h', id.substring(0, 10)]">&lt;&lt; Back To TPS</a>
+</p>
+
+<br>
+
+<p>
+@if (loading) {
+    <mat-spinner></mat-spinner>
+} @else if (uploading) {
+    Uploading your photo<br>
+    <mat-spinner></mat-spinner>
+} @else {
+    <input #u type="file" (change)="upload($event)" style="display: none" />
+    <button mat-raised-button color="primary" (click)="u.click()">Upload Photo</button>
+}
+</p>
+
+<br>
+@if (imageUrl.length > 0) {
+    <p>Uploaded Photos:</p>
+    <img [src]="imageUrl" width="100%" />
+}
+</div>

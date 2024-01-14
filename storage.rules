@@ -1,12 +1,14 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if false;
+    // Only allows write. The images are read from serving url.
+    match /uploads/{tpsId}/{userId}/{imageId} {
+      allow write: if tpsId.matches('[0-9]{11,13}')
+                   && userId == request.auth.uid
+                   && imageId.matches('[A-Za-z0-9]{20}')
+                   && request.resource.size < 15 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
     }
   }
 }

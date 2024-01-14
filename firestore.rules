@@ -2,8 +2,59 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    function getUserRole() {
+      return get(/databases/$(database)/documents/r/$(request.auth.uid))
+                .data.profile.role;
+    }
+
+    // Static herarchy for searching.
+    match /h/{userId} {
+      allow list: if request.auth.uid != null && request.query.limit <= 100;
+    }
+
+    // Hierarchy Cache Sum and KPU autofill.
+    match /hc2/{tpsId} {
+      // Anyone can read the cached sum.
+      allow get: if request.auth.uid != null;
+    }
+ 
+    // Relawan database.
+    match /r/{userId} {
+      // Moderator can read user profile if know the uid.
+      allow get: if request.auth.uid == userId || getUserRole() >= 1;
+
+      // Only Admin can perform search for user profile.
+      allow list: if request.query.limit <= 100 && getUserRole() >= 2;
+    }
+ 
+    // Relawan photos.
+    match /p2/{userId} {
+      // Moderator can read user photos if know the uid.
+      allow get: if request.auth.uid == userId || getUserRole() >= 1;
+
+      // Admins can see the scoreboard.
+      allow list: if request.query.limit <= 100 && getUserRole() >= 2;
+    }
+ 
+    // Photo Uploads.
+    match /u2/{imageId} {
+      // User can see their own uploaded photos.
+      allow get: if request.auth.uid == resource.data.uploader.uid;
+
+      // Moderator can see the uploaded photos.
+      allow list: if request.query.limit <= 100 && getUserRole() >= 1;
+    }
+
+    // TPS change log.
+    match /t2/{tpsId} {
+      // Only Moderator and above can see the TPS history.
+      allow get: if getUserRole() >= 1;
+    }
+
+    // Scoreboard
+    match /s/s {
+      // Only Moderator and above can see scoreboard.
+      allow get: if getUserRole() >= 1;
     }
   }
 }

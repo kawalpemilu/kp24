@@ -6,6 +6,9 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
     ]
   },
   "firestore": {
@@ -23,8 +26,6 @@
         "firebase-debug.*.log"
       ],
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
     }
   ],
@@ -39,7 +40,7 @@
       "port": 5001
     },
     "firestore": {
-      "port": 8080
+      "port": 8084
     },
     "hosting": {
       "port": 5000
