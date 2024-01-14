@@ -104,7 +104,10 @@ export declare interface AggregateVotes {
   // Total TPS has at least one photo.
   totalCompletedTps: number;
 
-  // The photo at this location.
+  // The blobId of the image file.
+  imageId: string;
+
+  // The serving url of the imageId.
   photoUrl: string;
 
   // The upload timestamp.

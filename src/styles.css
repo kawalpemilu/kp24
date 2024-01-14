@@ -13,3 +13,20 @@ table.collapsed_border {
     padding: 7px;
     border: 1px solid gray;
 }
+
+.truncate-text {
+    width: 200px;
+    overflow: scroll;
+    white-space: nowrap;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .truncate-text::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .selected {
+    background-color: lightgreen;
+  }
+  

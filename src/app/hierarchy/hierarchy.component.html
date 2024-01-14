@@ -19,11 +19,15 @@
 </tr>
 @for (c of children; track c[0];) {
     <tr>
-    @if (lokasi.id.length === 10) {
-        <td><a [routerLink]="['/u', lokasi.id + c[0]]">TPS #{{ c[1].name }}</a></td>
-    } @else {
-        <td><a [routerLink]="['/h', c[0]]">{{ c[1].name }}</a></td>
-    }
+        <td>
+            <div class="truncate-text">
+            @if (lokasi.id.length === 10) {
+                <a [routerLink]="['/u', lokasi.id + c[0]]">TPS #{{ c[1].name }}</a>
+            } @else {
+                <a [routerLink]="['/h', c[0]]">{{ c[1].name }}</a>
+            }
+            </div>
+        </td>
     @if (c[1].idLokasi && c[1].idLokasi.length > 0) {
         <td>{{ c[1].pas1 }}</td>
         <td>{{ c[1].pas2 }}</td>

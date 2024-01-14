@@ -1,4 +1,6 @@
 import { onCall, CallableRequest } from "firebase-functions/v2/https";
+import { onTaskDispatched } from "firebase-functions/v2/tasks";
+import { getFunctions } from "firebase-admin/functions";
 import * as admin from 'firebase-admin';
 import * as logger from "firebase-functions/logger";
 import * as fs from "fs";
@@ -61,6 +63,7 @@ async function getLatestVote(request: UploadRequest): Promise<AggregateVotes> {
     }
   }
   return {
+    idLokasi: request.tpsId,
     name: request.tpsId.substring(10),
     pas1: request.pas1,
     pas2: request.pas2,
@@ -69,7 +72,7 @@ async function getLatestVote(request: UploadRequest): Promise<AggregateVotes> {
     tidakSah: request.tidakSah,
     uploadTimeMs: Date.now(),
     // To be overriden.
-    idLokasi: latest?.idLokasi ?? 'noImage',
+    imageId: latest?.imageId ?? 'noImageId',
     photoUrl: latest?.photoUrl ?? '',
     totalTps: 0,
     totalCompletedTps: 0,
@@ -81,11 +84,105 @@ export const hierarchy = onCall(
   async (request: CallableRequest<{ id: string }>) => {
     let id = request.data.id;
     if (!(/^\d{0,13}$/.test(id))) id = '';
+
+    const hRef = firestore.doc(`h/i${id}`);
+    const latest = (await hRef.get()).data() as Lokasi | undefined;
+    if (latest) return latest;
+
     const lokasi: Lokasi = { id, names: getParentNames(H, id), aggregated: {} };
     if (id.length > 10) return getTpsImages(lokasi);
     if (id.length === 10) return getTpsList(lokasi);
     return getSubLokasi(lokasi);
   });
+
+function isIdentical(a: AggregateVotes, b: AggregateVotes) {
+  return a.pas1 === b.pas1
+    && a.pas2 === b.pas2
+    && a.pas3 === b.pas3
+    && a.sah === b.sah
+    && a.tidakSah === b.tidakSah;
+}
+
+function getParentId(id: string) {
+  if (id.length > 10) return id.substring(0, 10);
+  if (id.length > 6) return id.substring(0, 6);
+  if (id.length > 4) return id.substring(0, 4);
+  if (id.length > 2) return id.substring(0, 2);
+  return '';
+}
+
+export const aggregate = onTaskDispatched<AggregateVotes>({
+  retryConfig: {
+    maxAttempts: 5,
+    minBackoffSeconds: 60,
+  },
+  rateLimits: {
+    maxConcurrentDispatches: 6,
+  },
+}, async (req) => {
+  logger.log("Dispatched", JSON.stringify(req.data, null, 2));
+  const idParent = getParentId(req.data.idLokasi);
+  const hRef = firestore.doc(`h/i${idParent}`);
+  const nextAgg = await firestore
+    .runTransaction(async t => {
+      let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
+      if (!lokasi) {
+        if (req.data.idLokasi.length > 10) {
+          lokasi = getTpsList({
+            id: idParent, names: getParentNames(H, idParent), aggregated: {} });
+        } else {
+          lokasi = getSubLokasi({
+            id: idParent, names: getParentNames(H, idParent), aggregated: {} });
+        }
+      }
+
+      let cid = req.data.idLokasi;
+      if (cid.length > 10) {
+        cid = cid.substring(10);
+        req.data.totalCompletedTps = 1;
+      }
+      logger.log('lokasi', cid, JSON.stringify(lokasi, null, 2));
+
+      const agg = lokasi.aggregated[cid];
+      if (isIdentical(agg, req.data)) return null;
+      req.data.name = agg.name; // Preserve the name.
+      lokasi.aggregated[cid] = req.data;
+      t.set(hRef, lokasi);
+
+      const nextAgg = getAggregateVotes(idParent, req.data.uploadTimeMs);
+      for (const cagg of Object.values(lokasi.aggregated)) {
+        nextAgg.pas1 += cagg.pas1 ?? 0;
+        nextAgg.pas2 += cagg.pas2 ?? 0;
+        nextAgg.pas3 += cagg.pas3 ?? 0;
+        nextAgg.sah += cagg.sah ?? 0;
+        nextAgg.tidakSah += cagg.tidakSah ?? 0;
+        nextAgg.totalCompletedTps += cagg.totalCompletedTps ?? 0;
+      }
+      return nextAgg;
+    });
+
+  if (idParent.length > 0 && nextAgg) {
+    logger.log('Next TPS', idParent, JSON.stringify(nextAgg, null, 2));
+    enqueueTask(nextAgg);
+  }
+});
+
+function getAggregateVotes(idLokasi: string, uploadTimeMs: number): AggregateVotes {
+  return {
+    idLokasi,
+    name:'',
+    pas1: 0,
+    pas2: 0,
+    pas3: 0,
+    sah: 0,
+    tidakSah: 0,
+    uploadTimeMs,
+    totalTps: 0,
+    totalCompletedTps: 0,
+    imageId: "",
+    photoUrl: ""
+  };
+}
 
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
 export const upload = onCall(
@@ -97,15 +194,54 @@ export const upload = onCall(
     const latest = await getLatestVote(request.data);
     if (request.data.imageId?.length) {
       if (request.data.imageId !== 'preserve') {
-        latest.idLokasi = request.data.imageId;
-        const path = `uploads/${tpsId}/${request.auth?.uid}/${latest.idLokasi}`;
+        latest.imageId = request.data.imageId;
+        const path = `uploads/${tpsId}/${request.auth?.uid}/${latest.imageId}`;
         logger.info("Get serving url", path);
         latest.photoUrl = await getServingUrl(path);
       }
-      await tpsColRef.doc(latest.idLokasi).set(latest);
+      logger.info('Store Latest', JSON.stringify(latest));
+      await tpsColRef.doc(latest.imageId).set(latest);
+      await enqueueTask(latest);
     }
     return latest;
   });
+
+async function enqueueTask(task: AggregateVotes) {
+  const queue = getFunctions().taskQueue("aggregate");
+  await queue.enqueue(task, {
+    dispatchDeadlineSeconds: 60 * 5, // 5 minutes
+    uri: await getFunctionUrl("aggregate"),
+  });
+}
+
+import { GoogleAuth } from "google-auth-library";
+
+let auth: any;
+
+/**
+ * Get the URL of a given v2 cloud function.
+ * @param {string} name the function's name
+ * @param {string} location the function's location
+ * @return {Promise<string>} The URL of the function
+ */
+async function getFunctionUrl(name: string, location = "us-central1") {
+  if (!auth) {
+    auth = new GoogleAuth({
+      scopes: "https://www.googleapis.com/auth/cloud-platform",
+    });
+  }
+  const projectId = await auth.getProjectId();
+  const url = "https://cloudfunctions.googleapis.com/v2beta/" +
+    `projects/${projectId}/locations/${location}/functions/${name}`;
+
+  const client = await auth.getClient();
+  const res = await client.request({ url });
+  const uri = res.data?.serviceConfig?.uri;
+  if (!uri) {
+    throw new Error(`Unable to retreive uri for function at ${url}`);
+  }
+  return uri;
+}
 
 /**
  * Returns the optimized image serving url for the given object.

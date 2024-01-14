@@ -52,6 +52,7 @@ export class UploadComponent implements OnInit {
     pas3: 0,
     sah: 0,
     tidakSah: 0,
+    imageId: '',
     photoUrl: '',
     totalTps: 0,
     totalCompletedTps: 0,
