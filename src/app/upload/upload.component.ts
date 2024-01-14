@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import { Auth, getRedirectResult, signOut, user } from '@angular/fire/auth';
-import { combineLatest, mergeAll, Observable, of, switchMap } from 'rxjs';
+import { mergeAll, Observable, of, switchMap } from 'rxjs';
 import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 import { Functions, httpsCallable } from '@angular/fire/functions';
@@ -61,18 +61,13 @@ export class UploadComponent implements OnInit {
   constructor(private route: ActivatedRoute) { }
 
   async ngOnInit() {
-    this.id$ = combineLatest([this.route.paramMap, this.user$]).pipe(
-      switchMap(async ([params, user]) => {
+    this.id$ = this.route.paramMap.pipe(
+      switchMap(async params => {
         this.id = params.get('id') || '';
         if (!(/^\d{11,13}$/.test(this.id))) {
           alert('Invalid id: ' + this.id);
           return of();
         }
-        if (!user) {
-          console.log('The user is not logged in');
-          return of();
-        }
-        console.log('Logged in user', user);
 
         try {
           const callable = httpsCallable(this.functions, 'hierarchy');
@@ -84,6 +79,7 @@ export class UploadComponent implements OnInit {
           }
           console.log('latest', this.latest);
         } catch (e) {
+          console.error('Error getting hierarchy', e);
           return of();
         }
         return of(this.id);
