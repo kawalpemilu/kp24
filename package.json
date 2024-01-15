@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start:emulators": "./run-emulators.sh",
+    "start:dev": "ng serve -c development",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
