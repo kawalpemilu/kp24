@@ -1,9 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
-import { Auth, getRedirectResult, signOut, user } from '@angular/fire/auth';
+import { Auth, getRedirectResult, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { mergeAll, Observable, of, switchMap } from 'rxjs';
-import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { GoogleAuthProvider } from "firebase/auth";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { MatIconModule } from '@angular/material/icon';
@@ -151,9 +151,11 @@ export class UploadComponent implements OnInit {
     this.loading = false;
   }
 
-  login() {
+  async login() {
     console.log('Try logging in');
-    signInWithRedirect(this.auth, this.provider);
+    // Sign in with redirect is problematic for Safari browser.
+    const u = await signInWithPopup(this.auth, this.provider);
+    console.log('Logged in user', u);
   }
 
   async logout() {
