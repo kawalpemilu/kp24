@@ -5,6 +5,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 - [Kawal Pemilu 2024](#kawal-pemilu-2024)
   - [Prerequisites](#prerequisites)
   - [Development](#development)
+    - [Local Firebase emulator](#local-firebase-emulator)
   - [Default commands](#default-commands)
     - [Development server](#development-server)
     - [Code scaffolding](#code-scaffolding)
@@ -15,17 +16,24 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/en/) version 18 or higher
-- [Angular CLI](https://angular.io/cli) version 17 or higher
-- [Firebase CLI](https://firebase.google.com/docs/cli) version 9 or higher
+- [Node.js](https://nodejs.org/en/) version 20.11.0 or higher
+- [Angular CLI](https://angular.io/cli) version 17.0.9 or higher
+- [Firebase CLI](https://firebase.google.com/docs/cli) version 13.0.3 or higher
 - [Java](https://www.java.com/en/) to run Firebase emulator locally
 
 ## Development
 
 1. Clone this repository
 2. Run `npm install` at the **root** and the **functions** directories to install all dependencies
-3. Run `npm run start:emulator` to start the Firebase emulator
-4. Open another terminal and run `npm run start:dev` to start the Angular development server while pointing to the local Firebase emulator
+3. Run `npm run start:prod` to start the Angular development server while pointing to the production Firebase instance.
+
+### Local Firebase emulator
+
+The `npm run start:emulator` command will start the Firebase emulator locally.
+However, currently, we can't make the cloud task queue to run locally.
+Therefore, for now, we will use the production environment to develop and test.
+
+If we couldn't fix this issue in time, we may need to set up a staging environment for development and testing purposes.
 
 ## Default commands
 
