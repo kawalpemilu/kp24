@@ -52,4 +52,21 @@ export class HierarchyComponent implements OnInit {
       }), mergeAll()
     );
   }
+
+  levelName(level: number): string | undefined {
+    switch (level) {
+      case 1:
+        return 'Provinsi';
+      case 2:
+        return 'Kota/Kabupaten';
+      case 3:
+        return 'Kecamatan';
+      case 4:
+        return 'Kelurahan/Desa';
+      case 5:
+        return 'TPS';
+      default:
+        return undefined;
+    }
+  }
 }
