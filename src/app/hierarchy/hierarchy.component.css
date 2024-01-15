@@ -1,0 +1,37 @@
+.hierarchy_path {
+    padding: 10px;
+    background-color: lightblue;
+}
+
+.hierarchy {
+    text-decoration: none;
+}
+
+.lokasi {
+    width: 150px;
+}
+
+th.paslon {
+    width: 50px;
+}
+
+th.sah {
+    width: 50px;
+}
+
+th.cov {
+    width: 50px;
+}
+
+/* Default styles - all columns visible */
+table th,
+table td {
+    display: table-cell;
+}
+
+@media (max-width: 600px) {
+    /* Hide the second and third columns on screens narrower than 600px */
+    table .sah {
+        display: none;
+    }
+}

@@ -1,30 +1,31 @@
-<h2 style="padding: 10px">Kawal Pemilu 2024</h2>
+<div *ngIf="lokasi$ | async as lokasi">
 
-<div style="padding-left: 10px" *ngIf="lokasi$ | async as lokasi">
-@for (p of parents; track p[0]; let last = $last) {
-    <a [routerLink]="['/h', p[0]]" routerLinkActive="active">{{ p[1] }}</a>
-    @if (!last) { &gt; }
-}
+<div class="hierarchy_path">
+    @for (p of parents; track p[0]; let last = $last) {
+        <a [routerLink]="['/h', p[0]]" routerLinkActive="active"
+            class="hierarchy">{{ p[1] }}</a>
+        @if (!last) { &gt; }
+    }
+</div>
 
-<br><br>
 <table class="collapsed_border">
 <tr bgcolor="lightgrey">
-    <th>{{ levelName(parents.length) ?? 'Lokasi' }}</th>
-    <th>Pas1</th>
-    <th>Pas2</th>
-    <th>Pas3</th>
-    <th>Sah</th>
-    <th>~Sah</th>
-    <th>COV</th>
+    <th class="lokasi">{{ levelName() }}</th>
+    <th class="paslon">Pas1</th>
+    <th class="paslon">Pas2</th>
+    <th class="paslon">Pas3</th>
+    <th class="sah">Sah</th>
+    <th class="sah">~Sah</th>
+    <th class="cov">COV</th>
 </tr>
 @for (c of children; track c[0];) {
     <tr>
         <td>
-            <div class="truncate-text">
+            <div class="truncate-text lokasi">
             @if (lokasi.id.length === 10) {
-                <a [routerLink]="['/u', lokasi.id + c[0]]">TPS #{{ c[1].name }}</a>
+                <a class="hierarchy" [routerLink]="['/u', lokasi.id + c[0]]">TPS #{{ c[1].name }}</a>
             } @else {
-                <a [routerLink]="['/h', c[0]]">{{ c[1].name }}</a>
+                <a class="hierarchy" [routerLink]="['/h', c[0]]">{{ c[1].name }}</a>
             }
             </div>
         </td>
@@ -32,10 +33,10 @@
         <td>{{ c[1].pas1 }}</td>
         <td>{{ c[1].pas2 }}</td>
         <td>{{ c[1].pas3 }}</td>
-        <td>{{ c[1].sah }}</td>
-        <td>{{ c[1].tidakSah }}</td>
+        <td class="sah">{{ c[1].sah }}</td>
+        <td class="sah">{{ c[1].tidakSah }}</td>
     } @else {
-        <td colspan="5">
+        <td colspan="3">
             &lt;- Click to upload photo.
         </td>
     }

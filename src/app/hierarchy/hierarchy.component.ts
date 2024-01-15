@@ -53,8 +53,8 @@ export class HierarchyComponent implements OnInit {
     );
   }
 
-  levelName(level: number): string | undefined {
-    switch (level) {
+  levelName() {
+    switch (this.parents.length) {
       case 1:
         return 'Provinsi';
       case 2:
@@ -66,7 +66,7 @@ export class HierarchyComponent implements OnInit {
       case 5:
         return 'TPS';
       default:
-        return undefined;
+        return 'Lokasi';
     }
   }
 }
