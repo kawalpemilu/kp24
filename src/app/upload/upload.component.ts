@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { AggregateVotes, Lokasi, UploadRequest } from '../../../functions/src/interfaces';
+import { AggregateVotes, TpsData, UploadRequest } from '../../../functions/src/interfaces';
 
 /** Returns a random n-character identifier containing [a-zA-Z0-9]. */
 export function autoId(n = 20): string {
@@ -44,20 +44,7 @@ export class UploadComponent implements OnInit {
   id$!: Observable<string>;
   id = '';
 
-  latest: AggregateVotes = {
-    idLokasi: '',
-    name: '',
-    pas1: 0,
-    pas2: 0,
-    pas3: 0,
-    sah: 0,
-    tidakSah: 0,
-    imageId: '',
-    photoUrl: '',
-    totalTps: 0,
-    totalCompletedTps: 0,
-    uploadTimeMs: -1
-  };
+  tpsVotes: AggregateVotes[] = [];
 
   constructor(private route: ActivatedRoute) { }
 
@@ -72,13 +59,9 @@ export class UploadComponent implements OnInit {
 
         try {
           const callable = httpsCallable(this.functions, 'hierarchy');
-          const lokasi = (await callable({ id: this.id })).data as Lokasi;
-          for (const agg of Object.values(lokasi.aggregated)) {
-            if (this.latest.uploadTimeMs < agg.uploadTimeMs) {
-              this.latest = agg;
-            }
-          }
-          console.log('latest', this.latest);
+          const tpsData = (await callable({ id: this.id })).data as TpsData;
+          this.tpsVotes = Object.values(tpsData.votes);
+          this.tpsVotes.sort((a, b) => b.uploadTimeMs - a.uploadTimeMs);
         } catch (e) {
           console.error('Error getting hierarchy', e);
           return of();
@@ -133,18 +116,18 @@ export class UploadComponent implements OnInit {
   async upload(imageId = 'preserve') {
     try {
       const request: UploadRequest = {
-        tpsId: this.id,
+        idLokasi: this.id,
+        uid: '',
         imageId,
-        pas1: this.latest.pas1,
-        pas2: this.latest.pas2,
-        pas3: this.latest.pas3,
-        sah: this.latest.sah,
-        tidakSah: this.latest.tidakSah,
+        pas1: Math.floor(Math.random() * 1000),
+        pas2: Math.floor(Math.random() * 1000),
+        pas3: Math.floor(Math.random() * 1000),
+        sah: Math.floor(Math.random() * 1000),
+        tidakSah: Math.floor(Math.random() * 1000),
       };
       const callable = httpsCallable(this.functions, 'upload');
-      const agg = (await callable(request)).data as AggregateVotes;
-      console.log('upload', request, agg);
-      this.latest = agg;
+      const result = (await callable(request));
+      console.log('Uploaded', request, result);
     } catch (e) {
       console.error(e);
     }
@@ -156,13 +139,5 @@ export class UploadComponent implements OnInit {
     // Sign in with redirect is problematic for Safari browser.
     const u = await signInWithPopup(this.auth, this.provider);
     console.log('Logged in user', u);
-  }
-
-  async logout() {
-    signOut(this.auth).then(() => {
-      console.log('Sign-out successful');
-    }).catch((error) => {
-      console.error('Signout failed', error);
-    });
   }
 }
