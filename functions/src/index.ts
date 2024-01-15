@@ -1,13 +1,12 @@
-import { onCall, CallableRequest } from "firebase-functions/v2/https";
-import { onTaskDispatched } from "firebase-functions/v2/tasks";
-import { getFunctions } from "firebase-admin/functions";
-import * as admin from 'firebase-admin';
+import {onCall, CallableRequest} from "firebase-functions/v2/https";
+import {onTaskDispatched} from "firebase-functions/v2/tasks";
+import {getFunctions} from "firebase-admin/functions";
+import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import * as fs from "fs";
 import {
-  AggregateVotes, Hierarchy, Lokasi,
-  UploadRequest,
-  getChildrenIds, getParentNames
+  AggregateVotes, Hierarchy, Lokasi, TpsData,
+  UploadRequest, getChildrenIds, getParentNames,
 } from "./interfaces";
 
 admin.initializeApp();
@@ -18,100 +17,127 @@ const H = JSON.parse(
 
 const C = getChildrenIds(H);
 
-function getSubLokasi(lokasi: Lokasi) {
-  for (const suffixId of C[lokasi.id]) {
-    const cid = lokasi.id + suffixId;
-    lokasi.aggregated[cid] = {
-      name: H.id2name[cid],
-    } as AggregateVotes;
-  }
-  return lokasi;
-}
-
-function getTpsList(lokasi: Lokasi) {
-  const [maxTpsNo, extBegin, extEnd] = H.tps[lokasi.id];
-  for (let i = 1; i <= maxTpsNo; i++) {
-    lokasi.aggregated[i] = {
-      name: `${i}`,
-    } as AggregateVotes;
-  }
-  if (extBegin) {
-    for (let i = extBegin; i <= extEnd; i++) {
+/**
+ * Constructs Lokasi object from hard-coded data.
+ * @param {string} id The id of a location.
+ * @return {Lokasi} The Lokasi object from hard-coded data.
+ */
+function getPrestineLokasi(id: string) {
+  const lokasi: Lokasi = {id, names: getParentNames(H, id), aggregated: {}};
+  if (id.length === 10) {
+    const [maxTpsNo, extBegin, extEnd] = H.tps[lokasi.id];
+    for (let i = 1; i <= maxTpsNo; i++) {
       lokasi.aggregated[i] = {
         name: `${i}`,
+      } as AggregateVotes;
+    }
+    if (extBegin) {
+      for (let i = extBegin; i <= extEnd; i++) {
+        lokasi.aggregated[i] = {
+          name: `${i}`,
+        } as AggregateVotes;
+      }
+    }
+  } else {
+    for (const suffixId of C[lokasi.id]) {
+      const cid = lokasi.id + suffixId;
+      lokasi.aggregated[cid] = {
+        name: H.id2name[cid],
       } as AggregateVotes;
     }
   }
   return lokasi;
 }
 
-async function getTpsImages(lokasi: Lokasi) {
-  const snapshot = await firestore.collection(`t/${lokasi.id}/p`).get();
-  snapshot.forEach(doc => {
-    lokasi.aggregated[doc.id] = doc.data() as AggregateVotes;
+/**
+ * Returns the TPS data stored in Firestore.
+ * @param {string} id The id of the TPS location.
+ * @return {TpsData} The TpsData of the id.
+ */
+async function getTpsData(id: string) {
+  const snapshot = await firestore.collection(`t/${id}/p`).get();
+  const tpsData: TpsData = {id, votes: {}};
+  snapshot.forEach((doc) => {
+    tpsData.votes[doc.id] = doc.data() as AggregateVotes;
   });
-  return lokasi;
-}
-
-async function getLatestVote(request: UploadRequest): Promise<AggregateVotes> {
-  let latest: AggregateVotes | undefined = undefined;
-  const lokasi: Lokasi = await getTpsImages(
-    { id: request.tpsId, names: [], aggregated: {} });
-  for (const agg of Object.values(lokasi.aggregated)) {
-    if (!latest || latest.uploadTimeMs < agg.uploadTimeMs) {
-      latest = agg;
-    }
-  }
-  return {
-    idLokasi: request.tpsId,
-    name: request.tpsId.substring(10),
-    pas1: request.pas1,
-    pas2: request.pas2,
-    pas3: request.pas3,
-    sah: request.sah,
-    tidakSah: request.tidakSah,
-    uploadTimeMs: Date.now(),
-    // To be overriden.
-    imageId: latest?.imageId ?? 'noImageId',
-    photoUrl: latest?.photoUrl ?? '',
-    totalTps: 0,
-    totalCompletedTps: 0,
-  };
+  return tpsData;
 }
 
 export const hierarchy = onCall(
-  { cors: true },
-  async (request: CallableRequest<{ id: string }>) => {
+  {cors: true},
+  async (request: CallableRequest<{ id: string }>)
+    : Promise<Lokasi | TpsData> => {
     let id = request.data.id;
-    if (!(/^\d{0,13}$/.test(id))) id = '';
+    if (!(/^\d{0,13}$/.test(id))) id = "";
 
     const hRef = firestore.doc(`h/i${id}`);
     const latest = (await hRef.get()).data() as Lokasi | undefined;
     if (latest) return latest;
 
-    const lokasi: Lokasi = { id, names: getParentNames(H, id), aggregated: {} };
-    if (id.length > 10) return getTpsImages(lokasi);
-    if (id.length === 10) return getTpsList(lokasi);
-    return getSubLokasi(lokasi);
+    return (id.length > 10) ? getTpsData(id) : getPrestineLokasi(id);
   });
 
+/**
+ * Check whether the number of votes in a and b are the same.
+ * @param {AggregateVotes} a the first votes.
+ * @param {AggregateVotes} b the second votes.
+ * @return {boolean} True if they are the same.
+ */
 function isIdentical(a: AggregateVotes, b: AggregateVotes) {
-  return a.pas1 === b.pas1
-    && a.pas2 === b.pas2
-    && a.pas3 === b.pas3
-    && a.sah === b.sah
-    && a.tidakSah === b.tidakSah;
+  return a.pas1 === b.pas1 &&
+    a.pas2 === b.pas2 &&
+    a.pas3 === b.pas3 &&
+    a.sah === b.sah &&
+    a.tidakSah === b.tidakSah;
 }
 
+/**
+ * Returns the parent id of a lokasi id.
+ * @param {string} id the id to be queried.
+ * @return {string} The id's parent.
+ */
 function getParentId(id: string) {
   if (id.length > 10) return id.substring(0, 10);
   if (id.length > 6) return id.substring(0, 6);
   if (id.length > 4) return id.substring(0, 4);
   if (id.length > 2) return id.substring(0, 2);
-  return '';
+  return "";
 }
 
-export const aggregate = onTaskDispatched<AggregateVotes>({
+/**
+ * Check the type of the parameter and cast it.
+ * @param {UploadRequest | AggregateVotes} x two possible types.
+ * @return {boolean} The correct type.
+ */
+function isUploadRequest(x: UploadRequest | AggregateVotes)
+  : x is UploadRequest {
+  return x.idLokasi.length > 10;
+}
+
+/**
+ * Converts the imageId into serving photoUrl.
+ * @param {UploadRequest} u The upload request.
+ * @return {Promise<AggregateVotes>} The processed image.
+ */
+async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
+  return {
+    idLokasi: u.idLokasi,
+    name: u.idLokasi.substring(10),
+    pas1: u.pas1,
+    pas2: u.pas2,
+    pas3: u.pas3,
+    sah: u.sah,
+    tidakSah: u.tidakSah,
+    uploadTimeMs: Date.now(),
+    imageId: u.imageId,
+    photoUrl: await getServingUrl(
+      `uploads/${u.idLokasi}/${u.uid}/${u.imageId}`),
+    totalTps: 0,
+    totalCompletedTps: 1,
+  };
+}
+
+export const aggregate = onTaskDispatched<UploadRequest | AggregateVotes>({
   retryConfig: {
     maxAttempts: 5,
     minBackoffSeconds: 60,
@@ -119,37 +145,52 @@ export const aggregate = onTaskDispatched<AggregateVotes>({
   rateLimits: {
     maxConcurrentDispatches: 6,
   },
-}, async (req) => {
-  logger.log("Dispatched", JSON.stringify(req.data, null, 2));
-  const idParent = getParentId(req.data.idLokasi);
+}, async (request) => {
+  logger.log("Dispatched", JSON.stringify(request.data, null, 2));
+
+  let agg: AggregateVotes;
+  if (isUploadRequest(request.data)) {
+    agg = await processImageId(request.data);
+    const tpsColRef = firestore.collection(`t/${agg.idLokasi}/p`);
+    await tpsColRef.doc(request.data.imageId).set(agg);
+  } else {
+    agg = request.data;
+  }
+
+  const idParent = getParentId(agg.idLokasi);
   const hRef = firestore.doc(`h/i${idParent}`);
   const nextAgg = await firestore
-    .runTransaction(async t => {
+    .runTransaction(async (t) => {
       let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
-      if (!lokasi) {
-        if (req.data.idLokasi.length > 10) {
-          lokasi = getTpsList({
-            id: idParent, names: getParentNames(H, idParent), aggregated: {} });
-        } else {
-          lokasi = getSubLokasi({
-            id: idParent, names: getParentNames(H, idParent), aggregated: {} });
-        }
-      }
+      if (!lokasi) lokasi = getPrestineLokasi(idParent);
+      logger.log("Lokasi", JSON.stringify(lokasi, null, 2));
 
-      let cid = req.data.idLokasi;
-      if (cid.length > 10) {
-        cid = cid.substring(10);
-        req.data.totalCompletedTps = 1;
+      const cid = isUploadRequest(agg) ?
+        agg.idLokasi.substring(10) : agg.idLokasi;
+      const old = lokasi.aggregated[cid];
+      if (isIdentical(old, agg)) {
+        logger.log("Identical", JSON.stringify(agg, null, 2));
+        return null;
       }
-      logger.log('lokasi', cid, JSON.stringify(lokasi, null, 2));
+      agg.name = old.name; // Preserve the name.
+      lokasi.aggregated[cid] = agg;
 
-      const agg = lokasi.aggregated[cid];
-      if (isIdentical(agg, req.data)) return null;
-      req.data.name = agg.name; // Preserve the name.
-      lokasi.aggregated[cid] = req.data;
       t.set(hRef, lokasi);
 
-      const nextAgg = getAggregateVotes(idParent, req.data.uploadTimeMs);
+      const nextAgg: AggregateVotes = {
+        idLokasi: idParent,
+        name: "",
+        pas1: 0,
+        pas2: 0,
+        pas3: 0,
+        sah: 0,
+        tidakSah: 0,
+        uploadTimeMs: agg.uploadTimeMs,
+        totalTps: 0,
+        totalCompletedTps: 0,
+        imageId: "",
+        photoUrl: "",
+      };
       for (const cagg of Object.values(lokasi.aggregated)) {
         nextAgg.pas1 += cagg.pas1 ?? 0;
         nextAgg.pas2 += cagg.pas2 ?? 0;
@@ -162,51 +203,61 @@ export const aggregate = onTaskDispatched<AggregateVotes>({
     });
 
   if (idParent.length > 0 && nextAgg) {
-    logger.log('Next TPS', idParent, JSON.stringify(nextAgg, null, 2));
+    logger.log("Next TPS", idParent, JSON.stringify(nextAgg, null, 2));
     enqueueTask(nextAgg);
   }
 });
 
-function getAggregateVotes(idLokasi: string, uploadTimeMs: number): AggregateVotes {
-  return {
-    idLokasi,
-    name:'',
-    pas1: 0,
-    pas2: 0,
-    pas3: 0,
-    sah: 0,
-    tidakSah: 0,
-    uploadTimeMs,
-    totalTps: 0,
-    totalCompletedTps: 0,
-    imageId: "",
-    photoUrl: ""
-  };
+/**
+ * Returns true if the votes is between [0, 999].
+ * @param {number} votes the votes to be checked.
+ * @return {boolean} true if valid.
+ */
+function isValidVoteNumbers(votes: number) {
+  if (isNaN(votes)) return false;
+  return votes >= 0 && votes < 1000;
 }
 
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
 export const upload = onCall(
-  { cors: true },
+  {cors: true},
   async (request: CallableRequest<UploadRequest>) => {
-    // TODO: add retry using tasks.
-    const tpsId = request.data.tpsId;
-    const tpsColRef = firestore.collection(`t/${tpsId}/p`);
-    const latest = await getLatestVote(request.data);
-    if (request.data.imageId?.length) {
-      if (request.data.imageId !== 'preserve') {
-        latest.imageId = request.data.imageId;
-        const path = `uploads/${tpsId}/${request.auth?.uid}/${latest.imageId}`;
-        logger.info("Get serving url", path);
-        latest.photoUrl = await getServingUrl(path);
-      }
-      logger.info('Store Latest', JSON.stringify(latest));
-      await tpsColRef.doc(latest.imageId).set(latest);
-      await enqueueTask(latest);
-    }
-    return latest;
+    if (!request.auth?.uid) return false;
+
+    const idLokasi = request.data.idLokasi;
+    if (!(/^\d{11,13}$/.test(idLokasi))) return false;
+
+    const imageId = request.data.imageId;
+    if (!(/^[A-Za-z0-9]{20}$/.test(imageId))) return false;
+
+    const pas1 = Number(request.data.pas1);
+    if (!isValidVoteNumbers(pas1)) return false;
+
+    const pas2 = Number(request.data.pas2);
+    if (!isValidVoteNumbers(pas2)) return false;
+
+    const pas3 = Number(request.data.pas3);
+    if (!isValidVoteNumbers(pas3)) return false;
+
+    const sah = Number(request.data.sah);
+    if (!isValidVoteNumbers(sah)) return false;
+
+    const tidakSah = Number(request.data.tidakSah);
+    if (!isValidVoteNumbers(tidakSah)) return false;
+
+    const sanitized: UploadRequest = {
+      idLokasi, uid: request.auth?.uid,
+      imageId, pas1, pas2, pas3, sah, tidakSah,
+    };
+    await enqueueTask(sanitized);
+    return true;
   });
 
-async function enqueueTask(task: AggregateVotes) {
+/**
+ * Schedules cloud task queue. It retries for 5 mins on error.
+ * @param {UploadRequest | AggregateVotes} task the task to be scheduled.
+ */
+async function enqueueTask(task: UploadRequest | AggregateVotes) {
   const queue = getFunctions().taskQueue("aggregate");
   await queue.enqueue(task, {
     dispatchDeadlineSeconds: 60 * 5, // 5 minutes
@@ -214,7 +265,7 @@ async function enqueueTask(task: AggregateVotes) {
   });
 }
 
-import { GoogleAuth } from "google-auth-library";
+import {GoogleAuth} from "google-auth-library";
 
 let auth: any;
 
@@ -235,7 +286,7 @@ async function getFunctionUrl(name: string, location = "us-central1") {
     `projects/${projectId}/locations/${location}/functions/${name}`;
 
   const client = await auth.getClient();
-  const res = await client.request({ url });
+  const res = await client.request({url});
   const uri = res.data?.serviceConfig?.uri;
   if (!uri) {
     throw new Error(`Unable to retreive uri for function at ${url}`);
@@ -251,7 +302,7 @@ async function getFunctionUrl(name: string, location = "us-central1") {
 async function getServingUrl(objectName: string) {
   const path = encodeURIComponent(`kp24-fd486.appspot.com/${objectName}`);
   const data = await fetch(`https://kp24-fd486.et.r.appspot.com/gsu?path=${path}`);
-  return data.startsWith("http") ? data : '';
+  return data.startsWith("http") ? data : "";
 }
 
 import * as https from "https";

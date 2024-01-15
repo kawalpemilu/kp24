@@ -5,6 +5,7 @@ import { mergeAll, switchMap } from 'rxjs/operators';
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { AggregateVotes, Lokasi } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 
 const idLengths = [2, 4, 6, 10];
 
@@ -13,7 +14,7 @@ type IdAndAggVotes = [id: string, agg: AggregateVotes];
 @Component({
   selector: 'app-hierarchy',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule],
   templateUrl: './hierarchy.component.html',
   styleUrl: './hierarchy.component.css'
 })

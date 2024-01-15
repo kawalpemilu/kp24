@@ -1,18 +1,23 @@
 export declare interface Hierarchy {
-    // The id is one of idProvinsi, idKabupaten, idKecamatan, idDesa.
-    // The value is the name for the id.
-    id2name: {[id: string]: string};
+  // The id is one of idProvinsi, idKabupaten, idKecamatan, idDesa.
+  // The value is the name for the id.
+  id2name: { [id: string]: string };
 
-    // The id is the idDesa.
-    // The value is [maxTpsNo, extBegin?, extEnd?].
-    // signifying that the TPS has number from [1, maxTpsNo].
-    // and optionally it has extended number from [extBegin, extEnd].
-    tps: {[id: string]: number[]};
+  // The id is the idDesa.
+  // The value is [maxTpsNo, extBegin?, extEnd?].
+  // signifying that the TPS has number from [1, maxTpsNo].
+  // and optionally it has extended number from [extBegin, extEnd].
+  tps: { [id: string]: number[] };
 }
 
+/**
+ * Returns the map of sorted children ids.
+ * @param {Hierarchy} hierarchy The hierarchy to be processed.
+ * @return {Record<string, string[]>} The map of sorted children.
+ */
 export function getChildrenIds(hierarchy: Hierarchy) {
   const c: Record<string, Set<string>> = {"": new Set<string>()};
-  for (const idDesa in hierarchy.tps) {
+  for (const idDesa of Object.keys(hierarchy.tps)) {
     if (idDesa.length != 10) throw new Error("Length must be 10");
 
     const idProvinsi = idDesa.substring(0, 2);
@@ -39,6 +44,12 @@ export function getChildrenIds(hierarchy: Hierarchy) {
   return sortedC;
 }
 
+/**
+ * Returns an array of names from the top level down to id's level.
+ * @param {Hierarchy} hierarchy The hierarchy to be processed.
+ * @param {string} id The id to be processed.
+ * @return {string[]} The array of names of the path to the id.
+ */
 export function getParentNames(hierarchy: Hierarchy, id: string) {
   const names: string[] = [];
   if (id.length >= 2) names.push(hierarchy.id2name[id.substring(0, 2)]);
@@ -81,6 +92,7 @@ export function getIdProvinsi(id: string) {
   return id.substring(0, 2);
 }
 
+// The aggregated votes at Provinsi, Kabupaten, and Kecamatan level.
 export declare interface AggregateVotes {
   idLokasi: string;
 
@@ -104,23 +116,25 @@ export declare interface AggregateVotes {
   // Total TPS has at least one photo.
   totalCompletedTps: number;
 
+  // The upload timestamp.
+  uploadTimeMs: number;
+
   // The blobId of the image file.
+  // Only available at Desa level.
   imageId: string;
 
   // The serving url of the imageId.
+  // Only available at Desa level.
   photoUrl: string;
-
-  // The upload timestamp.
-  uploadTimeMs: number;
 }
 
+// Lokasi detail for Provinsi, Kabupaten, and Kecamatan level.
 export declare interface Lokasi {
   // The 10 digits id formatted as folows:
   // The first 2 is the idProvinsi.
   // The next 2 is the idKabupaten.
   // The next 2 is the idKecamatan.
   // The next 4 is the idDesa.
-  // The next 3 is the TPS NO.
   id: string;
 
   // The names depending on the hierarchy:
@@ -132,17 +146,44 @@ export declare interface Lokasi {
 
   // The aggregated votes of all the children of this Node.
   // If the current id is idProvinsi, then the cid is idKabupaten.
-  // If the current id is idDesa, then the cid is the tpsNo.
-  aggregated: {[cid: string]: AggregateVotes};
+  // If the current id is idDesa, then the cid is Tps No.
+  aggregated: { [cid: string]: AggregateVotes };
+}
+
+// Photos and votes at Desa level.
+export declare interface TpsData {
+  // The idDesa + tpsNo.
+  id: string;
+
+  // One TPS can have many photos.
+  // The votes in each photo is digitized.
+  votes: { [imageId: string]: AggregateVotes };
+}
+
+/**
+ * Returns the AggregateVotes with the latest timestamp.
+ * @param {TpsData} tpsData the tps data.
+ * @return {AggregateVotes} The votes with the latest timestamp.
+ */
+export function getLatestTpsVotes(tpsData: TpsData) {
+  let latest: AggregateVotes | undefined = undefined;
+  for (const v of Object.values(tpsData)) {
+    if (!latest || latest.uploadTimeMs < v.uploadTimeMs) {
+      latest = v;
+    }
+  }
+  return latest;
 }
 
 export declare interface UploadRequest {
   // The idDesa + tpsNo
-  tpsId: string;
+  idLokasi: string;
+
+  // The user's UID.
+  uid: string;
 
   // The blobId in the cloud storage.
-  // If unset, then the image is not overriden.
-  imageId?: string;
+  imageId: string;
 
   // Number of votes for paslon 1, 2, 3
   pas1: number;
