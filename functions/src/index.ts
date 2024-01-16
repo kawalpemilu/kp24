@@ -137,24 +137,16 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
   };
 }
 
-export const aggregate = onTaskDispatched<UploadRequest | AggregateVotes>({
-  retryConfig: {
-    maxAttempts: 5,
-    minBackoffSeconds: 60,
-  },
-  rateLimits: {
-    maxConcurrentDispatches: 6,
-  },
-}, async (request) => {
-  logger.log("Dispatched", JSON.stringify(request.data, null, 2));
+const aggregateInternal = async (data: UploadRequest | AggregateVotes) => {
+  logger.log("Dispatched", JSON.stringify(data, null, 2));
 
   let agg: AggregateVotes;
-  if (isUploadRequest(request.data)) {
-    agg = await processImageId(request.data);
+  if (isUploadRequest(data)) {
+    agg = await processImageId(data);
     const tpsColRef = firestore.collection(`t/${agg.idLokasi}/p`);
-    await tpsColRef.doc(request.data.imageId).set(agg);
+    await tpsColRef.doc(data.imageId).set(agg);
   } else {
-    agg = request.data;
+    agg = data;
   }
 
   const idParent = getParentId(agg.idLokasi);
@@ -206,6 +198,18 @@ export const aggregate = onTaskDispatched<UploadRequest | AggregateVotes>({
     logger.log("Next TPS", idParent, JSON.stringify(nextAgg, null, 2));
     enqueueTask(nextAgg);
   }
+};
+
+export const aggregate = onTaskDispatched<UploadRequest | AggregateVotes>({
+  retryConfig: {
+    maxAttempts: 5,
+    minBackoffSeconds: 60,
+  },
+  rateLimits: {
+    maxConcurrentDispatches: 6,
+  },
+}, async (request) => {
+  return aggregateInternal(request.data);
 });
 
 /**
@@ -258,6 +262,12 @@ export const upload = onCall(
  * @param {UploadRequest | AggregateVotes} task the task to be scheduled.
  */
 async function enqueueTask(task: UploadRequest | AggregateVotes) {
+  if (process.env.FUNCTIONS_EMULATOR) {
+    // For local development it's okay execute it now, rather than queuing.
+    await aggregateInternal(task);
+    return;
+  }
+
   const queue = getFunctions().taskQueue("aggregate");
   await queue.enqueue(task, {
     dispatchDeadlineSeconds: 60 * 5, // 5 minutes

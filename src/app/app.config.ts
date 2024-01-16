@@ -8,7 +8,7 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getAnalytics, provideAnalytics, ScreenTrackingService, UserTrackingService } from '@angular/fire/analytics';
 import { connectFirestoreEmulator, getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { connectFunctionsEmulator, getFunctions, provideFunctions } from '@angular/fire/functions';
-import { getStorage, provideStorage } from '@angular/fire/storage';
+import { connectStorageEmulator, getStorage, provideStorage } from '@angular/fire/storage';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
@@ -31,7 +31,13 @@ export const appConfig: ApplicationConfig = {
       }
       return f;
     })),
-    importProvidersFrom(provideStorage(() => getStorage())),
+    importProvidersFrom(provideStorage(() => {
+      const f = getStorage();
+      if (!environment.production) {
+        connectStorageEmulator(f, environment.emulatorHost, 9199);
+      }
+      return f;
+    })),
     ScreenTrackingService,
     UserTrackingService,
     provideAnimations()
