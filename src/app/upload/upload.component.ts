@@ -5,6 +5,7 @@ import { Auth, getRedirectResult, signInWithPopup, signOut, user } from '@angula
 import { mergeAll, Observable, of, switchMap } from 'rxjs';
 import { GoogleAuthProvider } from "firebase/auth";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { Storage } from "@angular/fire/storage";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -33,6 +34,7 @@ export function autoId(n = 20): string {
 })
 export class UploadComponent implements OnInit {
   private functions: Functions = inject(Functions);
+  private storage: Storage = inject(Storage);
 
   auth: Auth = inject(Auth);
   user$ = user(this.auth);
@@ -100,8 +102,7 @@ export class UploadComponent implements OnInit {
     const filename = `/uploads/${this.id}/${uid}/${imageId}`;
     console.log('Uploading to', filename);
 
-    const storage = getStorage();
-    const mountainsRef = ref(storage, filename);
+    const mountainsRef = ref(this.storage, filename);
 
     this.uploading = true;
     await uploadBytes(mountainsRef, file).then((snapshot) => {
