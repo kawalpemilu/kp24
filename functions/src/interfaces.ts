@@ -10,88 +10,6 @@ export declare interface Hierarchy {
   tps: { [id: string]: number[] };
 }
 
-/**
- * Returns the map of sorted children ids.
- * @param {Hierarchy} hierarchy The hierarchy to be processed.
- * @return {Record<string, string[]>} The map of sorted children.
- */
-export function getChildrenIds(hierarchy: Hierarchy) {
-  const c: Record<string, Set<string>> = {"": new Set<string>()};
-  for (const idDesa of Object.keys(hierarchy.tps)) {
-    if (idDesa.length != 10) throw new Error("Length must be 10");
-
-    const idProvinsi = idDesa.substring(0, 2);
-    c[""].add(idProvinsi);
-    if (!c[idProvinsi]) c[idProvinsi] = new Set<string>();
-    c[idProvinsi].add(idDesa.substring(2, 4));
-
-    const idKabupaten = idDesa.substring(0, 4);
-    if (!c[idKabupaten]) c[idKabupaten] = new Set<string>();
-    c[idKabupaten].add(idDesa.substring(4, 6));
-
-    const idKecamatan = idDesa.substring(0, 6);
-    if (!c[idKecamatan]) c[idKecamatan] = new Set<string>();
-    c[idKecamatan].add(idDesa.substring(6, 10));
-  }
-  const sortedC: Record<string, string[]> = {};
-  for (const [id, set] of Object.entries(c)) {
-    sortedC[id] = Array.from(set).sort((a, b) => {
-      const na = hierarchy.id2name[id + a];
-      const nb = hierarchy.id2name[id + b];
-      return (na < nb) ? -1 : (na > nb) ? 1 : 0;
-    });
-  }
-  return sortedC;
-}
-
-/**
- * Returns an array of names from the top level down to id's level.
- * @param {Hierarchy} hierarchy The hierarchy to be processed.
- * @param {string} id The id to be processed.
- * @return {string[]} The array of names of the path to the id.
- */
-export function getParentNames(hierarchy: Hierarchy, id: string) {
-  const names: string[] = [];
-  if (id.length >= 2) names.push(hierarchy.id2name[id.substring(0, 2)]);
-  if (id.length >= 4) names.push(hierarchy.id2name[id.substring(0, 4)]);
-  if (id.length >= 6) names.push(hierarchy.id2name[id.substring(0, 6)]);
-  if (id.length >= 10) names.push(hierarchy.id2name[id.substring(0, 10)]);
-  return names;
-}
-
-/**
- * Returns the first 6 characters.
- * @param {string} id The id of kecamatan or lower.
- * @return {string} The idKecamatan.
- */
-export function getIdKecamatan(id: string) {
-  if (id.length == 6) return id;
-  if (id.length < 6) throw new Error("Insufficient length");
-  return id.substring(0, 6);
-}
-
-/**
- * Returns the first 4 characters.
- * @param {string} id The id of kabupaten or lower.
- * @return {string} The idKabupaten.
- */
-export function getIdKabupaten(id: string) {
-  if (id.length == 4) return id;
-  if (id.length < 4) throw new Error("Insufficient length");
-  return id.substring(0, 4);
-}
-
-/**
- * Returns the first 2 characters.
- * @param {string} id The id of provinsi or lower.
- * @return {string} The idProvinsi.
- */
-export function getIdProvinsi(id: string) {
-  if (id.length == 2) return id;
-  if (id.length < 2) throw new Error("Insufficient length");
-  return id.substring(0, 2);
-}
-
 // The aggregated votes at Provinsi, Kabupaten, and Kecamatan level.
 export declare interface AggregateVotes {
   idLokasi: string;
@@ -158,21 +76,6 @@ export declare interface TpsData {
   // One TPS can have many photos.
   // The votes in each photo is digitized.
   votes: { [imageId: string]: AggregateVotes };
-}
-
-/**
- * Returns the AggregateVotes with the latest timestamp.
- * @param {TpsData} tpsData the tps data.
- * @return {AggregateVotes} The votes with the latest timestamp.
- */
-export function getLatestTpsVotes(tpsData: TpsData) {
-  let latest: AggregateVotes | undefined = undefined;
-  for (const v of Object.values(tpsData)) {
-    if (!latest || latest.uploadTimeMs < v.uploadTimeMs) {
-      latest = v;
-    }
-  }
-  return latest;
 }
 
 export declare interface UploadRequest {

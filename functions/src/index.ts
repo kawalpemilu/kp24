@@ -1,53 +1,12 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
-import {onTaskDispatched} from "firebase-functions/v2/tasks";
-import {getFunctions} from "firebase-admin/functions";
+import {AggregateVotes, Lokasi, TpsData, UploadRequest} from "./interfaces";
+import {getPrestineLokasi} from "./lokasi";
+import {getServingUrl} from "./serving_url";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
-import * as fs from "fs";
-import {
-  AggregateVotes, Hierarchy, Lokasi, TpsData,
-  UploadRequest, getChildrenIds, getParentNames,
-} from "./interfaces";
 
 admin.initializeApp();
 const firestore = admin.firestore();
-
-const H = JSON.parse(
-  fs.readFileSync("lib/hierarchy.js", "utf-8")) as Hierarchy;
-
-const C = getChildrenIds(H);
-
-/**
- * Constructs Lokasi object from hard-coded data.
- * @param {string} id The id of a location.
- * @return {Lokasi} The Lokasi object from hard-coded data.
- */
-function getPrestineLokasi(id: string) {
-  const lokasi: Lokasi = {id, names: getParentNames(H, id), aggregated: {}};
-  if (id.length === 10) {
-    const [maxTpsNo, extBegin, extEnd] = H.tps[lokasi.id];
-    for (let i = 1; i <= maxTpsNo; i++) {
-      lokasi.aggregated[i] = {
-        name: `${i}`,
-      } as AggregateVotes;
-    }
-    if (extBegin) {
-      for (let i = extBegin; i <= extEnd; i++) {
-        lokasi.aggregated[i] = {
-          name: `${i}`,
-        } as AggregateVotes;
-      }
-    }
-  } else {
-    for (const suffixId of C[lokasi.id]) {
-      const cid = lokasi.id + suffixId;
-      lokasi.aggregated[cid] = {
-        name: H.id2name[cid],
-      } as AggregateVotes;
-    }
-  }
-  return lokasi;
-}
 
 /**
  * Returns the TPS data stored in Firestore.
@@ -70,11 +29,17 @@ export const hierarchy = onCall(
     let id = request.data.id;
     if (!(/^\d{0,13}$/.test(id))) id = "";
 
+    // At the TPS level, returns all user submitted photos + votes.
+    if (id.length > 10) return getTpsData(id);
+
+    // At Province, Kabupaten, Kecamatan, Desa level, returns the Hierarchy
+    // along with the aggregated votes from Firestore (if exists).
     const hRef = firestore.doc(`h/i${id}`);
     const latest = (await hRef.get()).data() as Lokasi | undefined;
     if (latest) return latest;
 
-    return (id.length > 10) ? getTpsData(id) : getPrestineLokasi(id);
+    // Otherwise, returns the hard-coded hierarchy without any votes.
+    return getPrestineLokasi(id);
   });
 
 /**
@@ -196,21 +161,9 @@ const aggregateInternal = async (data: UploadRequest | AggregateVotes) => {
 
   if (idParent.length > 0 && nextAgg) {
     logger.log("Next TPS", idParent, JSON.stringify(nextAgg, null, 2));
-    enqueueTask(nextAgg);
+    aggregateInternal(nextAgg);
   }
 };
-
-export const aggregate = onTaskDispatched<UploadRequest | AggregateVotes>({
-  retryConfig: {
-    maxAttempts: 5,
-    minBackoffSeconds: 60,
-  },
-  rateLimits: {
-    maxConcurrentDispatches: 6,
-  },
-}, async (request) => {
-  return aggregateInternal(request.data);
-});
 
 /**
  * Returns true if the votes is between [0, 999].
@@ -253,86 +206,7 @@ export const upload = onCall(
       idLokasi, uid: request.auth?.uid,
       imageId, pas1, pas2, pas3, sah, tidakSah,
     };
-    await enqueueTask(sanitized);
+    await aggregateInternal(sanitized);
     return true;
   });
 
-/**
- * Schedules cloud task queue. It retries for 5 mins on error.
- * @param {UploadRequest | AggregateVotes} task the task to be scheduled.
- */
-async function enqueueTask(task: UploadRequest | AggregateVotes) {
-  if (process.env.FUNCTIONS_EMULATOR) {
-    // For local development it's okay execute it now, rather than queuing.
-    await aggregateInternal(task);
-    return;
-  }
-
-  const queue = getFunctions().taskQueue("aggregate");
-  await queue.enqueue(task, {
-    dispatchDeadlineSeconds: 60 * 5, // 5 minutes
-    uri: await getFunctionUrl("aggregate"),
-  });
-}
-
-import {GoogleAuth} from "google-auth-library";
-
-let auth: any;
-
-/**
- * Get the URL of a given v2 cloud function.
- * @param {string} name the function's name
- * @param {string} location the function's location
- * @return {Promise<string>} The URL of the function
- */
-async function getFunctionUrl(name: string, location = "us-central1") {
-  if (!auth) {
-    auth = new GoogleAuth({
-      scopes: "https://www.googleapis.com/auth/cloud-platform",
-    });
-  }
-  const projectId = await auth.getProjectId();
-  const url = "https://cloudfunctions.googleapis.com/v2beta/" +
-    `projects/${projectId}/locations/${location}/functions/${name}`;
-
-  const client = await auth.getClient();
-  const res = await client.request({url});
-  const uri = res.data?.serviceConfig?.uri;
-  if (!uri) {
-    throw new Error(`Unable to retreive uri for function at ${url}`);
-  }
-  return uri;
-}
-
-/**
- * Returns the optimized image serving url for the given object.
- * @param {string} objectName The object name in the storage bucket.
- * @return {string} The serving url of the object image.
- */
-async function getServingUrl(objectName: string) {
-  const path = encodeURIComponent(`kp24-fd486.appspot.com/${objectName}`);
-  const data = await fetch(`https://kp24-fd486.et.r.appspot.com/gsu?path=${path}`);
-  return data.startsWith("http") ? data : "";
-}
-
-import * as https from "https";
-import * as http from "http";
-
-/**
- * Fetches the content of the given url.
- * @param {string} url The url to be fetched.
- * @return {string} The content of the url.
- */
-export function fetch(url: string) {
-  return new Promise<string>((resolve, reject) => {
-    https.get(url, (resp: http.IncomingMessage) => {
-      let data = "";
-      resp.on("data", (chunk: string) => {
-        data += chunk;
-      });
-      resp.on("end", () => {
-        resolve(data);
-      });
-    }).on("error", reject);
-  });
-}

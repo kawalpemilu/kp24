@@ -4,8 +4,7 @@
  */
 import {parse} from "csv-parse";
 import * as fs from "fs";
-import {Hierarchy,
-  getIdKecamatan, getIdKabupaten, getIdProvinsi} from "./interfaces";
+import {Hierarchy} from "./interfaces";
 
 /**
  * Parses the csv.
@@ -71,13 +70,13 @@ function ensureHierarchyStructure(records: RecordArray) {
     let id = r.idDesa;
     if (id.length != 10) throw new Error("idDesa is not 10");
 
-    id = getIdKecamatan(id);
+    id = id.substring(0, 6);
     if (id != r.idKecamatan) throw new Error("idKecamatan is not 6");
 
-    id = getIdKabupaten(id);
+    id = id.substring(0, 4);
     if (id != r.idKabupaten) throw new Error("idKabupaten is not 4");
 
-    id = getIdProvinsi(id);
+    id = id.substring(0, 2);
     if (id != r.idProvinsi) throw new Error("idProvinsi is not 2");
   }
 }
