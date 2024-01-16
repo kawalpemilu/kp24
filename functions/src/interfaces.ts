@@ -1,3 +1,6 @@
+// These interfaces are shared between the backend (Firestore Functions) and
+// the frontend (Angular).
+
 export declare interface Hierarchy {
   // The id is one of idProvinsi, idKabupaten, idKecamatan, idDesa.
   // The value is the name for the id.

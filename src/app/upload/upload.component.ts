@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import { Auth, getRedirectResult, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { mergeAll, Observable, of, switchMap } from 'rxjs';
 import { GoogleAuthProvider } from "firebase/auth";
-import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes } from "firebase/storage";
 import { Storage } from "@angular/fire/storage";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { MatIconModule } from '@angular/material/icon';
@@ -128,7 +128,12 @@ export class UploadComponent implements OnInit {
       };
       const callable = httpsCallable(this.functions, 'upload');
       const result = (await callable(request));
-      console.log('Uploaded', request, result);
+      console.log('Uploaded', result, request);
+      if (result.data) {
+        this.tpsVotes.unshift({
+          photoUrl: result.data as string
+        } as AggregateVotes);
+      }
     } catch (e) {
       console.error(e);
     }
