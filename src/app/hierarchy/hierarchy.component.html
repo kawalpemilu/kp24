@@ -62,9 +62,28 @@
                     &lt;- Click to upload photo.
                 </td>
             }
-            <td>{{ c[1].totalCompletedTps }} / {{ c[1].totalTps }}</td>
+            <td nowrap align="center">
+                {{ 100.0 * (c[1].totalCompletedTps || 0) / c[1].totalTps | number: '1.2-2' }}%<br>
+                <span style="font-size: xx-small">
+                    {{ (c[1].totalCompletedTps || 0) | number }}/{{ c[1].totalTps | number }}
+                </span>
+            </td>
         </tr>
         }
+        <tr bgcolor="lightgrey">
+            <th align="right">TOTAL:</th>
+            <th class="paslon">{{ total.pas1 }}</th>
+            <th class="paslon">{{ total.pas2 }}</th>
+            <th class="paslon">{{ total.pas3 }}</th>
+            <th class="sah">{{ total.sah }}</th>
+            <th class="sah">{{ total.tidakSah }}</th>
+            <th class="cov">
+                {{ 100.0 * (total.totalCompletedTps || 0) / total.totalTps | number: '1.2-2' }}%<br>
+                <span style="font-size: xx-small">
+                    {{ (total.totalCompletedTps || 0) | number }}/{{ total.totalTps | number }}
+                </span>
+            </th>
+        </tr>
     </table>
 }
 </div>

@@ -63,25 +63,26 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
     uploadTimeMs: Date.now(),
     imageId: u.imageId,
     photoUrl,
-    totalTps: 0,
+    totalTps: 1,
     totalCompletedTps: 1,
   };
 }
 
+/**
+ * Stores the uploaded image and votes to Firestore and aggregate them
+ * upwards through the hierarchy.
+ * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
+ * @param {UploadRequest} data the UploadRequest data.
+ * @return {string} the serving photo url in the request.
+ */
 export async function uploadHandler(firestore: admin.firestore.Firestore,
-  data: UploadRequest | AggregateVotes): Promise<string> {
+  data: UploadRequest): Promise<string> {
   logger.log("Dispatched", JSON.stringify(data, null, 2));
 
-  let agg: AggregateVotes;
-  let photoUrl ="";
-  if (isUploadRequest(data)) {
-    agg = await processImageId(data);
-    photoUrl = agg.photoUrl;
-    const tpsColRef = firestore.collection(`t/${agg.idLokasi}/p`);
-    await tpsColRef.doc(data.imageId).set(agg);
-  } else {
-    agg = data;
-  }
+  let agg = await processImageId(data);
+  const photoUrl = agg.photoUrl;
+  const tpsColRef = firestore.collection(`t/${agg.idLokasi}/p`);
+  await tpsColRef.doc(data.imageId).set(agg);
 
   do {
     const idParent = getParentId(agg.idLokasi);
@@ -100,6 +101,7 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
           return null;
         }
         agg.name = old.name; // Preserve the name.
+        agg.totalTps = old.totalTps;
         lokasi.aggregated[cid] = agg;
 
         t.set(hRef, lokasi);
@@ -125,6 +127,7 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
           nextAgg.sah += cagg.sah ?? 0;
           nextAgg.tidakSah += cagg.tidakSah ?? 0;
           nextAgg.totalCompletedTps += cagg.totalCompletedTps ?? 0;
+          nextAgg.totalTps += cagg.totalTps ?? 0;
         }
         return nextAgg;
       });

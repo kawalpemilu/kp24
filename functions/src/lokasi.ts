@@ -8,7 +8,8 @@ import {AggregateVotes, Hierarchy, Lokasi} from "./interfaces";
 const H = JSON.parse(
   fs.readFileSync("lib/hierarchy.js", "utf-8")) as Hierarchy;
 const C = getChildrenIds(H);
-console.log("Loaded Hierarchy", Object.keys(C).length);
+const T = getTotalTps();
+console.log("Loaded Hierarchy, total TPS: ", T[""]);
 
 /**
  * Constructs Lokasi object from hard-coded data.
@@ -23,12 +24,14 @@ export function getPrestineLokasi(id: string) {
     for (let i = 1; i <= maxTpsNo; i++) {
       lokasi.aggregated[i] = {
         name: `${i}`,
+        totalTps: 1,
       } as AggregateVotes;
     }
     if (extBegin) {
       for (let i = extBegin; i <= extEnd; i++) {
         lokasi.aggregated[i] = {
           name: `${i}`,
+          totalTps: 1,
         } as AggregateVotes;
       }
     }
@@ -37,6 +40,7 @@ export function getPrestineLokasi(id: string) {
       const cid = lokasi.id + suffixId;
       lokasi.aggregated[cid] = {
         name: H.id2name[cid],
+        totalTps: T[cid],
       } as AggregateVotes;
     }
   }
@@ -90,4 +94,32 @@ function getChildrenIds(hierarchy: Hierarchy) {
     });
   }
   return sortedC;
+}
+
+/**
+ * Compute the total tps for each id.
+ * @return {Record<string, number>} The map of total tps by id.
+ */
+function getTotalTps() {
+  const totalTps: Record<string, number> = {};
+  /**
+   * Recursive function to compute number of tps in the sub hierarchy.
+   * @param {string} id the lokasi id
+   * @return {number} the total number of tps for the id.
+   */
+  function rec(id: string) {
+    let numTps = 0;
+    if (id.length == 10) {
+      const [maxTpsNo, extBegin, extEnd] = H.tps[id];
+      numTps += maxTpsNo;
+      if (extBegin) numTps += (extEnd - extBegin) + 1;
+    } else {
+      for (const suffixId of C[id]) {
+        numTps += rec(id + suffixId);
+      }
+    }
+    return totalTps[id] = numTps;
+  }
+  rec("");
+  return totalTps;
 }

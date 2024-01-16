@@ -24,6 +24,7 @@ export class HierarchyComponent implements OnInit {
   lokasi$!: Observable<Lokasi>;
   parents: string[][] = [];
   children: IdAndAggVotes[] = [];
+  total = {} as AggregateVotes;
 
   constructor(private route: ActivatedRoute, private router: Router) { }
 
@@ -44,6 +45,17 @@ export class HierarchyComponent implements OnInit {
             if (lokasi.id.length === 10) return +a[1].name - +b[1].name;
             return a[1].name.localeCompare(b[1].name);
           });
+          this.total = { pas1: 0, pas2: 0, pas3: 0, sah: 0, tidakSah: 0,
+             totalCompletedTps: 0, totalTps: 0 } as AggregateVotes;
+          for (const [_, c] of this.children) {
+            this.total.pas1 += c.pas1 ?? 0;
+            this.total.pas2 += c.pas2 ?? 0;
+            this.total.pas3 += c.pas3 ?? 0;
+            this.total.sah += c.sah ?? 0;
+            this.total.tidakSah += c.tidakSah ?? 0;
+            this.total.totalCompletedTps += c.totalCompletedTps ?? 0;
+            this.total.totalTps += c.totalTps ?? 0;
+          }
           return of(lokasi);
         } catch (e) {
           console.error('Error', e);
