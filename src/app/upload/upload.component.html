@@ -46,7 +46,7 @@
 
         <br><br> -->
 
-        <input #u type="file" (change)="handleUpload($event)" style="display: none" />
+        <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
         <button mat-raised-button color="primary" (click)="u.click()">Upload Photo</button>
     }
 }

@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import { Auth, getRedirectResult, signInWithPopup, user } from '@angular/fire/auth';
 import { mergeAll, Observable, of, switchMap } from 'rxjs';
 import { GoogleAuthProvider } from "firebase/auth";
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadString } from "firebase/storage";
 import { Storage } from "@angular/fire/storage";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { MatIconModule } from '@angular/material/icon';
@@ -98,16 +98,26 @@ export class UploadComponent implements OnInit {
       return;
     }
 
+    let imgURL = await this.readAsDataUrl(file);
+    if (!imgURL) {
+      alert('Invalid image');
+      return;
+    }
+    if (file.size > 800 * 1024) {
+      imgURL = await this.compress(imgURL as string, 2048);
+      if (!imgURL) {
+        alert('Cannot compress image');
+        return;
+      }
+    }
+
     const imageId = autoId();
     const filename = `/uploads/${this.id}/${uid}/${imageId}`;
     console.log('Uploading to', filename);
 
-    const mountainsRef = ref(this.storage, filename);
-
     this.uploading = true;
-    await uploadBytes(mountainsRef, file).then((snapshot) => {
-      console.log('Uploaded a blob or file!');
-    });
+    await uploadString(ref(this.storage, filename), imgURL as string, 'data_url');
+    console.log('Uploaded a blob or file!');
     this.uploading = false;
     this.loading = true;
 
@@ -145,5 +155,41 @@ export class UploadComponent implements OnInit {
     // Sign in with redirect is problematic for Safari browser.
     const u = await signInWithPopup(this.auth, this.provider);
     console.log('Logged in user', u);
+  }
+
+
+  private async compress(dataUrl: string, maxDimension: number): Promise<string> {
+    const img = await this.getImage(dataUrl);
+    let width = img.width;
+    let height = img.height;
+    const scale = Math.min(1, maxDimension / width, maxDimension / height);
+    if (scale < 1) {
+      width *= scale;
+      height *= scale;
+    }
+    const elem = document.createElement('canvas'); // Use Angular's Renderer2 method
+    elem.width = width;
+    elem.height = height;
+    const ctx = elem.getContext('2d');
+    if (!ctx) return '';
+    ctx.drawImage(img, 0, 0, width, height);
+    return ctx.canvas.toDataURL('image/jpeg');
+  }
+
+  private getImage(dataUrl: string): Promise<HTMLImageElement> {
+    const img = new Image();
+    return new Promise(resolve => {
+      img.src = dataUrl;
+      img.onload = () => resolve(img);
+    });
+  }
+
+  private readAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+    });
   }
 }
