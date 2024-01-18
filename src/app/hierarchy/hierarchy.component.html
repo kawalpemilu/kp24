@@ -1,4 +1,4 @@
-<div *ngIf="lokasi$ | async as lokasi">
+<div *ngIf="id$ | async as idLokasi">
 
 <div class="hierarchy_path">
     @for (p of parents; track p[0]; let last = $last) {
@@ -8,7 +8,7 @@
     }
 </div>
 
-@if (lokasi.id.length === 10) {
+@if (idLokasi.length === 10) {
     <!-- Level TPS -->
     <table class="collapsed_border">
     @for (c of children; track c[0];) {
@@ -27,7 +27,7 @@
             </td>
             <td width="260" align="center">
                 <img [src]="c[1].photoUrl" style="max-width:200px; max-height: 150px"><br>
-                <button mat-raised-button color="warn" [routerLink]="['/u', lokasi.id + c[0]]">
+                <button mat-raised-button color="warn" [routerLink]="['/u', idLokasi + c[0]]">
                     Upload Photo
                 </button>
             </td>
@@ -48,7 +48,7 @@
         </tr>
         @for (c of children; track c[0];) {
         <tr>
-            <td><div class="truncate-text lokasi">
+            <td><div class="lokasi">
                 <a class="hierarchy" [routerLink]="['/h', c[0]]">{{ c[1].name }}</a>
             </div></td>
             @if (c[1].idLokasi && c[1].idLokasi.length > 0) {
@@ -87,3 +87,5 @@
     </table>
 }
 </div>
+
+<div *ngIf="lokasi$ | async"></div>

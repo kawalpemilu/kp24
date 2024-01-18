@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
-import { Auth, getRedirectResult, signInWithPopup, signOut, user } from '@angular/fire/auth';
+import { Auth, getRedirectResult, signInWithPopup, user } from '@angular/fire/auth';
 import { mergeAll, Observable, of, switchMap } from 'rxjs';
 import { GoogleAuthProvider } from "firebase/auth";
 import { ref, uploadBytes } from "firebase/storage";
