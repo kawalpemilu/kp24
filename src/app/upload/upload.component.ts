@@ -116,9 +116,10 @@ export class UploadComponent implements OnInit {
         tidakSah: Math.floor(Math.random() * 1000),
         imageMetadata: metadata
       };
+      console.log('UploadRequest', JSON.stringify(request, null, 2));
       const callable = httpsCallable(this.functions, 'upload');
       const result = (await callable(request));
-      console.log('Uploaded', result, request);
+      console.log('Uploaded', result);
       if (result.data) {
         this.onUpload.emit(result.data as string);
       } else {
@@ -179,18 +180,21 @@ export class UploadComponent implements OnInit {
       const z = exifObj['0th'];
       if (z) {
         m.m = `${z[piexif.TagValues.ImageIFD.Make]}, ${z[piexif.TagValues.ImageIFD.Model]}`;
-        m.o = z[piexif.TagValues.ImageIFD.Orientation] as number;
+        const o = z[piexif.TagValues.ImageIFD.Orientation] as number;
+        if (o) m.o = o;
       }
       const g = exifObj['GPS'];
       if (g) {
-        m.y = this.convertDms(
+        const y = this.convertDms(
           g[piexif.TagValues.GPSIFD.GPSLatitude],
           g[piexif.TagValues.GPSIFD.GPSLatitudeRef]
         );
-        m.x = this.convertDms(
+        if (y) m.y = y;
+        const x = this.convertDms(
           g[piexif.TagValues.GPSIFD.GPSLongitude],
           g[piexif.TagValues.GPSIFD.GPSLongitudeRef]
         );
+        if (x) m.x = x;
       }
       return exifObj;
     } catch (e) {
