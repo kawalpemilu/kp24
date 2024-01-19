@@ -12,24 +12,32 @@
     <!-- Level TPS -->
     <table class="collapsed_border">
     @for (c of children; track c[0];) {
-        <tr>
+        <tr *ngIf="c[1][0] as a">
             <td width="145" align="center">
                 <br>
-                <b style="font-size: large">TPS #{{ c[1].name }}</b>
+                <b style="font-size: large">TPS #{{ a.name }}</b>
                 <br>
                 <br>
-                Pas1: <b>{{ c[1].pas1 }}</b><br>
-                Pas2: <b>{{ c[1].pas2 }}</b><br>
-                Pas3: <b>{{ c[1].pas3 }}</b><br>
-                Sah: <b>{{ c[1].sah }}</b><br>
-                ~Sah: <b>{{ c[1].tidakSah }}</b><br>
+                Pas1: <b>{{ a.pas1 }}</b><br>
+                Pas2: <b>{{ a.pas2 }}</b><br>
+                Pas3: <b>{{ a.pas3 }}</b><br>
+                Sah: <b>{{ a.sah }}</b><br>
+                ~Sah: <b>{{ a.tidakSah }}</b><br>
                 <br>
             </td>
             <td width="260" align="center">
-                <img [src]="c[1].photoUrl" style="max-width:200px; max-height: 150px"><br>
-                <button mat-raised-button color="warn" [routerLink]="['/u', idLokasi + c[0]]">
-                    Upload Photo
-                </button>
+                <br>
+                <app-upload [id]="idLokasi + c[0]" (onUpload)="fetchLokasiData(idLokasi)"></app-upload>
+                <br>
+                @if (c[1].length > 1) {
+                    <br>
+                    @for (tps of c[1].slice(1); track tps.uploadedPhoto?.imageId) {
+                        <hr><br>
+                        <img [src]="tps.uploadedPhoto?.photoUrl + '=s200'" /><br>
+                        <pre style="width: 300px; white-space: pre-wrap; word-wrap: break-word; text-align: left;">{{
+                          tps.uploadedPhoto?.imageMetadata| json }}</pre>
+                    }
+                }
             </td>
         </tr>
     }
@@ -47,25 +55,25 @@
             <th class="cov">COV</th>
         </tr>
         @for (c of children; track c[0];) {
-        <tr>
+        <tr *ngIf="c[1][0] as a">
             <td><div class="lokasi">
-                <a class="hierarchy" [routerLink]="['/h', c[0]]">{{ c[1].name }}</a>
+                <a class="hierarchy" [routerLink]="['/h', c[0]]">{{ a.name }}</a>
             </div></td>
-            @if (c[1].idLokasi && c[1].idLokasi.length > 0) {
-                <td>{{ c[1].pas1 }}</td>
-                <td>{{ c[1].pas2 }}</td>
-                <td>{{ c[1].pas3 }}</td>
-                <td class="sah">{{ c[1].sah }}</td>
-                <td class="sah">{{ c[1].tidakSah }}</td>
+            @if (a.idLokasi && a.idLokasi.length > 0) {
+                <td>{{ a.pas1 }}</td>
+                <td>{{ a.pas2 }}</td>
+                <td>{{ a.pas3 }}</td>
+                <td class="sah">{{ a.sah }}</td>
+                <td class="sah">{{ a.tidakSah }}</td>
             } @else {
                 <td colspan="3">
                     &lt;- Click to upload photo.
                 </td>
             }
             <td nowrap align="center">
-                {{ 100.0 * (c[1].totalCompletedTps || 0) / c[1].totalTps | number: '1.2-2' }}%<br>
+                {{ 100.0 * (a.totalCompletedTps || 0) / a.totalTps | number: '1.2-2' }}%<br>
                 <span style="font-size: xx-small">
-                    {{ (c[1].totalCompletedTps || 0) | number }}/{{ c[1].totalTps | number }}
+                    {{ (a.totalCompletedTps || 0) | number }}/{{ a.totalTps | number }}
                 </span>
             </td>
         </tr>

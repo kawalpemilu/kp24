@@ -61,11 +61,14 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
     sah: u.sah,
     tidakSah: u.tidakSah,
     uploadTimeMs: Date.now(),
-    imageId: u.imageId,
-    imageMetadata: u.imageMetadata,
-    photoUrl,
     totalTps: 1,
     totalCompletedTps: 1,
+    uploadedPhoto: {
+      halaman: 1, // TODO: update this.
+      imageId: u.imageId,
+      imageMetadata: u.imageMetadata,
+      photoUrl,
+    }
   };
 }
 
@@ -81,7 +84,7 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
   logger.log("Dispatched", JSON.stringify(data, null, 2));
 
   let agg = await processImageId(data);
-  const photoUrl = agg.photoUrl ?? false;
+  const photoUrl = agg.uploadedPhoto?.photoUrl ?? false;
   const tpsColRef = firestore.collection(`t/${agg.idLokasi}/p`);
   await tpsColRef.doc(data.imageId).set(agg);
 
@@ -96,14 +99,20 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
 
         const cid = isUploadRequest(agg) ?
           agg.idLokasi.substring(10) : agg.idLokasi;
-        const old = lokasi.aggregated[cid];
+
+        if (isUploadRequest(agg)) {
+          // TODO: merge halaman 1, 2, 3 numbers.
+          lokasi.aggregated[cid].splice(1, 0, agg);
+        }
+  
+        const old = lokasi.aggregated[cid][0];
         if (isIdentical(old, agg)) {
           logger.log("Identical", JSON.stringify(agg, null, 2));
           return null;
         }
         agg.name = old.name; // Preserve the name.
         agg.totalTps = old.totalTps;
-        lokasi.aggregated[cid] = agg;
+        lokasi.aggregated[cid][0] = agg;
 
         t.set(hRef, lokasi);
 
@@ -119,7 +128,7 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
           totalTps: 0,
           totalCompletedTps: 0,
         };
-        for (const cagg of Object.values(lokasi.aggregated)) {
+        for (const [cagg] of Object.values(lokasi.aggregated)) {
           nextAgg.pas1 += cagg.pas1 ?? 0;
           nextAgg.pas2 += cagg.pas2 ?? 0;
           nextAgg.pas3 += cagg.pas3 ?? 0;

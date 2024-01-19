@@ -9,12 +9,15 @@ import { AppService } from './app.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { Auth, signOut } from '@angular/fire/auth';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { getChildrenIds } from '../../functions/src/interfaces';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, MatToolbarModule, MatButtonModule, MatIconModule,
-    MatSidenavModule, MatListModule],
+    MatSidenavModule, MatListModule, HttpClientModule],
   template: `
     <div class="container" [class.is-mobile]="isMobile()">
       <mat-toolbar color="primary" class="toolbar">
@@ -75,10 +78,18 @@ export class AppComponent {
 
   private _mobileQueryListener: () => void;
 
-  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, public service: AppService) {
+  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
+    public service: AppService, private http: HttpClient) {
     service.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     service.mobileQuery.addListener(this._mobileQueryListener);
+    this.initializeService();
+  }
+
+  async initializeService() {
+    this.service.id2name = (await firstValueFrom(
+      this.http.get('assets/id2name.json'))) as Record<string, string>;
+    this.service.childrenIds = getChildrenIds(this.service.id2name);
   }
 
   ngOnDestroy(): void {

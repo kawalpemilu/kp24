@@ -40,17 +40,24 @@ export declare interface AggregateVotes {
   // The upload timestamp.
   uploadTimeMs: number;
 
-  // The blobId of the image file.
   // Only available at Desa level.
-  imageId?: string;
+  uploadedPhoto?: UploadedPhoto;
+}
+
+export declare interface UploadedPhoto {
+  // Which page of the C1 plano is the photo for.
+  halaman: 1 | 2 | 3;
+
+  // The blobId of the image file.
+  imageId: string;
 
   // The serving url of the imageId.
   // Only available at Desa level.
-  photoUrl?: string;
+  photoUrl: string;
 
   // Additional info about the image if available.
   // Only available at Desa level.
-  imageMetadata?: ImageMetadata;
+  imageMetadata: ImageMetadata;
 }
 
 // Lokasi detail for Provinsi, Kabupaten, and Kecamatan level.
@@ -72,7 +79,9 @@ export declare interface Lokasi {
   // The aggregated votes of all the children of this Node.
   // If the current id is idProvinsi, then the cid is idKabupaten.
   // If the current id is idDesa, then the cid is Tps No.
-  aggregated: { [cid: string]: AggregateVotes };
+  // At Provinsi, Kabupaten, Kecamatan level, there is only 1 AggregateVotes.
+  // At Desa level there can be many AggregateVotes[].
+  aggregated: { [cid: string]: AggregateVotes[] };
 }
 
 // Photos and votes at Desa level.
@@ -119,4 +128,38 @@ export interface ImageMetadata {
   o?: number; // Orientation.
   y?: number; // Latitude.
   x?: number; // Longitude.
+}
+
+/**
+ * Returns the map of sorted children ids.
+ * @param {Record<string, string>} id2name The map of idLokasi to name.
+ * @return {Record<string, string[]>} The map of sorted children.
+ */
+export function getChildrenIds(id2name: Record<string, string>) {
+  const c: Record<string, Set<string>> = {"": new Set<string>()};
+  for (const idDesa of Object.keys(id2name)) {
+    if (idDesa.length != 10) continue;
+
+    const idProvinsi = idDesa.substring(0, 2);
+    c[""].add(idProvinsi);
+    if (!c[idProvinsi]) c[idProvinsi] = new Set<string>();
+    c[idProvinsi].add(idDesa.substring(2, 4));
+
+    const idKabupaten = idDesa.substring(0, 4);
+    if (!c[idKabupaten]) c[idKabupaten] = new Set<string>();
+    c[idKabupaten].add(idDesa.substring(4, 6));
+
+    const idKecamatan = idDesa.substring(0, 6);
+    if (!c[idKecamatan]) c[idKecamatan] = new Set<string>();
+    c[idKecamatan].add(idDesa.substring(6, 10));
+  }
+  const sortedC: Record<string, string[]> = {};
+  for (const [id, set] of Object.entries(c)) {
+    sortedC[id] = Array.from(set).sort((a, b) => {
+      const na = id2name[id + a];
+      const nb = id2name[id + b];
+      return (na < nb) ? -1 : (na > nb) ? 1 : 0;
+    });
+  }
+  return sortedC;
 }

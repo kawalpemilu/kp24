@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import {AggregateVotes, Hierarchy, Lokasi} from "./interfaces";
+import {AggregateVotes, Hierarchy, Lokasi, getChildrenIds} from "./interfaces";
 
 /**
  * This global variable for this module takes memory resources.
@@ -7,7 +7,7 @@ import {AggregateVotes, Hierarchy, Lokasi} from "./interfaces";
  */
 const H = JSON.parse(
   fs.readFileSync("lib/hierarchy.js", "utf-8")) as Hierarchy;
-const C = getChildrenIds(H);
+const C = getChildrenIds(H.id2name);
 const T = getTotalTps();
 console.log("Loaded Hierarchy, total TPS: ", T[""]);
 
@@ -22,26 +22,26 @@ export function getPrestineLokasi(id: string) {
   if (id.length === 10) {
     const [maxTpsNo, extBegin, extEnd] = H.tps[lokasi.id];
     for (let i = 1; i <= maxTpsNo; i++) {
-      lokasi.aggregated[i] = {
+      lokasi.aggregated[i] = [{
         name: `${i}`,
         totalTps: 1,
-      } as AggregateVotes;
+      } as AggregateVotes];
     }
     if (extBegin) {
       for (let i = extBegin; i <= extEnd; i++) {
-        lokasi.aggregated[i] = {
+        lokasi.aggregated[i] = [{
           name: `${i}`,
           totalTps: 1,
-        } as AggregateVotes;
+        } as AggregateVotes];
       }
     }
   } else {
     for (const suffixId of C[lokasi.id]) {
       const cid = lokasi.id + suffixId;
-      lokasi.aggregated[cid] = {
+      lokasi.aggregated[cid] = [{
         name: H.id2name[cid],
         totalTps: T[cid],
-      } as AggregateVotes;
+      } as AggregateVotes];
     }
   }
   return lokasi;
@@ -60,40 +60,6 @@ function getParentNames(hierarchy: Hierarchy, id: string) {
   if (id.length >= 6) names.push(hierarchy.id2name[id.substring(0, 6)]);
   if (id.length >= 10) names.push(hierarchy.id2name[id.substring(0, 10)]);
   return names;
-}
-
-/**
- * Returns the map of sorted children ids.
- * @param {Hierarchy} hierarchy The hierarchy to be processed.
- * @return {Record<string, string[]>} The map of sorted children.
- */
-function getChildrenIds(hierarchy: Hierarchy) {
-  const c: Record<string, Set<string>> = {"": new Set<string>()};
-  for (const idDesa of Object.keys(hierarchy.tps)) {
-    if (idDesa.length != 10) throw new Error("Length must be 10");
-
-    const idProvinsi = idDesa.substring(0, 2);
-    c[""].add(idProvinsi);
-    if (!c[idProvinsi]) c[idProvinsi] = new Set<string>();
-    c[idProvinsi].add(idDesa.substring(2, 4));
-
-    const idKabupaten = idDesa.substring(0, 4);
-    if (!c[idKabupaten]) c[idKabupaten] = new Set<string>();
-    c[idKabupaten].add(idDesa.substring(4, 6));
-
-    const idKecamatan = idDesa.substring(0, 6);
-    if (!c[idKecamatan]) c[idKecamatan] = new Set<string>();
-    c[idKecamatan].add(idDesa.substring(6, 10));
-  }
-  const sortedC: Record<string, string[]> = {};
-  for (const [id, set] of Object.entries(c)) {
-    sortedC[id] = Array.from(set).sort((a, b) => {
-      const na = hierarchy.id2name[id + a];
-      const nb = hierarchy.id2name[id + b];
-      return (na < nb) ? -1 : (na > nb) ? 1 : 0;
-    });
-  }
-  return sortedC;
 }
 
 /**

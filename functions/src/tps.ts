@@ -164,7 +164,7 @@ function getDistilledTps(
 
   const id2name: Record<string, string> = {};
   for (const [id, name] of Object.entries(tps.id2name)) {
-    if (id.length <= 6) id2name[id] = name;
+    if (id.length <= 10) id2name[id] = name;
   }
-  fs.writeFileSync("../data/id2name.js", JSON.stringify(id2name));
+  fs.writeFileSync("../data/id2name.json", JSON.stringify(id2name));
 })();

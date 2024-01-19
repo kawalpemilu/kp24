@@ -1,8 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
-import { Auth, getRedirectResult, signInWithPopup, user } from '@angular/fire/auth';
-import { mergeAll, Observable, of, switchMap } from 'rxjs';
+import { Auth, signInWithPopup, user } from '@angular/fire/auth';
 import { GoogleAuthProvider } from "firebase/auth";
 import { ref, uploadString } from "firebase/storage";
 import { Storage } from "@angular/fire/storage";
@@ -11,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { AggregateVotes, ImageMetadata, TpsData, UploadRequest } from '../../../functions/src/interfaces';
+import { ImageMetadata, UploadRequest } from '../../../functions/src/interfaces';
 import * as piexif from 'piexifjs';
 
 /** Returns a random n-character identifier containing [a-zA-Z0-9]. */
@@ -28,12 +26,15 @@ export function autoId(n = 20): string {
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, FormsModule,
+  imports: [CommonModule, FormsModule,
     MatIconModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './upload.component.html',
   styleUrl: './upload.component.css'
 })
 export class UploadComponent implements OnInit {
+  @Input() id = '';
+  @Output() onUpload = new EventEmitter<string>();
+
   private functions: Functions = inject(Functions);
   private storage: Storage = inject(Storage);
 
@@ -41,44 +42,10 @@ export class UploadComponent implements OnInit {
   user$ = user(this.auth);
 
   provider = new GoogleAuthProvider();
-  loading = true;
+  loading = false;
   uploading = false;
 
-  id$!: Observable<string>;
-  id = '';
-
-  tpsVotes: AggregateVotes[] = [];
-
-  constructor(private route: ActivatedRoute) { }
-
   async ngOnInit() {
-    this.id$ = this.route.paramMap.pipe(
-      switchMap(async params => {
-        this.id = params.get('id') || '';
-        if (!(/^\d{11,13}$/.test(this.id))) {
-          alert('Invalid id: ' + this.id);
-          return of();
-        }
-
-        try {
-          const callable = httpsCallable(this.functions, 'hierarchy');
-          const tpsData = (await callable({ id: this.id })).data as TpsData;
-          this.tpsVotes = Object.values(tpsData.votes);
-          this.tpsVotes.sort((a, b) => b.uploadTimeMs - a.uploadTimeMs);
-        } catch (e) {
-          console.error('Error getting hierarchy', e);
-          return of();
-        }
-        return of(this.id);
-      }), mergeAll()
-    );
-    try {
-      const result = await getRedirectResult(this.auth);
-      console.log('RedirectResult', result);
-      this.loading = false;
-    } catch (e) {
-      console.error(e);
-    }
   }
 
   async handleUpload(event: any) {
@@ -137,10 +104,6 @@ export class UploadComponent implements OnInit {
     this.uploading = false;
     this.loading = true;
 
-    await this.upload(imageId, metadata);
-  }
-
-  async upload(imageId = 'preserve', imageMetadata: ImageMetadata) {
     try {
       const request: UploadRequest = {
         idLokasi: this.id,
@@ -151,15 +114,13 @@ export class UploadComponent implements OnInit {
         pas3: Math.floor(Math.random() * 1000),
         sah: Math.floor(Math.random() * 1000),
         tidakSah: Math.floor(Math.random() * 1000),
-        imageMetadata
+        imageMetadata: metadata
       };
       const callable = httpsCallable(this.functions, 'upload');
       const result = (await callable(request));
       console.log('Uploaded', result, request);
       if (result.data) {
-        this.tpsVotes.unshift({
-          photoUrl: result.data as string
-        } as AggregateVotes);
+        this.onUpload.emit(result.data as string);
       } else {
         alert('Unable to upload photo');
       }

@@ -28,6 +28,9 @@
               "@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.css"
             ],
+            "allowedCommonJsDependencies": [
+              "piexifjs"
+            ],
             "scripts": []
           },
           "configurations": {
