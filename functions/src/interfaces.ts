@@ -42,11 +42,15 @@ export declare interface AggregateVotes {
 
   // The blobId of the image file.
   // Only available at Desa level.
-  imageId: string;
+  imageId?: string;
 
   // The serving url of the imageId.
   // Only available at Desa level.
-  photoUrl: string;
+  photoUrl?: string;
+
+  // Additional info about the image if available.
+  // Only available at Desa level.
+  imageMetadata?: ImageMetadata;
 }
 
 // Lokasi detail for Provinsi, Kabupaten, and Kecamatan level.
@@ -91,6 +95,9 @@ export declare interface UploadRequest {
   // The blobId in the cloud storage.
   imageId: string;
 
+  // Additional info about the image if available.
+  imageMetadata: ImageMetadata;
+
   // Number of votes for paslon 1, 2, 3
   pas1: number;
   pas2: number;
@@ -101,4 +108,15 @@ export declare interface UploadRequest {
 
   // Number of invalid votes.
   tidakSah: number;
+}
+
+// Intentionally make the field name short to save bytes.
+export interface ImageMetadata {
+  l: number; // Last Modified Timestamp.
+  s: number; // Size in Bytes.
+  z?: number; // Size in Bytes after compressed.
+  m?: string; // Make, Model.
+  o?: number; // Orientation.
+  y?: number; // Latitude.
+  x?: number; // Longitude.
 }

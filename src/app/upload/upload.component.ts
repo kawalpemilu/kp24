@@ -11,7 +11,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { AggregateVotes, TpsData, UploadRequest } from '../../../functions/src/interfaces';
+import { AggregateVotes, ImageMetadata, TpsData, UploadRequest } from '../../../functions/src/interfaces';
+import * as piexif from 'piexifjs';
 
 /** Returns a random n-character identifier containing [a-zA-Z0-9]. */
 export function autoId(n = 20): string {
@@ -86,7 +87,7 @@ export class UploadComponent implements OnInit {
       return;
     }
 
-    const file: File = event.target.files[0];
+    let file: File = event.target.files[0];
     if (!file.type.match(/image\/*/)) {
       console.log('Invalid mime: ', file.type);
       return;
@@ -103,17 +104,32 @@ export class UploadComponent implements OnInit {
       alert('Invalid image');
       return;
     }
+
+    const metadata: ImageMetadata = { s: imgURL.length, l: file.lastModified };
+    const exifObj = this.populateMetadata(imgURL, metadata);
     if (file.size > 800 * 1024) {
       imgURL = await this.compress(imgURL as string, 2048);
       if (!imgURL) {
         alert('Cannot compress image');
         return;
       }
+      if (exifObj) {
+        try {
+          // https://piexifjs.readthedocs.io/en/2.0/sample.html#insert-exif-into-jpeg
+          imgURL = piexif.insert(piexif.dump(exifObj), imgURL);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      metadata.z = imgURL.length;
+    }
+    if (metadata.o !== undefined && metadata.o !== 1) {
+      imgURL = await this.rotateImageUrl(imgURL, metadata.o);
     }
 
     const imageId = autoId();
     const filename = `/uploads/${this.id}/${uid}/${imageId}`;
-    console.log('Uploading to', filename);
+    console.log('Uploading to', filename, metadata);
 
     this.uploading = true;
     await uploadString(ref(this.storage, filename), imgURL as string, 'data_url');
@@ -121,10 +137,10 @@ export class UploadComponent implements OnInit {
     this.uploading = false;
     this.loading = true;
 
-    await this.upload(imageId);
+    await this.upload(imageId, metadata);
   }
 
-  async upload(imageId = 'preserve') {
+  async upload(imageId = 'preserve', imageMetadata: ImageMetadata) {
     try {
       const request: UploadRequest = {
         idLokasi: this.id,
@@ -135,6 +151,7 @@ export class UploadComponent implements OnInit {
         pas3: Math.floor(Math.random() * 1000),
         sah: Math.floor(Math.random() * 1000),
         tidakSah: Math.floor(Math.random() * 1000),
+        imageMetadata
       };
       const callable = httpsCallable(this.functions, 'upload');
       const result = (await callable(request));
@@ -143,6 +160,8 @@ export class UploadComponent implements OnInit {
         this.tpsVotes.unshift({
           photoUrl: result.data as string
         } as AggregateVotes);
+      } else {
+        alert('Unable to upload photo');
       }
     } catch (e) {
       console.error(e);
@@ -191,5 +210,121 @@ export class UploadComponent implements OnInit {
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
     });
+  }
+
+  private populateMetadata(imgURL: string, m: ImageMetadata) {
+    try {
+      const exifObj = piexif.load(imgURL as string);
+      const z = exifObj['0th'];
+      if (z) {
+        m.m = `${z[piexif.TagValues.ImageIFD.Make]}, ${z[piexif.TagValues.ImageIFD.Model]}`;
+        m.o = z[piexif.TagValues.ImageIFD.Orientation] as number;
+      }
+      const g = exifObj['GPS'];
+      if (g) {
+        m.y = this.convertDms(
+          g[piexif.TagValues.GPSIFD.GPSLatitude],
+          g[piexif.TagValues.GPSIFD.GPSLatitudeRef]
+        );
+        m.x = this.convertDms(
+          g[piexif.TagValues.GPSIFD.GPSLongitude],
+          g[piexif.TagValues.GPSIFD.GPSLongitudeRef]
+        );
+      }
+      return exifObj;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  private convertDms(dms: any, direction: any) {
+    if (!dms || !direction || dms.length < 3) {
+      return null;
+    }
+    const degs = dms[0][0] / dms[0][1];
+    const mins = dms[1][0] / dms[1][1];
+    const secs = dms[2][0] / dms[2][1];
+    return this.convertDMSToDD(degs, mins, secs, direction);
+  }
+
+  private convertDMSToDD(degrees: any, minutes: any, seconds: any, direction: any) {
+    let dd = degrees + minutes / 60.0 + seconds / (60.0 * 60);
+    if (direction === 'S' || direction === 'W') {
+      dd = dd * -1;
+    } // Don't do anything for N or E
+    return dd;
+  }
+
+  /**
+   * https://piexifjs.readthedocs.io/en/2.0/sample.html#insert-exif-into-jpeg
+   */
+  private async rotateImageUrl(dataUrl: string, orientation: number) {
+    const image = await this.getImage(dataUrl);
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('Fail to create ctx');
+      return dataUrl;
+    }
+    let x = 0;
+    let y = 0;
+    ctx.save();
+    switch (orientation) {
+      case 2:
+        x = -canvas.width;
+        ctx.scale(-1, 1);
+        break;
+
+      case 3:
+        x = -canvas.width;
+        y = -canvas.height;
+        ctx.scale(-1, -1);
+        break;
+
+      case 4:
+        y = -canvas.height;
+        ctx.scale(1, -1);
+        break;
+
+      case 5:
+        canvas.width = image.height;
+        canvas.height = image.width;
+        ctx.translate(canvas.width, canvas.height / canvas.width);
+        ctx.rotate(Math.PI / 2);
+        y = -canvas.width;
+        ctx.scale(1, -1);
+        break;
+
+      case 6:
+        canvas.width = image.height;
+        canvas.height = image.width;
+        ctx.translate(canvas.width, canvas.height / canvas.width);
+        ctx.rotate(Math.PI / 2);
+        break;
+
+      case 7:
+        canvas.width = image.height;
+        canvas.height = image.width;
+        ctx.translate(canvas.width, canvas.height / canvas.width);
+        ctx.rotate(Math.PI / 2);
+        x = -canvas.height;
+        ctx.scale(-1, 1);
+        break;
+
+      case 8:
+        canvas.width = image.height;
+        canvas.height = image.width;
+        ctx.translate(canvas.width, canvas.height / canvas.width);
+        ctx.rotate(Math.PI / 2);
+        x = -canvas.height;
+        y = -canvas.width;
+        ctx.scale(-1, -1);
+        break;
+    }
+    ctx.drawImage(image, x, y);
+    ctx.restore();
+    return canvas.toDataURL('image/jpeg');
   }
 }

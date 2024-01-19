@@ -1,5 +1,5 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
-import {AggregateVotes, Lokasi, TpsData, UploadRequest} from "./interfaces";
+import {AggregateVotes, ImageMetadata, Lokasi, TpsData, UploadRequest} from "./interfaces";
 import {getPrestineLokasi} from "./lokasi";
 import {uploadHandler} from "./upload_handler";
 
@@ -78,9 +78,18 @@ export const upload = onCall(
     const tidakSah = Number(request.data.tidakSah);
     if (!isValidVoteNumbers(tidakSah)) return false;
 
+    const m = request.data.imageMetadata;
+    const imageMetadata: ImageMetadata = { l: Number(m.l), s: Number(m.s)};
+    if (m.z) imageMetadata.z = Number(m.z);
+    if (m.m) imageMetadata.m = m.m.substring(0, 50);
+    if (m.o) imageMetadata.o = Number(m.o);
+    if (m.y) imageMetadata.y = Number(m.y);
+    if (m.x) imageMetadata.x = Number(m.x);
+
     const sanitized: UploadRequest = {
       idLokasi, uid: request.auth?.uid,
       imageId, pas1, pas2, pas3, sah, tidakSah,
+      imageMetadata
     };
     return uploadHandler(firestore, sanitized);
   });

@@ -62,6 +62,7 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
     tidakSah: u.tidakSah,
     uploadTimeMs: Date.now(),
     imageId: u.imageId,
+    imageMetadata: u.imageMetadata,
     photoUrl,
     totalTps: 1,
     totalCompletedTps: 1,
@@ -76,11 +77,11 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
  * @return {string} the serving photo url in the request.
  */
 export async function uploadHandler(firestore: admin.firestore.Firestore,
-  data: UploadRequest): Promise<string> {
+  data: UploadRequest): Promise<string | false> {
   logger.log("Dispatched", JSON.stringify(data, null, 2));
 
   let agg = await processImageId(data);
-  const photoUrl = agg.photoUrl;
+  const photoUrl = agg.photoUrl ?? false;
   const tpsColRef = firestore.collection(`t/${agg.idLokasi}/p`);
   await tpsColRef.doc(data.imageId).set(agg);
 
@@ -117,8 +118,6 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
           uploadTimeMs: agg.uploadTimeMs,
           totalTps: 0,
           totalCompletedTps: 0,
-          imageId: "",
-          photoUrl: "",
         };
         for (const cagg of Object.values(lokasi.aggregated)) {
           nextAgg.pas1 += cagg.pas1 ?? 0;
