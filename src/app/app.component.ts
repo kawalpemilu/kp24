@@ -5,13 +5,13 @@ import { RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { AppService } from './app.service';
+import { AppService, StaticHierarchy } from './app.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { Auth, signOut } from '@angular/fire/auth';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { getChildrenIds } from '../../functions/src/interfaces';
-import { firstValueFrom } from 'rxjs';
+import { map, shareReplay } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -83,13 +83,16 @@ export class AppComponent {
     service.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     service.mobileQuery.addListener(this._mobileQueryListener);
-    this.initializeService();
-  }
-
-  async initializeService() {
-    this.service.id2name = (await firstValueFrom(
-      this.http.get('assets/id2name.json'))) as Record<string, string>;
-    this.service.childrenIds = getChildrenIds(this.service.id2name);
+    service.hierarchy$ =
+      this.http.get('assets/id2name.json').pipe(
+        map((json): StaticHierarchy => {
+          const id2name = json as Record<string, string>;
+          return {
+            id2name: id2name,
+            childrenIds: getChildrenIds(id2name)
+          }
+        }), shareReplay(1)
+      );
   }
 
   ngOnDestroy(): void {

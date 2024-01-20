@@ -1,17 +1,33 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { map, mergeAll, shareReplay, switchMap } from 'rxjs/operators';
+import { combineLatest, EMPTY, from, Observable, of } from 'rxjs';
+import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
 import { Functions, httpsCallable } from '@angular/fire/functions';
-import { AggregateVotes, Lokasi } from '../../../functions/src/interfaces';
+import { AggregateVotes, Lokasi, LruCache } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { AppService } from '../app.service';
 import { UploadComponent } from '../upload/upload.component';
 
 const idLengths = [2, 4, 6, 10];
-
+const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
 type IdAndAggVotes = [id: string, agg: AggregateVotes[]];
+
+interface LokasiData {
+  id: string;
+  parents: string[][];
+  children: IdAndAggVotes[];
+  total: AggregateVotes;
+  level: string;
+}
+
+function newLokasiData(id: string): LokasiData {
+  return {
+    id, parents: [['', 'IDN']], children: [],
+    total: {} as AggregateVotes,
+    level: ''
+  };
+}
 
 @Component({
   selector: 'app-hierarchy',
@@ -23,99 +39,122 @@ type IdAndAggVotes = [id: string, agg: AggregateVotes[]];
 export class HierarchyComponent implements OnInit {
   private functions: Functions = inject(Functions);
 
-  id$!: Observable<string>;
-  lokasi$!: Observable<Lokasi>;
+  lokasi$!: Observable<LokasiData>;
+  lokasiCache = new LruCache<string, LokasiData>(100);
 
-  parents: string[][] = [];
-  children: IdAndAggVotes[] = [];
-  total = {} as AggregateVotes;
-
-  constructor(private route: ActivatedRoute, private router: Router, private service: AppService) {
+  constructor(
+    private route: ActivatedRoute,
+    public router: Router,
+    private service: AppService) {
   }
 
   ngOnInit() {
-    this.id$ = this.route.paramMap.pipe(
-      map(params => {
+    this.lokasi$ = this.route.paramMap.pipe(
+      switchMap(params => {
         let id = params.get('id') || '';
         if (!(/^\d{0,13}$/.test(id))) id = '';
+        // Creates two observables from the given location id.
+        // The first observable is fetching from static hierarchy,
+        // this observable can emit value very fast because it constructs
+        // the value from locally-cached static hierarchy without any votes.
+        const lokasi1$ = this.getLokasiDataWithoutVotes(id);
+        // The second observable is fetching from Firebase function,
+        // which is slow (may take a few seconds depending on the network latency).
+        // The result of this second observable will replace the first observable.
+        const lokasi2$ = this.getLokasiDataWithVotes(id);
+        // Both observable have initial value of null so that
+        // the combineLatest kicks in immediately.
+        return combineLatest([
+          lokasi1$.pipe(startWith(null)),
+          lokasi2$.pipe(startWith(null))
+        ]).pipe(
+          catchError(error => {
+            // On error, do not emit anything.
+            console.error('Error occurred:', error);
+            return EMPTY;
+          }), switchMap(([lokasi1, lokasi2]) => {
+            // Prefer lokasi2 if it's not null.
+            const lokasi = lokasi2 ? lokasi2 : lokasi1;
+            // Do not emit anything if it's null.
+            return lokasi ? of(lokasi) : of();
+          }), shareReplay(1));
+      }));
+  }
 
-        if (this.service.childrenIds[id]) {
-          // Pre render if possible.
-          this.parents = [['', 'IDN']];
-          for (const len of idLengths) {
-            if (len <= id.length) {
-              const cid = id.substring(0, len);
-              this.parents.push([cid, this.service.id2name[cid]]);
-            }
+  /**
+   * @param id the lokasi id.
+   * @returns {Observable<LokasiData | null>} the LokasiData from static hierarchy.
+   * or null if the static hierarchy does not exist.
+   */
+  getLokasiDataWithoutVotes(id: string): Observable<LokasiData | null> {
+    if (!this.service.hierarchy$) return of();
+    return this.service.hierarchy$.pipe(map(
+      ({ id2name, childrenIds }) => {
+        const lokasi = newLokasiData(id);
+        for (const len of idLengths) {
+          if (len <= id.length) {
+            const cid = id.substring(0, len);
+            lokasi.parents.push([cid, id2name[cid]]);
           }
-          this.children = [];
-          for (const cid of this.service.childrenIds[id]) {
+        }
+        lokasi.level = levelNames[lokasi.parents.length];
+        if (childrenIds[id]) {
+          for (const cid of childrenIds[id]) {
             const idLokasi = id + cid;
-            this.children.push([idLokasi, [{
-              idLokasi, name: this.service.id2name[idLokasi]
+            lokasi.children.push([idLokasi, [{
+              idLokasi, name: id2name[idLokasi]
             } as AggregateVotes]]);
           }
         }
-        console.log('id', id, this.parents, this.children);
-        return id || 'z';
-      }), shareReplay(1));
-
-    this.lokasi$ = this.id$.pipe(
-      switchMap(async id => {
-        try {
-          return of(await this.fetchLokasiData(id));
-        } catch (e) {
-          console.error('Error', e);
-          return of();
-        }
-      }), mergeAll(), shareReplay(1)
-    );
+        console.log('id', lokasi);
+        return lokasi;
+      }
+    ));
   }
 
-  async fetchLokasiData(id: string) {
+  /**
+   * @param id the lokasi id.
+   * @returns {Observable<LokasiData | null>} the cached LokasiData if exists,
+   * and then emit another more fresh LokasiData from the server and cache it.
+   */
+  getLokasiDataWithVotes(id: string): Observable<LokasiData | null> {
     const callable = httpsCallable(this.functions, 'hierarchy');
-    const lokasi = (await callable({ id })).data as Lokasi;
-    console.log('lokasi', lokasi);
-    this.parents = [['', 'IDN']];
-    for (let i = 0; i < lokasi.names.length; i++) {
-      this.parents.push([lokasi.id.substring(0, idLengths[i]), lokasi.names[i]]);
-    }
-    this.children = Object.entries<AggregateVotes[]>(lokasi.aggregated);
-    this.children.sort((a, b) => {
-      const aName = a[1][0].name, bName = b[1][0].name;
-      if (lokasi.id.length === 10) return +aName - +bName;
-      return aName.localeCompare(bName);
-    });
-    this.total = {
-      pas1: 0, pas2: 0, pas3: 0, sah: 0, tidakSah: 0,
-      totalCompletedTps: 0, totalTps: 0
-    } as AggregateVotes;
-    for (const [_, [c]] of this.children) {
-      this.total.pas1 += c.pas1 ?? 0;
-      this.total.pas2 += c.pas2 ?? 0;
-      this.total.pas3 += c.pas3 ?? 0;
-      this.total.sah += c.sah ?? 0;
-      this.total.tidakSah += c.tidakSah ?? 0;
-      this.total.totalCompletedTps += c.totalCompletedTps ?? 0;
-      this.total.totalTps += c.totalTps ?? 0;
-    }
-    return lokasi;
-  }
+    return from(callable({ id })).pipe(
+      switchMap(async (result) => {
+        // Artificial delay to test slow loading.
+        // await new Promise((resolve) => setTimeout(resolve, 2000));
+        const lokasiWithVotes = result.data as Lokasi;
+        console.log('lokasi with votes', lokasiWithVotes);
 
-  levelName() {
-    switch (this.parents.length) {
-      case 1:
-        return 'Provinsi';
-      case 2:
-        return 'Kota/Kabupaten';
-      case 3:
-        return 'Kecamatan';
-      case 4:
-        return 'Kelurahan/Desa';
-      case 5:
-        return 'TPS';
-      default:
-        return 'Lokasi';
-    }
+        const lokasi = newLokasiData(id);
+        lokasi.parents = [['', 'IDN']];
+        for (let i = 0; i < lokasiWithVotes.names.length; i++) {
+          lokasi.parents.push([
+            lokasi.id.substring(0, idLengths[i]), lokasiWithVotes.names[i]]);
+        }
+        lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated);
+        lokasi.children.sort((a, b) => {
+          const aName = a[1][0].name, bName = b[1][0].name;
+          if (lokasi.id.length === 10) return +aName - +bName;
+          return aName.localeCompare(bName);
+        });
+        lokasi.total = {
+          pas1: 0, pas2: 0, pas3: 0, sah: 0, tidakSah: 0,
+          totalCompletedTps: 0, totalTps: 0
+        } as AggregateVotes;
+        for (const [_, [c]] of lokasi.children) {
+          lokasi.total.pas1 += c.pas1 ?? 0;
+          lokasi.total.pas2 += c.pas2 ?? 0;
+          lokasi.total.pas3 += c.pas3 ?? 0;
+          lokasi.total.sah += c.sah ?? 0;
+          lokasi.total.tidakSah += c.tidakSah ?? 0;
+          lokasi.total.totalCompletedTps += c.totalCompletedTps ?? 0;
+          lokasi.total.totalTps += c.totalTps ?? 0;
+        }
+        this.lokasiCache.set(id, lokasi);
+        return lokasi;
+      }),
+      startWith(this.lokasiCache.get(id)),
+    );
   }
 }

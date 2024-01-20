@@ -1,17 +1,17 @@
-<div *ngIf="id$ | async as idLokasi">
+<div *ngIf="lokasi$ | async as lokasi">
 
 <div class="hierarchy_path">
-    @for (p of parents; track p[0]; let last = $last) {
+    @for (p of lokasi.parents; track p[0]; let last = $last) {
         <a [routerLink]="['/h', p[0]]" routerLinkActive="active"
             class="hierarchy">{{ p[1] }}</a>
         @if (!last) { &gt; }
     }
 </div>
 
-@if (idLokasi.length === 10) {
+@if (lokasi.id.length === 10) {
     <!-- Level TPS -->
     <table class="collapsed_border">
-    @for (c of children; track c[0];) {
+    @for (c of lokasi.children; track c[0];) {
         <tr *ngIf="c[1][0] as a">
             <td width="145" align="center">
                 <br>
@@ -27,14 +27,15 @@
             </td>
             <td width="260" align="center">
                 <br>
-                <app-upload [id]="idLokasi + c[0]" (onUpload)="fetchLokasiData(idLokasi)"></app-upload>
+                <app-upload [id]="lokasi.id + c[0]"
+                    (onUpload)="router.navigate(['/h', lokasi.id])"></app-upload>
                 <br>
                 @if (c[1].length > 1) {
                     <br>
                     @for (tps of c[1].slice(1); track tps.uploadedPhoto?.imageId) {
                         <hr><br>
                         <img [src]="tps.uploadedPhoto?.photoUrl + '=s200'" /><br>
-                        <pre style="width: 300px; white-space: pre-wrap; word-wrap: break-word; text-align: left;">{{
+                        <pre style="text-align: left;">{{
                           tps.uploadedPhoto?.imageMetadata| json }}</pre>
                     }
                 }
@@ -46,7 +47,7 @@
     <!-- Level Provinsi, Kecamatan, Kelurahan -->
     <table class="collapsed_border">
         <tr bgcolor="lightgrey">
-            <th class="lokasi">{{ levelName() }}</th>
+            <th class="lokasi">{{ lokasi.level }}</th>
             <th class="paslon">Pas1</th>
             <th class="paslon">Pas2</th>
             <th class="paslon">Pas3</th>
@@ -54,7 +55,7 @@
             <th class="sah">~Sah</th>
             <th class="cov">COV</th>
         </tr>
-        @for (c of children; track c[0];) {
+        @for (c of lokasi.children; track c[0];) {
         <tr *ngIf="c[1][0] as a">
             <td><div class="lokasi">
                 <a class="hierarchy" [routerLink]="['/h', c[0]]">{{ a.name }}</a>
@@ -80,20 +81,18 @@
         }
         <tr bgcolor="lightgrey">
             <th align="right">TOTAL:</th>
-            <th class="paslon">{{ total.pas1 }}</th>
-            <th class="paslon">{{ total.pas2 }}</th>
-            <th class="paslon">{{ total.pas3 }}</th>
-            <th class="sah">{{ total.sah }}</th>
-            <th class="sah">{{ total.tidakSah }}</th>
+            <th class="paslon">{{ lokasi.total.pas1 }}</th>
+            <th class="paslon">{{ lokasi.total.pas2 }}</th>
+            <th class="paslon">{{ lokasi.total.pas3 }}</th>
+            <th class="sah">{{ lokasi.total.sah }}</th>
+            <th class="sah">{{ lokasi.total.tidakSah }}</th>
             <th class="cov">
-                {{ 100.0 * (total.totalCompletedTps || 0) / total.totalTps | number: '1.2-2' }}%<br>
+                {{ 100.0 * (lokasi.total.totalCompletedTps || 0) / lokasi.total.totalTps | number: '1.2-2' }}%<br>
                 <span style="font-size: xx-small">
-                    {{ (total.totalCompletedTps || 0) | number }}/{{ total.totalTps | number }}
+                    {{ (lokasi.total.totalCompletedTps || 0) | number }}/{{ lokasi.total.totalTps | number }}
                 </span>
             </th>
         </tr>
     </table>
 }
 </div>
-
-<div *ngIf="lokasi$ | async"></div>

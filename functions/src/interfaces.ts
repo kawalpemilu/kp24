@@ -163,3 +163,32 @@ export function getChildrenIds(id2name: Record<string, string>) {
   }
   return sortedC;
 }
+
+/**
+ * Simple implementation of LRU cache.
+ */
+export class LruCache<K, V> {
+  private readonly map = new Map<K, V>();
+
+  constructor(private readonly maxSize = 10) {}
+
+  has = this.map.has.bind(this.map);
+
+  get(key: K, callable?: () => V): V {
+    const value = this.map.get(key);
+    if (value !== undefined) return this.set(key, value);
+    if (callable) return this.set(key, callable());
+    return undefined as V;
+  }
+
+  set(key: K, value: V) {
+    this.map.delete(key);
+    if (this.map.size === this.maxSize) {
+      // Map keys is ordered by insertion order.
+      // The first key is the oldest (first inserted) key.
+      this.map.delete(this.map.keys().next().value);
+    }
+    this.map.set(key, value);
+    return value;
+  }
+}
