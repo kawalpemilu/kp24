@@ -117,8 +117,7 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
             agg.tidakSah = data.tidakSah;
           }
           delete agg.uploadedPhoto;
-        }
-        if (isIdentical(old, agg)) {
+        } else if (isIdentical(old, agg)) {
           logger.log("Identical", JSON.stringify(agg, null, 2));
           return null;
         }
