@@ -22,29 +22,35 @@ export function getPrestineLokasi(id: string) {
   if (id.length === 10) {
     const [maxTpsNo, extBegin, extEnd] = H.tps[lokasi.id];
     for (let i = 1; i <= maxTpsNo; i++) {
-      lokasi.aggregated[i] = [{
-        name: `${i}`,
-        totalTps: 1,
-      } as AggregateVotes];
+      lokasi.aggregated[i] = [newAggregateVotes(`${id}${i}`, `${i}`, 1)];
     }
     if (extBegin) {
       for (let i = extBegin; i <= extEnd; i++) {
-        lokasi.aggregated[i] = [{
-          name: `${i}`,
-          totalTps: 1,
-        } as AggregateVotes];
+        lokasi.aggregated[i] = [newAggregateVotes(`${id}${i}`, `${i}`, 1)];
       }
     }
   } else {
     for (const suffixId of C[lokasi.id]) {
       const cid = lokasi.id + suffixId;
-      lokasi.aggregated[cid] = [{
-        name: H.id2name[cid],
-        totalTps: T[cid],
-      } as AggregateVotes];
+      lokasi.aggregated[cid] = [newAggregateVotes(cid, H.id2name[cid], T[cid])];
     }
   }
   return lokasi;
+}
+
+function newAggregateVotes(idLokasi: string, name: string, totalTps: number): AggregateVotes {
+  return {
+    idLokasi,
+    pas1: 0,
+    pas2: 0,
+    pas3: 0,
+    sah: 0,
+    tidakSah: 0,
+    name,
+    totalTps,
+    totalCompletedTps: 0,
+    uploadTimeMs: 0
+  } ;
 }
 
 /**

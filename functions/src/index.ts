@@ -63,20 +63,25 @@ export const upload = onCall(
     const imageId = request.data.imageId;
     if (!(/^[A-Za-z0-9]{20}$/.test(imageId))) return false;
 
-    const pas1 = Number(request.data.pas1);
-    if (!isValidVoteNumbers(pas1)) return false;
-
-    const pas2 = Number(request.data.pas2);
-    if (!isValidVoteNumbers(pas2)) return false;
-
-    const pas3 = Number(request.data.pas3);
-    if (!isValidVoteNumbers(pas3)) return false;
-
-    const sah = Number(request.data.sah);
-    if (!isValidVoteNumbers(sah)) return false;
-
-    const tidakSah = Number(request.data.tidakSah);
-    if (!isValidVoteNumbers(tidakSah)) return false;
+    let pas1 = 0, pas2 = 0, pas3 = 0, sah = 0, tidakSah = 0;
+    if (request.data.halaman === 1) {
+      pas1 = Number(request.data.pas1);
+      if (!isValidVoteNumbers(pas1)) return false;
+  
+      pas2 = Number(request.data.pas2);
+      if (!isValidVoteNumbers(pas2)) return false;
+  
+      pas3 = Number(request.data.pas3);
+      if (!isValidVoteNumbers(pas3)) return false;
+    } else if (request.data.halaman === 2) {
+      sah = Number(request.data.sah);
+      if (!isValidVoteNumbers(sah)) return false;
+  
+      tidakSah = Number(request.data.tidakSah);
+      if (!isValidVoteNumbers(tidakSah)) return false;
+    } else {
+      return false;
+    }
 
     const m = request.data.imageMetadata;
     const imageMetadata: ImageMetadata = { l: Number(m.l), s: Number(m.s)};
@@ -89,6 +94,7 @@ export const upload = onCall(
     const sanitized: UploadRequest = {
       idLokasi, uid: request.auth?.uid,
       imageId, pas1, pas2, pas3, sah, tidakSah,
+      halaman : request.data.halaman,
       imageMetadata
     };
     return uploadHandler(firestore, sanitized);

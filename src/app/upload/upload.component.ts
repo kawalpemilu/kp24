@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { ImageMetadata, UploadRequest } from '../../../functions/src/interfaces';
+import { Halaman, ImageMetadata, UploadRequest } from '../../../functions/src/interfaces';
 import * as piexif from 'piexifjs';
 
 /** Returns a random n-character identifier containing [a-zA-Z0-9]. */
@@ -42,8 +42,19 @@ export class UploadComponent implements OnInit {
   user$ = user(this.auth);
 
   provider = new GoogleAuthProvider();
-  loading = false;
+  digitizing = false;
   uploading = false;
+  submitting = false;
+
+  halaman: Halaman = 0;
+  pas1 = 0;
+  pas2 = 0;
+  pas3 = 0;
+  sah = 0;
+  tidakSah = 0;
+
+  submitPhoto = () => {};
+  cancelSubmit = () => {};
 
   async ngOnInit() {
   }
@@ -60,8 +71,7 @@ export class UploadComponent implements OnInit {
       return;
     }
 
-    const uid = this.auth.currentUser?.uid;
-    if (!uid) {
+    if (!this.auth.currentUser?.uid) {
       alert('Please sign in first');
       return;
     }
@@ -94,28 +104,16 @@ export class UploadComponent implements OnInit {
       imgURL = await this.rotateImageUrl(imgURL, metadata.o);
     }
 
-    const imageId = autoId();
-    const filename = `/uploads/${this.id}/${uid}/${imageId}`;
-    console.log('Uploading to', filename, metadata);
-
-    this.uploading = true;
-    await uploadString(ref(this.storage, filename), imgURL as string, 'data_url');
-    console.log('Uploaded a blob or file!');
-    this.uploading = false;
-    this.loading = true;
+    const imageId = this.startUploadPhoto(imgURL, metadata);
 
     try {
-      const request: UploadRequest = {
-        idLokasi: this.id,
-        uid: '',
-        imageId,
-        pas1: Math.floor(Math.random() * 1000),
-        pas2: Math.floor(Math.random() * 1000),
-        pas3: Math.floor(Math.random() * 1000),
-        sah: Math.floor(Math.random() * 1000),
-        tidakSah: Math.floor(Math.random() * 1000),
-        imageMetadata: metadata
-      };
+      const request = await this.startDigitize();
+      request.idLokasi = this.id;
+      request.imageId = await imageId;
+      request.imageMetadata = metadata;
+      request.halaman = this.halaman;
+  
+      this.submitting = true;
       console.log('UploadRequest', JSON.stringify(request, null, 2));
       const callable = httpsCallable(this.functions, 'upload');
       const result = (await callable(request));
@@ -128,7 +126,7 @@ export class UploadComponent implements OnInit {
     } catch (e) {
       console.error(e);
     }
-    this.loading = false;
+    this.submitting = false;
   }
 
   async login() {
@@ -138,6 +136,43 @@ export class UploadComponent implements OnInit {
     console.log('Logged in user', u);
   }
 
+  async startUploadPhoto(imgURL: string, metadata: ImageMetadata) {
+    const imageId = autoId();
+    const filename = `/uploads/${this.id}/${this.auth.currentUser?.uid}/${imageId}`;
+    console.log('Uploading to', filename, metadata);
+
+    this.uploading = true;
+    await uploadString(ref(this.storage, filename), imgURL as string, 'data_url');
+    console.log('Uploaded a blob or file!');
+    this.uploading = false;
+    return imageId;
+  }
+
+  async startDigitize(): Promise<UploadRequest> {
+    this.digitizing = true;
+    return new Promise((resolve, reject) => {
+      this.submitPhoto = () => {
+        this.digitizing = false;
+        if (this.halaman === 1) {
+          resolve({
+            pas1: this.pas1,
+            pas2: this.pas2,
+            pas3: this.pas3,
+          } as UploadRequest);
+        } else {
+          resolve({
+            sah: this.sah,
+            tidakSah: this.tidakSah,
+          } as UploadRequest);
+        }
+      };
+      this.cancelSubmit = () => {
+        this.uploading = false;
+        this.digitizing = false;
+        reject();
+      };
+    });
+  }
 
   private async compress(dataUrl: string, maxDimension: number): Promise<string> {
     const img = await this.getImage(dataUrl);
@@ -179,7 +214,8 @@ export class UploadComponent implements OnInit {
       const exifObj = piexif.load(imgURL as string);
       const z = exifObj['0th'];
       if (z) {
-        m.m = `${z[piexif.TagValues.ImageIFD.Make]}, ${z[piexif.TagValues.ImageIFD.Model]}`;
+        if (z[piexif.TagValues.ImageIFD.Make]) m.m = `${z[piexif.TagValues.ImageIFD.Make]}`;
+        if (z[piexif.TagValues.ImageIFD.Model]) m.m = `${m.m? ', ' : ''}${z[piexif.TagValues.ImageIFD.Model]}`;
         const o = z[piexif.TagValues.ImageIFD.Orientation] as number;
         if (o) m.o = o;
       }

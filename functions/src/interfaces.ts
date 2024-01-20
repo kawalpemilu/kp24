@@ -13,6 +13,9 @@ export declare interface Hierarchy {
   tps: { [id: string]: number[] };
 }
 
+// Halaman 0 is invalid.
+export type Halaman = 0 | 1 | 2;
+
 // The aggregated votes at Provinsi, Kabupaten, and Kecamatan level.
 export declare interface AggregateVotes {
   idLokasi: string;
@@ -46,7 +49,7 @@ export declare interface AggregateVotes {
 
 export declare interface UploadedPhoto {
   // Which page of the C1 plano is the photo for.
-  halaman: 1 | 2 | 3;
+  halaman: Halaman;
 
   // The blobId of the image file.
   imageId: string;
@@ -117,6 +120,9 @@ export declare interface UploadRequest {
 
   // Number of invalid votes.
   tidakSah: number;
+
+  // Halaman yang diupload.
+  halaman: Halaman;
 }
 
 // Intentionally make the field name short to save bytes.

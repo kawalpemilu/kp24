@@ -1,45 +1,72 @@
-@if (loading) {
-    <mat-spinner></mat-spinner>
-} @else if (!auth.currentUser) {
-    <button mat-raised-button color="warn" (click)="login()">Sign In to Upload Photo</button>
-} @else {
+<div style="width: 250px; padding: 30px 0;">
+@if (!auth.currentUser) {
+    <button mat-raised-button color="warn" (click)="login()">
+        Sign In to Upload Photo
+    </button>
+} @else if (digitizing) {
+    <p>
+        Masukkan angka di halaman {{ halaman }}:
+    </p>
+    <table class="collapsed_border">
+    @if (halaman === 1) {
+        <tr>
+            <td>Paslon #1</td>
+            <td><input type="number" style="width: 50px;" [(ngModel)]="pas1"></td>
+        </tr>
+        <tr>
+            <td>Paslon #2</td>
+            <td><input type="number" style="width: 50px;" [(ngModel)]="pas2"></td>
+        </tr>
+        <tr>
+            <td>Paslon #3</td>
+            <td><input type="number" style="width: 50px;" [(ngModel)]="pas3"></td>
+        </tr>
+    } @else {
+        <tr>
+            <td>Sah</td>
+            <td><input type="number" style="width: 50px;" [(ngModel)]="sah"></td>
+        </tr>
+        <tr>
+            <td>Tidak Sah</td>
+            <td><input type="number" style="width: 50px;" [(ngModel)]="tidakSah"></td>
+        </tr>
+    }
+        <tr>
+            <td colspan="2">
+                <button mat-raised-button color="primary" (click)="submitPhoto()">
+                    Submit
+                </button>
+                &nbsp; &nbsp;
+                <button mat-raised-button color="warn" (click)="cancelSubmit()">
+                    Cancel
+                </button>
+            </td>
+        </tr>
+    </table>
+    <br><br>
+} @else if (uploading || submitting) {
     @if (uploading) {
         Uploading your photo<br>
-        <mat-spinner></mat-spinner>
     } @else {
-        <!-- <table class="collapsed_border">
-            <tr>
-                <td>Paslon #1</td>
-                <td><input type="number" style="width: 50px;"></td>
-            </tr>
-            <tr>
-                <td>Paslon #2</td>
-                <td><input type="number" style="width: 50px;"></td>
-            </tr>
-            <tr>
-                <td>Paslon #3</td>
-                <td><input type="number" style="width: 50px;"></td>
-            </tr>
-            <tr>
-                <td>Sah</td>
-                <td><input type="number" style="width: 50px;"></td>
-            </tr>
-            <tr>
-                <td>Tidak Sah</td>
-                <td><input type="number" style="width: 50px;"></td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <button mat-raised-button color="primary" (click)="upload()">
-                        Submit Votes
-                    </button>
-                </td>
-            </tr>
-        </table>
-
-        <br><br> -->
-
-        <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
-        <button mat-raised-button color="primary" (click)="u.click()">Upload Photo</button>
+        Submitting your photo<br>
     }
+    <mat-spinner></mat-spinner>
+} @else {
+    <h3>Upload foto untuk halaman:</h3>
+
+    <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
+
+    <br>
+    <p>
+        <button mat-raised-button color="primary" (click)="halaman = 1; u.click()">
+            Upload Halaman 1
+        </button>
+    </p>
+    <br>
+    <p>
+        <button mat-raised-button color="primary" (click)="halaman = 2; u.click()">
+            Upload Halaman 2
+        </button>
+    </p>
 }
+</div>

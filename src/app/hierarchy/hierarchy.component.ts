@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { combineLatest, EMPTY, from, Observable, of } from 'rxjs';
+import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { AggregateVotes, Lokasi, LruCache } from '../../../functions/src/interfaces';
@@ -8,6 +8,8 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { AppService } from '../app.service';
 import { UploadComponent } from '../upload/upload.component';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
 
 const idLengths = [2, 4, 6, 10];
 const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
@@ -32,7 +34,8 @@ function newLokasiData(id: string): LokasiData {
 @Component({
   selector: 'app-hierarchy',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule, UploadComponent],
+  imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule, UploadComponent,
+    MatSidenavModule, MatIconModule],
   templateUrl: './hierarchy.component.html',
   styleUrl: './hierarchy.component.css'
 })
@@ -42,9 +45,11 @@ export class HierarchyComponent implements OnInit {
   lokasi$!: Observable<LokasiData>;
   lokasiCache = new LruCache<string, LokasiData>(100);
 
+  // Used for trigger the refetching the LokasiData.
+  lokasiWithVotesTrigger$ = new BehaviorSubject(null);
+
   constructor(
     private route: ActivatedRoute,
-    public router: Router,
     private service: AppService) {
   }
 
@@ -61,7 +66,9 @@ export class HierarchyComponent implements OnInit {
         // The second observable is fetching from Firebase function,
         // which is slow (may take a few seconds depending on the network latency).
         // The result of this second observable will replace the first observable.
-        const lokasi2$ = this.getLokasiDataWithVotes(id);
+        const lokasi2$ = this.lokasiWithVotesTrigger$.pipe(
+          switchMap(() => this.getLokasiDataWithVotes(id))
+        );
         // Both observable have initial value of null so that
         // the combineLatest kicks in immediately.
         return combineLatest([
@@ -132,6 +139,7 @@ export class HierarchyComponent implements OnInit {
           lokasi.parents.push([
             lokasi.id.substring(0, idLengths[i]), lokasiWithVotes.names[i]]);
         }
+        lokasi.level = levelNames[lokasi.parents.length];
         lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated);
         lokasi.children.sort((a, b) => {
           const aName = a[1][0].name, bName = b[1][0].name;
@@ -151,10 +159,16 @@ export class HierarchyComponent implements OnInit {
           lokasi.total.totalCompletedTps += c.totalCompletedTps ?? 0;
           lokasi.total.totalTps += c.totalTps ?? 0;
         }
+        // Sets the newly fetch lokasi with votes to cache and emit it.
         this.lokasiCache.set(id, lokasi);
         return lokasi;
       }),
+      // Starts with the cached lokasi if exists.
       startWith(this.lokasiCache.get(id)),
     );
+  }
+
+  onUpload(id: string) {
+    this.lokasiWithVotesTrigger$.next(null);
   }
 }

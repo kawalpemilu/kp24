@@ -64,7 +64,7 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
     totalTps: 1,
     totalCompletedTps: 1,
     uploadedPhoto: {
-      halaman: 1, // TODO: update this.
+      halaman: u.halaman,
       imageId: u.imageId,
       imageMetadata: u.imageMetadata,
       photoUrl,
@@ -100,12 +100,24 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
         const cid = isUploadRequest(agg) ?
           agg.idLokasi.substring(10) : agg.idLokasi;
 
-        if (isUploadRequest(agg)) {
-          // TODO: merge halaman 1, 2, 3 numbers.
-          lokasi.aggregated[cid].splice(1, 0, agg);
-        }
-  
         const old = lokasi.aggregated[cid][0];
+        if (isUploadRequest(agg)) {
+          lokasi.aggregated[cid].splice(1, 0, {...agg});
+          if (data.halaman === 1) {
+            agg.pas1 = data.pas1;
+            agg.pas2 = data.pas2;
+            agg.pas3 = data.pas3;
+            agg.sah = old.sah;
+            agg.tidakSah = old.tidakSah;
+          } else if (data.halaman === 2) {
+            agg.pas1 = old.pas1;
+            agg.pas2 = old.pas2;
+            agg.pas3 = old.pas3;
+            agg.sah = data.sah;
+            agg.tidakSah = data.tidakSah;
+          }
+          delete agg.uploadedPhoto;
+        }
         if (isIdentical(old, agg)) {
           logger.log("Identical", JSON.stringify(agg, null, 2));
           return null;

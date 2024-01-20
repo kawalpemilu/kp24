@@ -13,7 +13,7 @@
     <table class="collapsed_border">
     @for (c of lokasi.children; track c[0];) {
         <tr *ngIf="c[1][0] as a">
-            <td width="145" align="center">
+            <td width="145" align="center" nowrap>
                 <br>
                 <b style="font-size: large">TPS #{{ a.name }}</b>
                 <br>
@@ -25,20 +25,52 @@
                 ~Sah: <b>{{ a.tidakSah }}</b><br>
                 <br>
             </td>
-            <td width="260" align="center">
-                <br>
-                <app-upload [id]="lokasi.id + c[0]"
-                    (onUpload)="router.navigate(['/h', lokasi.id])"></app-upload>
-                <br>
+            <td width="*" align="center">
+                <mat-drawer-container [hasBackdrop]="true">
+                    <mat-drawer #drawer mode="over">
+                        <app-upload [id]="lokasi.id + c[0]"
+                            (onUpload)="onUpload(lokasi.id); drawer.close()">
+                        </app-upload>
+                    </mat-drawer>
+                    <mat-drawer-content>
+                        <div style="min-width: 300px; width: 100%; overflow-x: scroll">
+                        <table height="250">
+                        <tr>
+                            <td>
+                                <div (click)="drawer.toggle()"
+                                     style="width: 100px; text-align: center; cursor: pointer;">
+                                    <button mat-fab color="primary">
+                                        <mat-icon>add_a_photo</mat-icon>
+                                    </button>
+                                    <p style="margin-top: 10px;">
+                                        <b>Upload<br>Photo</b>
+                                    </p>
+                                </div>
+                            </td>
                 @if (c[1].length > 1) {
-                    <br>
                     @for (tps of c[1].slice(1); track tps.uploadedPhoto?.imageId) {
-                        <hr><br>
+                    <td valign="top">
                         <img [src]="tps.uploadedPhoto?.photoUrl + '=s200'" /><br>
-                        <pre style="text-align: left;">{{
-                          tps.uploadedPhoto?.imageMetadata| json }}</pre>
+                        Halaman: {{ tps.uploadedPhoto?.halaman }}<br>
+                        @if (tps.uploadedPhoto?.halaman === 1) {
+                            Pas1: {{ tps.pas1 }}<br>
+                            Pas2: {{ tps.pas2 }}<br>
+                            Pas3: {{ tps.pas3 }}<br>
+                        } @else if (tps.uploadedPhoto?.halaman === 2) {
+                            Sah: {{ tps.sah }}<br>
+                            ~Sah: {{ tps.tidakSah }}<br>
+                        }
+                        @if (tps.uploadedPhoto?.imageMetadata; as m) {
+                            <pre style="text-align: left;">{{ m | json }}</pre>
+                        }
+                    </td>
                     }
                 }
+                        </tr>
+                        </table>
+                        </div>
+                    </mat-drawer-content>
+                </mat-drawer-container>
             </td>
         </tr>
     }
