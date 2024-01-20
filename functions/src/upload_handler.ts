@@ -50,7 +50,7 @@ function isUploadRequest(x: UploadRequest | AggregateVotes)
 async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
   // Use the default image for local testing.
   const photoUrl = (process.env.FUNCTIONS_EMULATOR === "true") ?
-    "https://lh3.googleusercontent.com/2vCAJNE_LMg6fXSEuXOdjAgn8bAX1DmnTwiCfWZWtqgvm7Gc3afrnRjusNU4g9pM1hRQLVo_aTaZWSezAoBVAliBAPRxQWMmEQMPGHE" :
+    "https://kp24.web.app/assets/kp.png" :
     await getServingUrl(`uploads/${u.idLokasi}/${u.uid}/${u.imageId}`);
   return {
     idLokasi: u.idLokasi,
