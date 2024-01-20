@@ -50,7 +50,9 @@
                 @if (c[1].length > 1) {
                     @for (tps of c[1].slice(1); track tps.uploadedPhoto?.imageId) {
                     <td valign="top">
-                        <img [src]="tps.uploadedPhoto?.photoUrl + '=s200'" /><br>
+                        <a [href]="tps.uploadedPhoto?.photoUrl + '=s1280'" target="_blank">
+                            <img [src]="tps.uploadedPhoto?.photoUrl + '=s200'" /><br>
+                        </a>
                         Halaman: {{ tps.uploadedPhoto?.halaman }}<br>
                         @if (tps.uploadedPhoto?.halaman === 1) {
                             Pas1: {{ tps.pas1 }}<br>
