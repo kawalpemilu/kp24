@@ -13,7 +13,7 @@
     <table class="collapsed_border">
     @for (c of lokasi.children; track c[0];) {
         <tr *ngIf="c[1][0] as a">
-            <td width="145" align="center" nowrap>
+            <td width="145" align="center" nowrap [style.background-color]="a.totalPendingTps ? 'orange' : ''">
                 <br>
                 <b style="font-size: large">TPS #{{ a.name }}</b>
                 <br>
@@ -53,12 +53,12 @@
                         <a [href]="tps.uploadedPhoto?.photoUrl + '=s1280'" target="_blank">
                             <img [src]="tps.uploadedPhoto?.photoUrl + '=s200'" /><br>
                         </a>
-                        Halaman: {{ tps.uploadedPhoto?.halaman }}<br>
-                        @if (tps.uploadedPhoto?.halaman === 1) {
+                        Halaman: {{ tps.uploadedPhoto?.lembar }}<br>
+                        @if (tps.uploadedPhoto?.lembar === LEMBAR.C1_HAL1) {
                             Pas1: {{ tps.pas1 }}<br>
                             Pas2: {{ tps.pas2 }}<br>
                             Pas3: {{ tps.pas3 }}<br>
-                        } @else if (tps.uploadedPhoto?.halaman === 2) {
+                        } @else if (tps.uploadedPhoto?.lembar === LEMBAR.C1_HAL2) {
                             Sah: {{ tps.sah }}<br>
                             ~Sah: {{ tps.tidakSah }}<br>
                         }

@@ -48,8 +48,12 @@ export declare interface Hierarchy {
   tps: { [id: string]: number[] };
 }
 
-// Halaman 0 is invalid.
-export type Halaman = 0 | 1 | 2;
+// Lembaran yang difoto.
+export enum LEMBAR {
+  C1_HAL1 = 1, // Berisi suara paslon 1, 2, dan 3.
+  C1_HAL2 = 2, // Berisi suara sah dan tidak sah.
+  REKAP = 3, // Berisi semua suara paslon 1, 2, 3, sah, tidakSah.
+}
 
 export enum APPROVAL_STATUS {
   NEW = 0,
@@ -105,8 +109,8 @@ export declare interface AggregateVotes extends Votes {
 }
 
 export declare interface UploadedPhoto {
-  // Which page of the C1 plano is the photo for.
-  halaman: Halaman;
+  // Which page is the photo for.
+  lembar: LEMBAR;
 
   // The blobId of the image file.
   imageId: string;
@@ -164,8 +168,8 @@ export declare interface UploadRequest {
   // Additional info about the image if available.
   imageMetadata: ImageMetadata;
 
-  // Halaman yang diupload.
-  halaman: Halaman;
+  // Lembaran yang diupload.
+  lembar: LEMBAR;
 
   // The digitized votes from newest to oldest.
   votes: Votes[];

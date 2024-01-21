@@ -1,5 +1,5 @@
 import {APPROVAL_STATUS, AggregateVotes,
-  Lokasi, UploadRequest} from "./interfaces";
+  LEMBAR, Lokasi, UploadRequest} from "./interfaces";
 import {getPrestineLokasi} from "./lokasi";
 import {getServingUrl} from "./serving_url";
 
@@ -73,7 +73,7 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
     totalPendingTps: 1,
     totalErrorTps: 0,
     uploadedPhoto: {
-      halaman: u.halaman,
+      lembar: u.lembar,
       imageId: u.imageId,
       imageMetadata: u.imageMetadata,
       photoUrl,
@@ -112,20 +112,22 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
 
         const old = lokasi.aggregated[cid][0];
         if (isUploadRequest(agg)) {
-          lokasi.aggregated[cid].splice(1, 0, {...agg});
-          const v = data.votes[0];
-          if (data.halaman === 1) {
-            agg.pas1 = v.pas1;
-            agg.pas2 = v.pas2;
-            agg.pas3 = v.pas3;
-            agg.sah = old.sah;
-            agg.tidakSah = old.tidakSah;
-          } else if (data.halaman === 2) {
+          if (agg.status == APPROVAL_STATUS.APPROVED) {
+            lokasi.aggregated[cid].splice(1, 0, {...agg});
+            if (data.lembar === LEMBAR.C1_HAL1) {
+              agg.sah = old.sah;
+              agg.tidakSah = old.tidakSah;
+            } else if (data.lembar === LEMBAR.C1_HAL2) {
+              agg.pas1 = old.pas1;
+              agg.pas2 = old.pas2;
+              agg.pas3 = old.pas3;
+            }
+          } else {
             agg.pas1 = old.pas1;
             agg.pas2 = old.pas2;
             agg.pas3 = old.pas3;
-            agg.sah = v.sah;
-            agg.tidakSah = v.tidakSah;
+            agg.sah = old.sah;
+            agg.tidakSah = old.tidakSah;
           }
           delete agg.uploadedPhoto;
         } else if (isIdentical(old, agg)) {
@@ -133,7 +135,6 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
           return null;
         }
         agg.name = old.name; // Preserve the name.
-        agg.totalTps = old.totalTps;
         lokasi.aggregated[cid][0] = agg;
 
         t.set(hRef, lokasi);

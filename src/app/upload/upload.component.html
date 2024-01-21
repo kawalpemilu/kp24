@@ -5,10 +5,10 @@
     </button>
 } @else if (digitizing) {
     <p>
-        Masukkan angka di halaman {{ halaman }}:
+        Masukkan jumlah suara:
     </p>
     <table class="collapsed_border">
-    @if (halaman === 1) {
+    @if (lembar === LEMBAR.C1_HAL1) {
         <tr>
             <td>Paslon #1</td>
             <td><input type="number" style="width: 50px;" [(ngModel)]="pas1"></td>
@@ -52,20 +52,20 @@
     }
     <mat-spinner></mat-spinner>
 } @else {
-    <h3>Upload foto untuk halaman:</h3>
+    <h3>Upload foto untuk suara:</h3>
 
     <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
 
     <br>
     <p>
-        <button mat-raised-button color="primary" (click)="halaman = 1; u.click()">
-            Upload Halaman 1
+        <button mat-raised-button color="primary" (click)="lembar = LEMBAR.C1_HAL1; u.click()">
+            Hasil Paslon
         </button>
     </p>
     <br>
     <p>
-        <button mat-raised-button color="primary" (click)="halaman = 2; u.click()">
-            Upload Halaman 2
+        <button mat-raised-button color="primary" (click)="lembar = LEMBAR.C1_HAL2; u.click()">
+            Sah / Tidak Sah
         </button>
     </p>
 }

@@ -1,7 +1,7 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {
   APPROVAL_STATUS,
-  AggregateVotes, ImageMetadata, Lokasi, TpsData,
+  AggregateVotes, ImageMetadata, LEMBAR, Lokasi, TpsData,
   USER_ROLE, UploadRequest, UserProfile,
 } from "./interfaces";
 import {getPrestineLokasi} from "./lokasi";
@@ -98,10 +98,16 @@ export const upload = onCall(
     const imageId = request.data.imageId;
     if (!(/^[A-Za-z0-9]{20}$/.test(imageId))) return false;
 
+    if (request.data.lembar !== LEMBAR.C1_HAL1 &&
+      request.data.lembar !== LEMBAR.C1_HAL2 &&
+      request.data.lembar !== LEMBAR.REKAP) {
+      return false;
+    }
+
     const vs = request.data.votes;
     if (!vs?.length || vs.length > 1) return false;
     let pas1 = 0; let pas2 = 0; let pas3 = 0; let sah = 0; let tidakSah = 0;
-    if (request.data.halaman === 1) {
+    if (request.data.lembar === LEMBAR.C1_HAL1 || request.data.lembar === LEMBAR.REKAP) {
       pas1 = Number(vs[0].pas1);
       if (!isValidVoteNumbers(pas1)) return false;
 
@@ -110,14 +116,13 @@ export const upload = onCall(
 
       pas3 = Number(vs[0].pas3);
       if (!isValidVoteNumbers(pas3)) return false;
-    } else if (request.data.halaman === 2) {
+    }
+    if (request.data.lembar === LEMBAR.C1_HAL2 || request.data.lembar === LEMBAR.REKAP) {
       sah = Number(vs[0].sah);
       if (!isValidVoteNumbers(sah)) return false;
 
       tidakSah = Number(vs[0].tidakSah);
       if (!isValidVoteNumbers(tidakSah)) return false;
-    } else {
-      return false;
     }
 
     const m = request.data.imageMetadata;
@@ -130,7 +135,7 @@ export const upload = onCall(
 
     const sanitized: UploadRequest = {
       idLokasi, imageId,
-      halaman: request.data.halaman,
+      lembar: request.data.lembar,
       votes: [{
         uid: request.auth?.uid,
         pas1, pas2, pas3, sah, tidakSah,

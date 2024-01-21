@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
-import { AggregateVotes, Lokasi, LruCache } from '../../../functions/src/interfaces';
+import { AggregateVotes, LEMBAR, Lokasi, LruCache } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { AppService } from '../app.service';
@@ -44,6 +44,8 @@ export class HierarchyComponent implements OnInit {
 
   // Used for trigger the refetching the LokasiData.
   lokasiWithVotesTrigger$ = new BehaviorSubject(null);
+
+  LEMBAR = LEMBAR;
 
   constructor(
     private route: ActivatedRoute,
