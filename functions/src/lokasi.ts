@@ -1,5 +1,6 @@
 import * as fs from "fs";
-import {AggregateVotes, Hierarchy, Lokasi, getChildrenIds} from "./interfaces";
+import {APPROVAL_STATUS, AggregateVotes,
+  Hierarchy, Lokasi, getChildrenIds} from "./interfaces";
 
 /**
  * This global variable for this module takes memory resources.
@@ -56,7 +57,10 @@ function newAggregateVotes(
     name,
     totalTps,
     totalCompletedTps: 0,
-    uploadTimeMs: 0,
+    totalPendingTps: 0,
+    totalErrorTps: 0,
+    createdTs: 0,
+    status: APPROVAL_STATUS.NEW,
   };
 }
 

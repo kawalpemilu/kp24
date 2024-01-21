@@ -93,6 +93,7 @@
         <tr *ngIf="c[1][0] as a">
             <td><div class="lokasi">
                 <a class="hierarchy" [routerLink]="['/h', c[0]]">{{ a.name }}</a>
+                <b *ngIf="a.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
             </div></td>
             @if (a.idLokasi && a.idLokasi.length > 0) {
                 <td>{{ a.pas1 }}</td>

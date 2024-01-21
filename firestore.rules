@@ -10,10 +10,19 @@ service cloud.firestore {
     // User Profile.
     match /u/{uid} {
       // User can see their own profile also >=MODERATOR.
-      allow get: if request.auth.uid == resource.data.uid || getUserRole() >= 1;
+      allow get: if request.auth.uid == resource.data.uid || getUserRole() >= 2;
 
-      // Moderator can list the users up to 100.
-      allow list: if request.query.limit <= 100 && getUserRole() >= 1;
+      // >=MODERATOR can list the users up to 100.
+      allow list: if request.query.limit <= 100 && getUserRole() >= 2;
+    }
+
+    // Photos uploaded at the specified TPS.
+    match /t/{tpsId}/p/{imageId} {
+      // >=MODERATOR can read user uploaded photos to be reviewed.
+      allow get: if getUserRole() >= 2;
+
+      // >=MODERATOR can query photos to be reviewed.
+      allow list: if request.query.limit <= 100 && getUserRole() >= 2;
     }
 
     // Static herarchy for searching.
@@ -35,16 +44,7 @@ service cloud.firestore {
       // Only Admin can perform search for user profile.
       allow list: if request.query.limit <= 100 && getUserRole() >= 2;
     }
- 
-    // Relawan photos.
-    match /p2/{userId} {
-      // Moderator can read user photos if know the uid.
-      allow get: if request.auth.uid == userId || getUserRole() >= 1;
-
-      // Admins can see the scoreboard.
-      allow list: if request.query.limit <= 100 && getUserRole() >= 2;
-    }
- 
+  
     // TPS change log.
     match /t2/{tpsId} {
       // Only Moderator and above can see the TPS history.

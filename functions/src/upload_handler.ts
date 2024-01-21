@@ -1,4 +1,5 @@
-import {AggregateVotes, Lokasi, UploadRequest} from "./interfaces";
+import {APPROVAL_STATUS, AggregateVotes,
+  Lokasi, UploadRequest} from "./interfaces";
 import {getPrestineLokasi} from "./lokasi";
 import {getServingUrl} from "./serving_url";
 
@@ -16,7 +17,11 @@ function isIdentical(a: AggregateVotes, b: AggregateVotes) {
         a.pas2 === b.pas2 &&
         a.pas3 === b.pas3 &&
         a.sah === b.sah &&
-        a.tidakSah === b.tidakSah;
+        a.tidakSah === b.tidakSah &&
+        a.totalTps === b.totalTps &&
+        a.totalCompletedTps === b.totalCompletedTps &&
+        a.totalPendingTps === b.totalPendingTps &&
+        a.totalErrorTps === b.totalErrorTps;
 }
 
 /**
@@ -48,27 +53,32 @@ function isUploadRequest(x: UploadRequest | AggregateVotes)
  * @return {Promise<AggregateVotes>} The processed image.
  */
 async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
+  if (!u.votes.length || u.votes.length > 1) throw new Error();
+  const v = u.votes[0];
   // Use the default image for local testing.
   const photoUrl = (process.env.FUNCTIONS_EMULATOR === "true") ?
     "https://kp24.web.app/assets/kp.png" :
-    await getServingUrl(`uploads/${u.idLokasi}/${u.uid}/${u.imageId}`);
+    await getServingUrl(`uploads/${u.idLokasi}/${v.uid}/${u.imageId}`);
   return {
     idLokasi: u.idLokasi,
     name: u.idLokasi.substring(10),
-    pas1: u.pas1,
-    pas2: u.pas2,
-    pas3: u.pas3,
-    sah: u.sah,
-    tidakSah: u.tidakSah,
-    uploadTimeMs: Date.now(),
+    pas1: v.pas1,
+    pas2: v.pas2,
+    pas3: v.pas3,
+    sah: v.sah,
+    tidakSah: v.tidakSah,
+    createdTs: Date.now(),
     totalTps: 1,
-    totalCompletedTps: 1,
+    totalCompletedTps: 0,
+    totalPendingTps: 1,
+    totalErrorTps: 0,
     uploadedPhoto: {
       halaman: u.halaman,
       imageId: u.imageId,
       imageMetadata: u.imageMetadata,
       photoUrl,
     },
+    status: APPROVAL_STATUS.NEW,
   };
 }
 
@@ -103,18 +113,19 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
         const old = lokasi.aggregated[cid][0];
         if (isUploadRequest(agg)) {
           lokasi.aggregated[cid].splice(1, 0, {...agg});
+          const v = data.votes[0];
           if (data.halaman === 1) {
-            agg.pas1 = data.pas1;
-            agg.pas2 = data.pas2;
-            agg.pas3 = data.pas3;
+            agg.pas1 = v.pas1;
+            agg.pas2 = v.pas2;
+            agg.pas3 = v.pas3;
             agg.sah = old.sah;
             agg.tidakSah = old.tidakSah;
           } else if (data.halaman === 2) {
             agg.pas1 = old.pas1;
             agg.pas2 = old.pas2;
             agg.pas3 = old.pas3;
-            agg.sah = data.sah;
-            agg.tidakSah = data.tidakSah;
+            agg.sah = v.sah;
+            agg.tidakSah = v.tidakSah;
           }
           delete agg.uploadedPhoto;
         } else if (isIdentical(old, agg)) {
@@ -135,18 +146,25 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
           pas3: 0,
           sah: 0,
           tidakSah: 0,
-          uploadTimeMs: agg.uploadTimeMs,
+          createdTs: agg.createdTs,
           totalTps: 0,
           totalCompletedTps: 0,
+          totalPendingTps: 0,
+          totalErrorTps: 0,
+          status: APPROVAL_STATUS.APPROVED,
         };
         for (const [cagg] of Object.values(lokasi.aggregated)) {
-          nextAgg.pas1 += cagg.pas1 ?? 0;
-          nextAgg.pas2 += cagg.pas2 ?? 0;
-          nextAgg.pas3 += cagg.pas3 ?? 0;
-          nextAgg.sah += cagg.sah ?? 0;
-          nextAgg.tidakSah += cagg.tidakSah ?? 0;
-          nextAgg.totalCompletedTps += cagg.totalCompletedTps ?? 0;
+          if (cagg.status === APPROVAL_STATUS.APPROVED) {
+            nextAgg.pas1 += cagg.pas1 ?? 0;
+            nextAgg.pas2 += cagg.pas2 ?? 0;
+            nextAgg.pas3 += cagg.pas3 ?? 0;
+            nextAgg.sah += cagg.sah ?? 0;
+            nextAgg.tidakSah += cagg.tidakSah ?? 0;
+          }
           nextAgg.totalTps += cagg.totalTps ?? 0;
+          nextAgg.totalCompletedTps += cagg.totalCompletedTps ?? 0;
+          nextAgg.totalPendingTps += cagg.totalPendingTps ?? 0;
+          nextAgg.totalErrorTps += cagg.totalErrorTps ?? 0;
         }
         return nextAgg;
       });

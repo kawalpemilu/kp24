@@ -1,5 +1,6 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {
+  APPROVAL_STATUS,
   AggregateVotes, ImageMetadata, Lokasi, TpsData,
   USER_ROLE, UploadRequest, UserProfile,
 } from "./interfaces";
@@ -97,21 +98,23 @@ export const upload = onCall(
     const imageId = request.data.imageId;
     if (!(/^[A-Za-z0-9]{20}$/.test(imageId))) return false;
 
+    const vs = request.data.votes;
+    if (!vs?.length || vs.length > 1) return false;
     let pas1 = 0; let pas2 = 0; let pas3 = 0; let sah = 0; let tidakSah = 0;
     if (request.data.halaman === 1) {
-      pas1 = Number(request.data.pas1);
+      pas1 = Number(vs[0].pas1);
       if (!isValidVoteNumbers(pas1)) return false;
 
-      pas2 = Number(request.data.pas2);
+      pas2 = Number(vs[0].pas2);
       if (!isValidVoteNumbers(pas2)) return false;
 
-      pas3 = Number(request.data.pas3);
+      pas3 = Number(vs[0].pas3);
       if (!isValidVoteNumbers(pas3)) return false;
     } else if (request.data.halaman === 2) {
-      sah = Number(request.data.sah);
+      sah = Number(vs[0].sah);
       if (!isValidVoteNumbers(sah)) return false;
 
-      tidakSah = Number(request.data.tidakSah);
+      tidakSah = Number(vs[0].tidakSah);
       if (!isValidVoteNumbers(tidakSah)) return false;
     } else {
       return false;
@@ -126,10 +129,16 @@ export const upload = onCall(
     if (m.x) imageMetadata.x = Number(m.x);
 
     const sanitized: UploadRequest = {
-      idLokasi, uid: request.auth?.uid,
-      imageId, pas1, pas2, pas3, sah, tidakSah,
+      idLokasi, imageId,
       halaman: request.data.halaman,
+      votes: [{
+        uid: request.auth?.uid,
+        pas1, pas2, pas3, sah, tidakSah,
+        createdTs: Date.now(),
+        status: APPROVAL_STATUS.NEW,
+      }],
       imageMetadata,
+      status: APPROVAL_STATUS.NEW,
     };
     return uploadHandler(firestore, sanitized);
   });

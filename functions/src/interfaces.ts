@@ -51,13 +51,13 @@ export declare interface Hierarchy {
 // Halaman 0 is invalid.
 export type Halaman = 0 | 1 | 2;
 
-// The aggregated votes at Provinsi, Kabupaten, and Kecamatan level.
-export declare interface AggregateVotes {
-  idLokasi: string;
+export enum APPROVAL_STATUS {
+  NEW = 0,
+  APPROVED = 1,
+  REJECTED = 2
+}
 
-  // The name of this location.
-  name: string;
-
+export declare interface Votes {
   // The number of votes for each paslon.
   pas1: number;
   pas2: number;
@@ -69,14 +69,36 @@ export declare interface AggregateVotes {
   // Total invalid votes.
   tidakSah: number;
 
+  // The timestamp when the votes were entered.
+  createdTs: number;
+
+  // NEW means the uid is the uploader.
+  // APPROVED/REJECTED means the uid is the moderator who approved.
+  status: APPROVAL_STATUS;
+
+  // The user id who entered/approved the votes.
+  // The uid is unset for level Desa and above.
+  uid?: string;
+}
+
+// The aggregated votes at Provinsi, Kabupaten, and Kecamatan level.
+export declare interface AggregateVotes extends Votes {
+  idLokasi: string;
+
+  // The name of this location.
+  name: string;
+
   // The total number of TPS in this aggregated votes.
   totalTps: number;
 
+  // Total TPS needs to be reviewed for photos.
+  totalPendingTps: number;
+
+  // Total TPS needs to be reviewed for errors.
+  totalErrorTps: number;
+
   // Total TPS has at least one photo.
   totalCompletedTps: number;
-
-  // The upload timestamp.
-  uploadTimeMs: number;
 
   // Only available at Desa level.
   uploadedPhoto?: UploadedPhoto;
@@ -136,28 +158,20 @@ export declare interface UploadRequest {
   // The idDesa + tpsNo
   idLokasi: string;
 
-  // The user's UID.
-  uid: string;
-
   // The blobId in the cloud storage.
   imageId: string;
 
   // Additional info about the image if available.
   imageMetadata: ImageMetadata;
 
-  // Number of votes for paslon 1, 2, 3
-  pas1: number;
-  pas2: number;
-  pas3: number;
-
-  // Number of valid votes.
-  sah: number;
-
-  // Number of invalid votes.
-  tidakSah: number;
-
   // Halaman yang diupload.
   halaman: Halaman;
+
+  // The digitized votes from newest to oldest.
+  votes: Votes[];
+
+  // Is the photo and digitiziation approved.
+  status: APPROVAL_STATUS;
 }
 
 // Intentionally make the field name short to save bytes.

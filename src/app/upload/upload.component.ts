@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { Halaman, ImageMetadata, UploadRequest } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, Halaman, ImageMetadata, UploadRequest, Votes } from '../../../functions/src/interfaces';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
 
@@ -102,11 +102,15 @@ export class UploadComponent implements OnInit {
     const imageId = this.startUploadPhoto(imgURL, metadata);
 
     try {
-      const request = await this.startDigitize();
-      request.idLokasi = this.id;
-      request.imageId = await imageId;
-      request.imageMetadata = metadata;
-      request.halaman = this.halaman;
+      const votes = await this.startDigitize();
+      const request: UploadRequest = {
+        idLokasi: this.id,
+        imageId: await imageId,
+        imageMetadata: metadata,
+        halaman: this.halaman,
+        votes: [votes],
+        status: APPROVAL_STATUS.NEW
+      };
   
       this.submitting = true;
       const result = await this.service.upload(request);
@@ -134,7 +138,7 @@ export class UploadComponent implements OnInit {
     return imageId;
   }
 
-  async startDigitize(): Promise<UploadRequest> {
+  async startDigitize(): Promise<Votes> {
     this.digitizing = true;
     return new Promise((resolve, reject) => {
       this.submitPhoto = () => {
@@ -144,12 +148,12 @@ export class UploadComponent implements OnInit {
             pas1: this.pas1,
             pas2: this.pas2,
             pas3: this.pas3,
-          } as UploadRequest);
+          } as Votes);
         } else {
           resolve({
             sah: this.sah,
             tidakSah: this.tidakSah,
-          } as UploadRequest);
+          } as Votes);
         }
       };
       this.cancelSubmit = () => {
@@ -200,8 +204,12 @@ export class UploadComponent implements OnInit {
       const exifObj = piexif.load(imgURL as string);
       const z = exifObj['0th'];
       if (z) {
-        if (z[piexif.TagValues.ImageIFD.Make]) m.m = `${z[piexif.TagValues.ImageIFD.Make]}`;
-        if (z[piexif.TagValues.ImageIFD.Model]) m.m = `${m.m? ', ' : ''}${z[piexif.TagValues.ImageIFD.Model]}`;
+        if (z[piexif.TagValues.ImageIFD.Make]) {
+          m.m = `${z[piexif.TagValues.ImageIFD.Make]}`;
+        }
+        if (z[piexif.TagValues.ImageIFD.Model]) {
+          m.m = `${m.m? (m.m + ', ') : ''}${z[piexif.TagValues.ImageIFD.Model]}`;
+        }
         const o = z[piexif.TagValues.ImageIFD.Orientation] as number;
         if (o) m.o = o;
       }
