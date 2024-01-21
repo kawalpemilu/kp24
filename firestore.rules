@@ -3,8 +3,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function getUserRole() {
-      return get(/databases/$(database)/documents/r/$(request.auth.uid))
-                .data.profile.role;
+      return get(/databases/$(database)/documents/u/$(request.auth.uid))
+                .data.role;
+    }
+
+    // User Profile.
+    match /u/{uid} {
+      // User can see their own profile also >=MODERATOR.
+      allow get: if request.auth.uid == resource.data.uid || getUserRole() >= 1;
+
+      // Moderator can list the users up to 100.
+      allow list: if request.query.limit <= 100 && getUserRole() >= 1;
     }
 
     // Static herarchy for searching.
@@ -36,15 +45,6 @@ service cloud.firestore {
       allow list: if request.query.limit <= 100 && getUserRole() >= 2;
     }
  
-    // Photo Uploads.
-    match /u2/{imageId} {
-      // User can see their own uploaded photos.
-      allow get: if request.auth.uid == resource.data.uploader.uid;
-
-      // Moderator can see the uploaded photos.
-      allow list: if request.query.limit <= 100 && getUserRole() >= 1;
-    }
-
     // TPS change log.
     match /t2/{tpsId} {
       // Only Moderator and above can see the TPS history.

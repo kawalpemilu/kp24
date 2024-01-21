@@ -1,8 +1,7 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
-import { Functions, httpsCallable } from '@angular/fire/functions';
 import { AggregateVotes, Lokasi, LruCache } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -40,8 +39,6 @@ function newLokasiData(id: string): LokasiData {
   styleUrl: './hierarchy.component.css'
 })
 export class HierarchyComponent implements OnInit {
-  private functions: Functions = inject(Functions);
-
   lokasi$!: Observable<LokasiData>;
   lokasiCache = new LruCache<string, LokasiData>(100);
 
@@ -125,8 +122,7 @@ export class HierarchyComponent implements OnInit {
    * and then emit another more fresh LokasiData from the server and cache it.
    */
   getLokasiDataWithVotes(id: string): Observable<LokasiData | null> {
-    const callable = httpsCallable(this.functions, 'hierarchy');
-    return from(callable({ id })).pipe(
+    return from(this.service.getHierarchy(id)).pipe(
       switchMap(async (result) => {
         // Artificial delay to test slow loading.
         // await new Promise((resolve) => setTimeout(resolve, 2000));

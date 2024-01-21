@@ -38,7 +38,14 @@ export function getPrestineLokasi(id: string) {
   return lokasi;
 }
 
-function newAggregateVotes(idLokasi: string, name: string, totalTps: number): AggregateVotes {
+/**
+ * @param {string} idLokasi
+ * @param {string} name
+ * @param {number} totalTps
+ * @return {AggregateVotes}
+ */
+function newAggregateVotes(
+  idLokasi: string, name: string, totalTps: number): AggregateVotes {
   return {
     idLokasi,
     pas1: 0,
@@ -49,8 +56,8 @@ function newAggregateVotes(idLokasi: string, name: string, totalTps: number): Ag
     name,
     totalTps,
     totalCompletedTps: 0,
-    uploadTimeMs: 0
-  } ;
+    uploadTimeMs: 0,
+  };
 }
 
 /**

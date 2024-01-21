@@ -68,7 +68,7 @@ async function processImageId(u: UploadRequest): Promise<AggregateVotes> {
       imageId: u.imageId,
       imageMetadata: u.imageMetadata,
       photoUrl,
-    }
+    },
   };
 }
 

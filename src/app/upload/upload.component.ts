@@ -1,15 +1,13 @@
 import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Auth, signInWithPopup, user } from '@angular/fire/auth';
-import { GoogleAuthProvider } from "firebase/auth";
 import { ref, uploadString } from "firebase/storage";
 import { Storage } from "@angular/fire/storage";
-import { Functions, httpsCallable } from '@angular/fire/functions';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
 import { Halaman, ImageMetadata, UploadRequest } from '../../../functions/src/interfaces';
+import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
 
 /** Returns a random n-character identifier containing [a-zA-Z0-9]. */
@@ -35,13 +33,8 @@ export class UploadComponent implements OnInit {
   @Input() id = '';
   @Output() onUpload = new EventEmitter<string>();
 
-  private functions: Functions = inject(Functions);
   private storage: Storage = inject(Storage);
 
-  auth: Auth = inject(Auth);
-  user$ = user(this.auth);
-
-  provider = new GoogleAuthProvider();
   digitizing = false;
   uploading = false;
   submitting = false;
@@ -55,6 +48,8 @@ export class UploadComponent implements OnInit {
 
   submitPhoto = () => {};
   cancelSubmit = () => {};
+
+  constructor(public service: AppService) {}
 
   async ngOnInit() {
   }
@@ -71,7 +66,7 @@ export class UploadComponent implements OnInit {
       return;
     }
 
-    if (!this.auth.currentUser?.uid) {
+    if (!this.service.auth.currentUser?.uid) {
       alert('Please sign in first');
       return;
     }
@@ -114,9 +109,7 @@ export class UploadComponent implements OnInit {
       request.halaman = this.halaman;
   
       this.submitting = true;
-      console.log('UploadRequest', JSON.stringify(request, null, 2));
-      const callable = httpsCallable(this.functions, 'upload');
-      const result = (await callable(request));
+      const result = await this.service.upload(request);
       console.log('Uploaded', result);
       if (result.data) {
         this.onUpload.emit(result.data as string);
@@ -129,16 +122,9 @@ export class UploadComponent implements OnInit {
     this.submitting = false;
   }
 
-  async login() {
-    console.log('Try logging in');
-    // Sign in with redirect is problematic for Safari browser.
-    const u = await signInWithPopup(this.auth, this.provider);
-    console.log('Logged in user', u);
-  }
-
   async startUploadPhoto(imgURL: string, metadata: ImageMetadata) {
     const imageId = autoId();
-    const filename = `/uploads/${this.id}/${this.auth.currentUser?.uid}/${imageId}`;
+    const filename = `/uploads/${this.id}/${this.service.auth.currentUser?.uid}/${imageId}`;
     console.log('Uploading to', filename, metadata);
 
     this.uploading = true;

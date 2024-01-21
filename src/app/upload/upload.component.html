@@ -1,6 +1,6 @@
 <div style="width: 250px; padding: 30px 0;">
-@if (!auth.currentUser) {
-    <button mat-raised-button color="warn" (click)="login()">
+@if (!service.auth.currentUser) {
+    <button mat-raised-button color="warn" (click)="service.login()">
         Sign In to Upload Photo
     </button>
 } @else if (digitizing) {

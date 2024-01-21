@@ -1,6 +1,41 @@
 // These interfaces are shared between the backend (Firestore Functions) and
 // the frontend (Angular).
 
+export enum USER_ROLE {
+  BANNED = 0,
+  RELAWAN = 1,
+  MODERATOR = 2,
+  ADMIN = 3
+}
+
+export interface UserProfile {
+  uid: string; // Firebase User ID.
+  name: string; // User Full Name.
+  lowerCaseName: string; // For prefix search.
+  email: string; // User email.
+  pic: string; // Link to user's profile picture.
+  createdTs: number; // The timestamp of when the user created the profile.
+  lastLoginTs: number; // The timestamp of last login.
+  role: USER_ROLE;
+  referrerUid?: string; // Must be set for role > RELAWAN.
+
+  uploads: UploadRequest[];
+  uploadCount: number; // Number of uploaded photos.
+  uploadMaxCount: number; // Whitelist this person to go beyond.
+  nTps: number; // Number of different TPS uploaded.
+  nKel: number; // Number of different kelurahans uploaded.
+
+  reviewCount: number; // The number of images reviewed.
+
+  // reports: ProblemRequest[];
+  // reportCount: number; // Number of reported photos.
+  // reportMaxCount: number; // Whitelist this person to go beyond.
+
+  // laporKpus: LaporKpuRequest[];
+  // laporKpuCount: number; // The number of janggal photos lapored ke KPU.
+  // laporKpuMaxCount: number; // The max janggal photos lapored ke KPU.
+}
+
 export declare interface Hierarchy {
   // The id is one of idProvinsi, idKabupaten, idKecamatan, idDesa.
   // The value is the name for the id.
@@ -176,10 +211,20 @@ export function getChildrenIds(id2name: Record<string, string>) {
 export class LruCache<K, V> {
   private readonly map = new Map<K, V>();
 
+  /**
+   * @param {number} maxSize The maximum number of items in this cache.
+   */
   constructor(private readonly maxSize = 10) {}
 
   has = this.map.has.bind(this.map);
 
+  /**
+   * Returns the cached key if exists, optionally specify a provider
+   * function that can generate value for the given key.
+   * @param {K} key cache key.
+   * @param {any} callable function value provider for the given key.
+   * @return {V} the value at the given key.
+   */
   get(key: K, callable?: () => V): V {
     const value = this.map.get(key);
     if (value !== undefined) return this.set(key, value);
@@ -187,6 +232,12 @@ export class LruCache<K, V> {
     return undefined as V;
   }
 
+  /**
+   * Sets the value to the given key to the cache.
+   * @param {K} key the cache key.
+   * @param {V} value the value to be cached for the given key.
+   * @return {V} the cached value.
+   */
   set(key: K, value: V) {
     this.map.delete(key);
     if (this.map.size === this.maxSize) {

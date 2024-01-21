@@ -1,0 +1,28 @@
+@if (service.auth.currentUser; as u) {
+
+<table class="collapsed_border">
+    <tr>
+        <td rowspan="3">
+            <img [src]="u.photoURL" />
+        </td>
+    </tr>
+    <tr>
+        <td>Name:</td>
+        <td>{{ u.displayName }}</td>
+    </tr>
+    <tr>
+        <td>Email:</td>
+        <td>{{ u.email }}</td>
+    </tr>
+</table>
+
+<p>Uploaded Photos:</p>
+<pre>{{ service.profile$ | async | json }}</pre>
+
+} @else {
+
+<button mat-raised-button color="warn" (click)="service.login()">
+    Sign In to view your Profile
+</button>
+
+}

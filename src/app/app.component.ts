@@ -1,14 +1,13 @@
 import { MediaMatcher } from '@angular/cdk/layout';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AppService, StaticHierarchy } from './app.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
-import { Auth, signOut } from '@angular/fire/auth';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { getChildrenIds } from '../../functions/src/interfaces';
 import { map, shareReplay } from 'rxjs';
@@ -32,8 +31,12 @@ import { map, shareReplay } from 'rxjs';
         <mat-sidenav #snav [mode]="isMobile() ? 'over' : 'side'"
                     [fixedInViewport]="isMobile()" fixedTopGap="56">
           <mat-nav-list>
-            @if (auth.currentUser) {
-              <a mat-list-item (click)="logout()">Sign Out</a>
+            <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">Home</a>
+            @if (service.auth.currentUser; as u) {
+              <a mat-list-item (click)="router.navigate(['/u', u.uid]); snav.close()">My Profile</a>
+              <a mat-list-item (click)="service.logout()">Sign Out</a>
+            } @else {
+              <a mat-list-item (click)="service.login()">Sign In</a>
             }
           </mat-nav-list>
         </mat-sidenav>
@@ -74,15 +77,16 @@ import { map, shareReplay } from 'rxjs';
   `
 })
 export class AppComponent {
-  auth: Auth = inject(Auth);
+  constructor(
+    changeDetectorRef: ChangeDetectorRef,
+    media: MediaMatcher,
+    public router: Router,
+    public service: AppService,
+    private http: HttpClient) {
 
-  private _mobileQueryListener: () => void;
-
-  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
-    public service: AppService, private http: HttpClient) {
+    service.changeDetectorRef = changeDetectorRef;
     service.mobileQuery = media.matchMedia('(max-width: 600px)');
-    this._mobileQueryListener = () => changeDetectorRef.detectChanges();
-    service.mobileQuery.addListener(this._mobileQueryListener);
+    service.mobileQuery.addListener(() => changeDetectorRef.detectChanges());
     service.hierarchy$ =
       this.http.get('assets/id2name.json').pipe(
         map((json): StaticHierarchy => {
@@ -95,19 +99,7 @@ export class AppComponent {
       );
   }
 
-  ngOnDestroy(): void {
-    this.service.mobileQuery?.removeListener(this._mobileQueryListener);
-  }
-
   isMobile() {
     return this.service.mobileQuery?.matches;
-  }
-
-  logout() {
-    signOut(this.auth).then(() => {
-      console.log('Sign-out successful');
-    }).catch((error) => {
-      console.error('Signout failed', error);
-    });
   }
 }
