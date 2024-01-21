@@ -76,6 +76,27 @@ export const register = onCall(
     }
   });
 
+export const changeRole = onCall(
+  {cors: true},
+  async (request: CallableRequest<{ uid: string, role: USER_ROLE }>)
+    : Promise<string> => {
+    if (!request.auth?.uid) return "Not logged in";
+
+    const adminRef = firestore.doc(`u/${request.auth.uid}`);
+    const admin = (await adminRef.get()).data() as UserProfile | undefined;
+    if (!admin || admin.role <= USER_ROLE.MODERATOR) return "peasants";
+    if (request.data.role >= admin.role) return "generous";
+
+    const userRef = firestore.doc(`u/${request.data.uid}`);
+    const user = (await userRef.get()).data() as UserProfile | undefined;
+    if (!user || user.role >= admin.role) return "nunjak";
+    if (user.role === request.data.role) return "unchanged";
+
+    user.role = request.data.role;
+    await userRef.set(user);
+    return "bravo";
+  });
+
 /**
  * Returns true if the votes is between [0, 999].
  * @param {number} votes the votes to be checked.
@@ -107,7 +128,8 @@ export const upload = onCall(
     const vs = request.data.votes;
     if (!vs?.length || vs.length > 1) return false;
     let pas1 = 0; let pas2 = 0; let pas3 = 0; let sah = 0; let tidakSah = 0;
-    if (request.data.lembar === LEMBAR.C1_HAL1 || request.data.lembar === LEMBAR.REKAP) {
+    if (request.data.lembar === LEMBAR.C1_HAL1 ||
+       request.data.lembar === LEMBAR.REKAP) {
       pas1 = Number(vs[0].pas1);
       if (!isValidVoteNumbers(pas1)) return false;
 
@@ -117,7 +139,8 @@ export const upload = onCall(
       pas3 = Number(vs[0].pas3);
       if (!isValidVoteNumbers(pas3)) return false;
     }
-    if (request.data.lembar === LEMBAR.C1_HAL2 || request.data.lembar === LEMBAR.REKAP) {
+    if (request.data.lembar === LEMBAR.C1_HAL2 ||
+       request.data.lembar === LEMBAR.REKAP) {
       sah = Number(vs[0].sah);
       if (!isValidVoteNumbers(sah)) return false;
 

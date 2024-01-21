@@ -5,7 +5,8 @@ export enum USER_ROLE {
   BANNED = 0,
   RELAWAN = 1,
   MODERATOR = 2,
-  ADMIN = 3
+  ADMIN = 3,
+  ROOT = 4
 }
 
 export interface UserProfile {

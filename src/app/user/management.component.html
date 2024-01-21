@@ -1,0 +1,48 @@
+@if (service.profile$ | async; as p) {
+@if (p.role === USER_ROLE.ADMIN) {
+<mat-form-field style="width: 225px">
+    <input #nama matInput placeholder="Cari Nama User" type="text" autocomplete="off"
+        (input)="cari$.next(nama.value)" />
+</mat-form-field>
+
+<br>
+Filter Role: 
+<select (change)="changeRoleFilter($event)">
+    <option [value]="-1">ANY_ROLE</option><br>
+    <option [value]="USER_ROLE.BANNED">BANNED</option><br>
+    <option [value]="USER_ROLE.RELAWAN">RELAWAN</option><br>
+    <option [value]="USER_ROLE.MODERATOR">MODERATOR</option><br>
+    <option [value]="USER_ROLE.ADMIN">ADMIN</option>
+    <option [value]="USER_ROLE.ROOT">ROOT</option>
+</select>
+
+<br>
+<br>
+<p>Search Results:</p>
+
+@for (u of users$ | async; track u.uid) {
+    <table class="collapsed_border">
+    <tr>
+        <td rowspan="3"><img [src]="u.pic" /></td>
+        <td>{{ u.name }} ({{ u.email }})</td>
+    </tr>
+    <tr>
+        <td>Created: {{ u.createdTs | date }}; {{ u.uploadCount }} uploads, {{ u.reviewCount }} reviews</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <mat-radio-group [value]="u.role" (change)="changeRole(u, $event.value)">
+                <mat-radio-button [value]="USER_ROLE.BANNED">BANNED</mat-radio-button><br>
+                <mat-radio-button [value]="USER_ROLE.RELAWAN">RELAWAN</mat-radio-button><br>
+                <mat-radio-button [value]="USER_ROLE.MODERATOR">MODERATOR</mat-radio-button><br>
+                <mat-radio-button [value]="USER_ROLE.ADMIN">ADMIN</mat-radio-button><br>
+                <mat-radio-button [value]="USER_ROLE.ROOT">ROOT</mat-radio-button>
+            </mat-radio-group>
+        </td>
+    </tr>
+    </table>
+    <br>
+}
+
+}
+}

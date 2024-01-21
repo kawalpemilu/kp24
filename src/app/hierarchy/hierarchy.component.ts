@@ -53,10 +53,15 @@ export class HierarchyComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.lokasi$ = this.route.paramMap.pipe(
-      switchMap(params => {
+    const id$ = this.route.paramMap.pipe(
+      map(params => {
         let id = params.get('id') || '';
         if (!(/^\d{0,13}$/.test(id))) id = '';
+        return id;
+      }));
+
+    this.lokasi$ = combineLatest([id$, this.lokasiWithVotesTrigger$]).pipe(
+      switchMap(([id]) => {
         // Creates two observables from the given location id.
         // The first observable is fetching from static hierarchy,
         // this observable can emit value very fast because it constructs
@@ -65,9 +70,7 @@ export class HierarchyComponent implements OnInit {
         // The second observable is fetching from Firebase function,
         // which is slow (may take a few seconds depending on the network latency).
         // The result of this second observable will replace the first observable.
-        const lokasi2$ = this.lokasiWithVotesTrigger$.pipe(
-          switchMap(() => this.getLokasiDataWithVotes(id))
-        );
+        const lokasi2$ = this.getLokasiDataWithVotes(id);
         // Both observable have initial value of null so that
         // the combineLatest kicks in immediately.
         return combineLatest([

@@ -1,28 +1,20 @@
-@if (service.auth.currentUser; as u) {
-
+@if (profile$ | async; as p) {
 <table class="collapsed_border">
     <tr>
         <td rowspan="3">
-            <img [src]="u.photoURL" />
+            <img [src]="p.pic" />
         </td>
     </tr>
     <tr>
         <td>Name:</td>
-        <td>{{ u.displayName }}</td>
+        <td>{{ p.name }}</td>
     </tr>
     <tr>
         <td>Email:</td>
-        <td>{{ u.email }}</td>
+        <td>{{ p.email }}</td>
     </tr>
 </table>
 
 <p>Uploaded Photos:</p>
-<pre>{{ service.profile$ | async | json }}</pre>
-
-} @else {
-
-<button mat-raised-button color="warn" (click)="service.login()">
-    Sign In to view your Profile
-</button>
-
+<pre>{{ p | json }}</pre>
 }

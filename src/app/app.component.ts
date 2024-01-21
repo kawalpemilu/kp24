@@ -9,7 +9,7 @@ import { AppService, StaticHierarchy } from './app.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { getChildrenIds } from '../../functions/src/interfaces';
+import { USER_ROLE, getChildrenIds } from '../../functions/src/interfaces';
 import { map, shareReplay } from 'rxjs';
 
 @Component({
@@ -33,7 +33,13 @@ import { map, shareReplay } from 'rxjs';
           <mat-nav-list>
             <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">Home</a>
             @if (service.auth.currentUser; as u) {
-              <a mat-list-item (click)="router.navigate(['/u', u.uid]); snav.close()">My Profile</a>
+              <a mat-list-item (click)="router.navigate(['/u']); snav.close()">My Profile</a>
+              @if (service.profile$ | async; as p) {
+                @if (p.role === USER_ROLE.ADMIN) {
+                  <a mat-list-item (click)="router.navigate(['/m']); snav.close()">User Management</a>
+                }
+              }
+              <hr>
               <a mat-list-item (click)="service.logout()">Sign Out</a>
             } @else {
               <a mat-list-item (click)="service.login()">Sign In</a>
@@ -77,6 +83,8 @@ import { map, shareReplay } from 'rxjs';
   `
 })
 export class AppComponent {
+  USER_ROLE = USER_ROLE;
+
   constructor(
     changeDetectorRef: ChangeDetectorRef,
     media: MediaMatcher,
@@ -84,7 +92,6 @@ export class AppComponent {
     public service: AppService,
     private http: HttpClient) {
 
-    service.changeDetectorRef = changeDetectorRef;
     service.mobileQuery = media.matchMedia('(max-width: 600px)');
     service.mobileQuery.addListener(() => changeDetectorRef.detectChanges());
     service.hierarchy$ =
