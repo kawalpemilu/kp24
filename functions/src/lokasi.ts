@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import {APPROVAL_STATUS, AggregateVotes,
+import {AggregateVotes,
   Hierarchy, Lokasi, getChildrenIds} from "./interfaces";
 
 /**
@@ -52,15 +52,12 @@ function newAggregateVotes(
     pas1: 0,
     pas2: 0,
     pas3: 0,
-    sah: 0,
-    tidakSah: 0,
     name,
     totalTps,
     totalCompletedTps: 0,
     totalPendingTps: 0,
     totalErrorTps: 0,
     createdTs: 0,
-    status: APPROVAL_STATUS.NEW,
   };
 }
 

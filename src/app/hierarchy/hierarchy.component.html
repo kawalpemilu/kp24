@@ -21,23 +21,34 @@
                 Pas1: <b>{{ a.pas1 }}</b><br>
                 Pas2: <b>{{ a.pas2 }}</b><br>
                 Pas3: <b>{{ a.pas3 }}</b><br>
-                Sah: <b>{{ a.sah }}</b><br>
-                ~Sah: <b>{{ a.tidakSah }}</b><br>
                 <br>
+                <button *ngIf="a.totalPendingTps"
+                    (click)="isUploadDrawer[lokasi.id + c[0]] = false; drawer.toggle()"
+                    mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
             </td>
             <td width="*" align="center">
                 <mat-drawer-container [hasBackdrop]="true">
                     <mat-drawer #drawer mode="over">
-                        <app-upload [id]="lokasi.id + c[0]"
-                            (onUpload)="onUpload(lokasi.id); drawer.close()">
-                        </app-upload>
+                    @defer (on viewport) {
+                        @if (isUploadDrawer[lokasi.id + c[0]]) {
+                            <app-upload [id]="lokasi.id + c[0]"
+                                (onUpload)="reloadLokasi(); drawer.close()">
+                            </app-upload>
+                        } @else {
+                            <app-review [id]="lokasi.id + c[0]"
+                                (onReview)="reloadLokasi(); drawer.close()">
+                            </app-review>
+                        }
+                    } @placeholder { 
+                        <br>
+                    }
                     </mat-drawer>
                     <mat-drawer-content>
                         <div style="min-width: 300px; width: 100%; overflow-x: scroll">
                         <table height="250">
                         <tr>
                             <td>
-                                <div (click)="drawer.toggle()"
+                                <div (click)="isUploadDrawer[lokasi.id + c[0]] = true; drawer.toggle()"
                                      style="width: 100px; text-align: center; cursor: pointer;">
                                     <button mat-fab color="primary">
                                         <mat-icon>add_a_photo</mat-icon>
@@ -50,21 +61,7 @@
                 @if (c[1].length > 1) {
                     @for (tps of c[1].slice(1); track tps.uploadedPhoto?.imageId) {
                     <td valign="top">
-                        <a [href]="tps.uploadedPhoto?.photoUrl + '=s1280'" target="_blank">
-                            <img [src]="tps.uploadedPhoto?.photoUrl + '=s200'" /><br>
-                        </a>
-                        Halaman: {{ tps.uploadedPhoto?.lembar }}<br>
-                        @if (tps.uploadedPhoto?.lembar === LEMBAR.C1_HAL1) {
-                            Pas1: {{ tps.pas1 }}<br>
-                            Pas2: {{ tps.pas2 }}<br>
-                            Pas3: {{ tps.pas3 }}<br>
-                        } @else if (tps.uploadedPhoto?.lembar === LEMBAR.C1_HAL2) {
-                            Sah: {{ tps.sah }}<br>
-                            ~Sah: {{ tps.tidakSah }}<br>
-                        }
-                        @if (tps.uploadedPhoto?.imageMetadata; as m) {
-                            <pre style="text-align: left;">{{ m | json }}</pre>
-                        }
+                        <app-photo [aggregatedVotes]="tps"></app-photo>
                     </td>
                     }
                 }
@@ -85,8 +82,6 @@
             <th class="paslon">Pas1</th>
             <th class="paslon">Pas2</th>
             <th class="paslon">Pas3</th>
-            <th class="sah">Sah</th>
-            <th class="sah">~Sah</th>
             <th class="cov">COV</th>
         </tr>
         @for (c of lokasi.children; track c[0];) {
@@ -99,8 +94,6 @@
                 <td>{{ a.pas1 }}</td>
                 <td>{{ a.pas2 }}</td>
                 <td>{{ a.pas3 }}</td>
-                <td class="sah">{{ a.sah }}</td>
-                <td class="sah">{{ a.tidakSah }}</td>
             } @else {
                 <td colspan="3">
                     &lt;- Click to upload photo.
@@ -119,8 +112,6 @@
             <th class="paslon">{{ lokasi.total.pas1 }}</th>
             <th class="paslon">{{ lokasi.total.pas2 }}</th>
             <th class="paslon">{{ lokasi.total.pas3 }}</th>
-            <th class="sah">{{ lokasi.total.sah }}</th>
-            <th class="sah">{{ lokasi.total.tidakSah }}</th>
             <th class="cov">
                 {{ 100.0 * (lokasi.total.totalCompletedTps || 0) / lokasi.total.totalTps | number: '1.2-2' }}%<br>
                 <span style="font-size: xx-small">

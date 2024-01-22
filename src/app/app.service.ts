@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, from, map, of, shareReplay, switchMap } from 'rxjs';
 import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
-import { Firestore, collection, doc, docSnapshots, getDocs, limit, query, where } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, collectionSnapshots, doc, docSnapshots, getDocs, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
-import { USER_ROLE, UploadRequest, UserProfile } from '../../functions/src/interfaces';
+import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, UploadRequest, UserProfile, Votes } from '../../functions/src/interfaces';
 
 export declare interface StaticHierarchy {
   id2name: Record<string, string>;
@@ -45,12 +45,28 @@ export class AppService {
     const uRef = doc(this.firestore, `/u/${uid}`);
     return docSnapshots(uRef).pipe(map(snapshot => {
       const u = snapshot.data() as UserProfile;
-      console.log('Got UserProfile', u);
+      console.log(`UserProfile: ${u.name} (${u.email})`);
       return u;
-    }),);
+    }));
   }
 
-  async searchUsers(prefix: string, filterRole: number): Promise<UserProfile[]> {
+  getNextPendingPhoto$(tpsId: string): Observable<UploadRequest> {
+    const tRef = collection(this.firestore, `/t/${tpsId}/p`);
+    const qRef = query(tRef, where('status', '==', APPROVAL_STATUS.NEW), limit(1));
+    return collectionSnapshots(qRef).pipe(switchMap(snapshots => {
+      if (!snapshots.length) return of();
+      const pending = snapshots[0].data() as UploadRequest;
+      console.log('Pending review', pending);
+      return of(pending);
+    }));
+  }
+
+  review(tpsId: string, imageId: string, votes: Votes) {
+    const callable = httpsCallable(this.functions, 'review');
+    return callable({ tpsId, imageId, votes });
+  }
+
+  searchUsers$(prefix: string, filterRole: number): Observable<UserProfile[]> {
     console.log('Search', prefix, filterRole);
 
     const uRef = collection(this.firestore, `/u`);
@@ -61,8 +77,7 @@ export class AppService {
       where('lowerCaseName', '<=', prefix.toLowerCase() + '{'),
       limit(5));
     const qRef = query(uRef, ...constraints);
-    const results = await getDocs(qRef);
-    return results.docs.map(doc => doc.data() as UserProfile);
+    return collectionSnapshots(qRef).pipe(map(ss => ss.map(s => s.data() as UserProfile)));
   }
 
   async changeRole(p: UserProfile, role: USER_ROLE) {

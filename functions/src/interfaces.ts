@@ -1,6 +1,8 @@
 // These interfaces are shared between the backend (Firestore Functions) and
 // the frontend (Angular).
 
+export const DEFAULT_MAX_UPLOADS = 10;
+
 export enum USER_ROLE {
   BANNED = 0,
   RELAWAN = 1,
@@ -20,7 +22,8 @@ export interface UserProfile {
   role: USER_ROLE;
   referrerUid?: string; // Must be set for role > RELAWAN.
 
-  uploads: UploadRequest[];
+  // uploads[tpsId][imageId] = UploadRequest.
+  uploads: Record<string, Record<string, UploadRequest>>;
   uploadCount: number; // Number of uploaded photos.
   uploadMaxCount: number; // Whitelist this person to go beyond.
   nTps: number; // Number of different TPS uploaded.
@@ -49,13 +52,6 @@ export declare interface Hierarchy {
   tps: { [id: string]: number[] };
 }
 
-// Lembaran yang difoto.
-export enum LEMBAR {
-  C1_HAL1 = 1, // Berisi suara paslon 1, 2, dan 3.
-  C1_HAL2 = 2, // Berisi suara sah dan tidak sah.
-  REKAP = 3, // Berisi semua suara paslon 1, 2, 3, sah, tidakSah.
-}
-
 export enum APPROVAL_STATUS {
   NEW = 0,
   APPROVED = 1,
@@ -68,18 +64,13 @@ export declare interface Votes {
   pas2: number;
   pas3: number;
 
-  // Total valid votes.
-  sah: number;
-
-  // Total invalid votes.
-  tidakSah: number;
-
   // The timestamp when the votes were entered.
   createdTs: number;
 
   // NEW means the uid is the uploader.
   // APPROVED/REJECTED means the uid is the moderator who approved.
-  status: APPROVAL_STATUS;
+  // The status is unset for AggregateVotes.
+  status?: APPROVAL_STATUS;
 
   // The user id who entered/approved the votes.
   // The uid is unset for level Desa and above.
@@ -107,22 +98,19 @@ export declare interface AggregateVotes extends Votes {
 
   // Only available at Desa level.
   uploadedPhoto?: UploadedPhoto;
+
+  // List of uid-imageIds to be reviewed.
+  // Only available at Desa level.
+  pendingUploads?: Record<string, true>;
 }
 
 export declare interface UploadedPhoto {
-  // Which page is the photo for.
-  lembar: LEMBAR;
-
   // The blobId of the image file.
   imageId: string;
 
   // The serving url of the imageId.
   // Only available at Desa level.
   photoUrl: string;
-
-  // Additional info about the image if available.
-  // Only available at Desa level.
-  imageMetadata: ImageMetadata;
 }
 
 // Lokasi detail for Provinsi, Kabupaten, and Kecamatan level.
@@ -169,8 +157,8 @@ export declare interface UploadRequest {
   // Additional info about the image if available.
   imageMetadata: ImageMetadata;
 
-  // Lembaran yang diupload.
-  lembar: LEMBAR;
+  // The seving URL for the imageId.
+  servingUrl: string;
 
   // The digitized votes from newest to oldest.
   votes: Votes[];

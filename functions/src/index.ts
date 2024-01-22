@@ -1,13 +1,14 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {
   APPROVAL_STATUS,
-  AggregateVotes, ImageMetadata, LEMBAR, Lokasi, TpsData,
-  USER_ROLE, UploadRequest, UserProfile,
+  AggregateVotes, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi, TpsData,
+  USER_ROLE, UploadRequest, UserProfile, Votes,
 } from "./interfaces";
 import {getPrestineLokasi} from "./lokasi";
 import {uploadHandler} from "./upload_handler";
 
 import * as admin from "firebase-admin";
+import {getServingUrl} from "./serving_url";
 admin.initializeApp();
 const firestore = admin.firestore();
 
@@ -60,9 +61,9 @@ export const register = onCall(
       createdTs: request.auth.token.iat * 1000,
       lastLoginTs: Date.now(),
       role: USER_ROLE.RELAWAN,
-      uploads: [],
+      uploads: {},
       uploadCount: 0,
-      uploadMaxCount: 10,
+      uploadMaxCount: DEFAULT_MAX_UPLOADS,
       nTps: 0,
       nKel: 0,
       reviewCount: 0,
@@ -97,6 +98,42 @@ export const changeRole = onCall(
     return "bravo";
   });
 
+export const review = onCall(
+  {cors: true},
+  async (request: CallableRequest<{
+       tpsId: string, imageId: string, votes: Votes }>)
+      : Promise<boolean> => {
+    if (!request.auth?.uid) return false;
+
+    const v = request.data.votes;
+    const pas1 = Number(v.pas1);
+    if (!isValidVoteNumbers(pas1)) return false;
+
+    const pas2 = Number(v.pas2);
+    if (!isValidVoteNumbers(pas2)) return false;
+
+    const pas3 = Number(v.pas3);
+    if (!isValidVoteNumbers(pas3)) return false;
+
+    const status = v.status;
+    if (!status) return false;
+    if (status !== APPROVAL_STATUS.APPROVED &&
+         status !== APPROVAL_STATUS.REJECTED) return false;
+    const sanitized: UploadRequest = {
+      idLokasi: request.data.tpsId,
+      imageId: request.data.imageId,
+      imageMetadata: {} as ImageMetadata, servingUrl: "",
+      votes: [{
+        uid: request.auth.uid,
+        pas1, pas2, pas3,
+        createdTs: Date.now(),
+        status,
+      }],
+      status,
+    };
+    return uploadHandler(firestore, sanitized);
+  });
+
 /**
  * Returns true if the votes is between [0, 999].
  * @param {number} votes the votes to be checked.
@@ -110,7 +147,7 @@ function isValidVoteNumbers(votes: number) {
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
 export const upload = onCall(
   {cors: true},
-  (request: CallableRequest<UploadRequest>) => {
+  async (request: CallableRequest<UploadRequest>) => {
     if (!request.auth?.uid) return false;
 
     const idLokasi = request.data.idLokasi;
@@ -119,34 +156,16 @@ export const upload = onCall(
     const imageId = request.data.imageId;
     if (!(/^[A-Za-z0-9]{20}$/.test(imageId))) return false;
 
-    if (request.data.lembar !== LEMBAR.C1_HAL1 &&
-      request.data.lembar !== LEMBAR.C1_HAL2 &&
-      request.data.lembar !== LEMBAR.REKAP) {
-      return false;
-    }
-
     const vs = request.data.votes;
     if (!vs?.length || vs.length > 1) return false;
-    let pas1 = 0; let pas2 = 0; let pas3 = 0; let sah = 0; let tidakSah = 0;
-    if (request.data.lembar === LEMBAR.C1_HAL1 ||
-       request.data.lembar === LEMBAR.REKAP) {
-      pas1 = Number(vs[0].pas1);
-      if (!isValidVoteNumbers(pas1)) return false;
+    const pas1 = Number(vs[0].pas1);
+    if (!isValidVoteNumbers(pas1)) return false;
 
-      pas2 = Number(vs[0].pas2);
-      if (!isValidVoteNumbers(pas2)) return false;
+    const pas2 = Number(vs[0].pas2);
+    if (!isValidVoteNumbers(pas2)) return false;
 
-      pas3 = Number(vs[0].pas3);
-      if (!isValidVoteNumbers(pas3)) return false;
-    }
-    if (request.data.lembar === LEMBAR.C1_HAL2 ||
-       request.data.lembar === LEMBAR.REKAP) {
-      sah = Number(vs[0].sah);
-      if (!isValidVoteNumbers(sah)) return false;
-
-      tidakSah = Number(vs[0].tidakSah);
-      if (!isValidVoteNumbers(tidakSah)) return false;
-    }
+    const pas3 = Number(vs[0].pas3);
+    if (!isValidVoteNumbers(pas3)) return false;
 
     const m = request.data.imageMetadata;
     const imageMetadata: ImageMetadata = {l: Number(m.l), s: Number(m.s)};
@@ -156,16 +175,19 @@ export const upload = onCall(
     if (m.y) imageMetadata.y = Number(m.y);
     if (m.x) imageMetadata.x = Number(m.x);
 
+    // Use the default image for local testing.
+    const servingUrl = (process.env.FUNCTIONS_EMULATOR === "true") ?
+      "https://kp24.web.app/assets/kp.png" :
+      await getServingUrl(`uploads/${idLokasi}/${request.auth.uid}/${imageId}`);
+
     const sanitized: UploadRequest = {
-      idLokasi, imageId,
-      lembar: request.data.lembar,
+      idLokasi, imageId, imageMetadata, servingUrl,
       votes: [{
-        uid: request.auth?.uid,
-        pas1, pas2, pas3, sah, tidakSah,
+        uid: request.auth.uid,
+        pas1, pas2, pas3,
         createdTs: Date.now(),
         status: APPROVAL_STATUS.NEW,
       }],
-      imageMetadata,
       status: APPROVAL_STATUS.NEW,
     };
     return uploadHandler(firestore, sanitized);

@@ -2,13 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
-import { AggregateVotes, LEMBAR, Lokasi, LruCache } from '../../../functions/src/interfaces';
+import { AggregateVotes, Lokasi, LruCache } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { AppService } from '../app.service';
 import { UploadComponent } from '../upload/upload.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
+import { ReviewComponent } from '../photo/review.component';
+import { PhotoComponent } from '../photo/photo.component';
 
 const idLengths = [2, 4, 6, 10];
 const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
@@ -34,7 +36,7 @@ function newLokasiData(id: string): LokasiData {
   selector: 'app-hierarchy',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule, UploadComponent,
-    MatSidenavModule, MatIconModule],
+    MatSidenavModule, MatIconModule, ReviewComponent, PhotoComponent],
   templateUrl: './hierarchy.component.html',
   styleUrl: './hierarchy.component.css'
 })
@@ -45,7 +47,8 @@ export class HierarchyComponent implements OnInit {
   // Used for trigger the refetching the LokasiData.
   lokasiWithVotesTrigger$ = new BehaviorSubject(null);
 
-  LEMBAR = LEMBAR;
+  // Whether to open the upload or review component when the drawer is open.
+  isUploadDrawer: Record<string, boolean> = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -115,7 +118,7 @@ export class HierarchyComponent implements OnInit {
             } as AggregateVotes]]);
           }
         }
-        console.log('id', lokasi);
+        console.log('id prestine', lokasi.id);
         return lokasi;
       }
     ));
@@ -148,15 +151,13 @@ export class HierarchyComponent implements OnInit {
           return aName.localeCompare(bName);
         });
         lokasi.total = {
-          pas1: 0, pas2: 0, pas3: 0, sah: 0, tidakSah: 0,
+          pas1: 0, pas2: 0, pas3: 0,
           totalCompletedTps: 0, totalTps: 0
         } as AggregateVotes;
         for (const [_, [c]] of lokasi.children) {
           lokasi.total.pas1 += c.pas1 ?? 0;
           lokasi.total.pas2 += c.pas2 ?? 0;
           lokasi.total.pas3 += c.pas3 ?? 0;
-          lokasi.total.sah += c.sah ?? 0;
-          lokasi.total.tidakSah += c.tidakSah ?? 0;
           lokasi.total.totalCompletedTps += c.totalCompletedTps ?? 0;
           lokasi.total.totalTps += c.totalTps ?? 0;
         }
@@ -169,7 +170,11 @@ export class HierarchyComponent implements OnInit {
     );
   }
 
-  onUpload(id: string) {
+  reloadLokasi() {
     this.lokasiWithVotesTrigger$.next(null);
+  }
+
+  numPendingUploads(a : AggregateVotes) {
+    return Object.keys(a.pendingUploads || {}).length;
   }
 }

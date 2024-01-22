@@ -35,7 +35,7 @@ import { map, shareReplay } from 'rxjs';
             @if (service.auth.currentUser; as u) {
               <a mat-list-item (click)="router.navigate(['/u']); snav.close()">My Profile</a>
               @if (service.profile$ | async; as p) {
-                @if (p.role === USER_ROLE.ADMIN) {
+                @if (p.role >= USER_ROLE.ADMIN) {
                   <a mat-list-item (click)="router.navigate(['/m']); snav.close()">User Management</a>
                 }
               }

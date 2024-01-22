@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, LEMBAR, ImageMetadata, UploadRequest, Votes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, ImageMetadata, UploadRequest, Votes } from '../../../functions/src/interfaces';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
 
@@ -35,13 +35,10 @@ export class UploadComponent implements OnInit {
 
   private storage: Storage = inject(Storage);
 
-  LEMBAR = LEMBAR;
-
   digitizing = false;
   uploading = false;
   submitting = false;
 
-  lembar = LEMBAR.C1_HAL1;
   pas1 = 0;
   pas2 = 0;
   pas3 = 0;
@@ -109,9 +106,9 @@ export class UploadComponent implements OnInit {
         idLokasi: this.id,
         imageId: await imageId,
         imageMetadata: metadata,
-        lembar: this.lembar,
+        servingUrl: '', // Will be populated by the server.
         votes: [votes],
-        status: APPROVAL_STATUS.NEW
+        status: APPROVAL_STATUS.NEW,
       };
   
       this.submitting = true;
@@ -145,26 +142,11 @@ export class UploadComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.submitPhoto = () => {
         this.digitizing = false;
-        if (this.lembar === LEMBAR.C1_HAL1) {
-          resolve({
-            pas1: this.pas1,
-            pas2: this.pas2,
-            pas3: this.pas3,
-          } as Votes);
-        } else if (this.lembar === LEMBAR.C1_HAL2) {
-          resolve({
-            sah: this.sah,
-            tidakSah: this.tidakSah,
-          } as Votes);
-        } else if (this.lembar === LEMBAR.REKAP) {
-          resolve({
-            pas1: this.pas1,
-            pas2: this.pas2,
-            pas3: this.pas3,
-            sah: this.sah,
-            tidakSah: this.tidakSah,
-          } as Votes);
-        }
+        resolve({
+          pas1: this.pas1,
+          pas2: this.pas2,
+          pas3: this.pas3,
+        } as Votes);
       };
       this.cancelSubmit = () => {
         this.uploading = false;

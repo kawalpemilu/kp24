@@ -8,7 +8,6 @@
         Masukkan jumlah suara:
     </p>
     <table class="collapsed_border">
-    @if (lembar === LEMBAR.C1_HAL1) {
         <tr>
             <td>Paslon #1</td>
             <td><input type="number" style="width: 50px;" [(ngModel)]="pas1"></td>
@@ -21,16 +20,6 @@
             <td>Paslon #3</td>
             <td><input type="number" style="width: 50px;" [(ngModel)]="pas3"></td>
         </tr>
-    } @else {
-        <tr>
-            <td>Sah</td>
-            <td><input type="number" style="width: 50px;" [(ngModel)]="sah"></td>
-        </tr>
-        <tr>
-            <td>Tidak Sah</td>
-            <td><input type="number" style="width: 50px;" [(ngModel)]="tidakSah"></td>
-        </tr>
-    }
         <tr>
             <td colspan="2">
                 <button mat-raised-button color="primary" (click)="submitPhoto()">
@@ -52,21 +41,15 @@
     }
     <mat-spinner></mat-spinner>
 } @else {
-    <h3>Upload foto untuk suara:</h3>
+    <h3>Upload foto hasil suara:</h3>
+
+    <p>TODO: tambahin instruksi</p>
 
     <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
 
     <br>
-    <p>
-        <button mat-raised-button color="primary" (click)="lembar = LEMBAR.C1_HAL1; u.click()">
-            Hasil Paslon
-        </button>
-    </p>
-    <br>
-    <p>
-        <button mat-raised-button color="primary" (click)="lembar = LEMBAR.C1_HAL2; u.click()">
-            Sah / Tidak Sah
-        </button>
-    </p>
+    <button mat-raised-button color="primary" (click)="u.click()">
+        Upload Foto
+    </button>
 }
 </div>
