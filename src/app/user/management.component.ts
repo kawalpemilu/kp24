@@ -28,7 +28,7 @@ export class UserManagementComponent implements OnInit {
     ngOnInit() {
         const prefix$ = this.cari$.pipe(debounceTime(500), distinctUntilChanged());
         this.users$ = combineLatest([prefix$, this.filterRole$]).pipe(
-            switchMap(([prefix, filterRole]) => this.service.searchUsers(prefix, filterRole)),
+            switchMap(([prefix, filterRole]) => this.service.searchUsers$(prefix, filterRole)),
             shareReplay(1)
         );
     }

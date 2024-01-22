@@ -1,5 +1,5 @@
 @if (service.profile$ | async; as p) {
-@if (p.role === USER_ROLE.ADMIN) {
+@if (p.role >= USER_ROLE.ADMIN) {
 <mat-form-field style="width: 225px">
     <input #nama matInput placeholder="Cari Nama User" type="text" autocomplete="off"
         (input)="cari$.next(nama.value)" />
