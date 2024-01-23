@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, from, map, of, shareReplay, switchMap } from 'rxjs';
 import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
-import { Firestore, collection, collectionData, collectionSnapshots, doc, docSnapshots, getDocs, limit, query, where } from '@angular/fire/firestore';
+import { Firestore, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
-import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, UploadRequest, UserProfile, Votes } from '../../functions/src/interfaces';
+import { APPROVAL_STATUS, Lokasi, USER_ROLE, UploadRequest, UserProfile, Votes } from '../../functions/src/interfaces';
 
 export declare interface StaticHierarchy {
   id2name: Record<string, string>;
@@ -23,10 +23,11 @@ export class AppService {
   public mobileQuery?: MediaQueryList;
   public hierarchy$?: Observable<StaticHierarchy>;
 
-  profile$: Observable<UserProfile> = user(this.auth).pipe(
-    switchMap(user => {
-      if (!user) return of();
-      return this.getUserProfile$(user.uid).pipe(
+  user$ = user(this.auth).pipe(shareReplay(1));
+
+  profile$: Observable<UserProfile> = this.user$.pipe(
+    switchMap(user => !user ? of() :
+      this.getUserProfile$(user.uid).pipe(
         catchError(() => {
           console.error('User not registered', user.uid);
           return from(this.register()).pipe(
@@ -36,12 +37,12 @@ export class AppService {
             })
           );
         })
-      );
-
-    }),
+      )
+    ),
     shareReplay(1));
 
   getUserProfile$(uid: string): Observable<UserProfile> {
+    console.log('Firestore UserProfile', uid);
     const uRef = doc(this.firestore, `/u/${uid}`);
     return docSnapshots(uRef).pipe(map(snapshot => {
       const u = snapshot.data() as UserProfile;
@@ -50,7 +51,18 @@ export class AppService {
     }));
   }
 
+  getLokasiDataFromFirestore$(id: string): Observable<Lokasi> {
+    console.log('Firestore Lokasi', id);
+    const hRef = doc(this.firestore, `/h/i${id}`);
+    return docSnapshots(hRef).pipe(
+      switchMap(snapshot => {
+        const h = snapshot.data() as Lokasi;
+        return h ? of(h) : of();
+      }), shareReplay(1));
+  }
+
   getNextPendingPhoto$(tpsId: string): Observable<UploadRequest> {
+    console.log('Firestore PendingPhotos', tpsId);
     const tRef = collection(this.firestore, `/t/${tpsId}/p`);
     const qRef = query(tRef, where('status', '==', APPROVAL_STATUS.NEW), limit(1));
     return collectionSnapshots(qRef).pipe(switchMap(snapshots => {
@@ -62,13 +74,13 @@ export class AppService {
   }
 
   review(tpsId: string, imageId: string, votes: Votes) {
+    console.log('RPC review', tpsId, imageId, votes);
     const callable = httpsCallable(this.functions, 'review');
     return callable({ tpsId, imageId, votes });
   }
 
   searchUsers$(prefix: string, filterRole: number): Observable<UserProfile[]> {
-    console.log('Search', prefix, filterRole);
-
+    console.log('Firestore Search', prefix, filterRole);
     const uRef = collection(this.firestore, `/u`);
     const constraints = [];
     if (filterRole >= 0) constraints.push(where('role', '==', filterRole));
@@ -81,23 +93,25 @@ export class AppService {
   }
 
   async changeRole(p: UserProfile, role: USER_ROLE) {
-    console.log('Change Role', p.uid, p.role, role);
+    console.log('RPC changRole', p.uid, p.role, role);
     const callable = httpsCallable(this.functions, 'changeRole');
     return callable({ uid: p.uid, role });
   }
 
   async register() {
+    console.log('RPC register');
     const callable = httpsCallable(this.functions, 'register');
     return callable();
   }
 
   getHierarchy(id: string) {
+    console.log('RPC hierarchy: ', id);
     const callable = httpsCallable(this.functions, 'hierarchy');
     return callable({ id })
   }
 
   upload(request: UploadRequest) {
-    console.log('UploadRequest', JSON.stringify(request, null, 2));
+    console.log('RPC upload:', JSON.stringify(request, null, 2));
     const callable = httpsCallable(this.functions, 'upload');
     return callable(request);
   }

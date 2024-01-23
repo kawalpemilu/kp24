@@ -124,57 +124,74 @@ export class HierarchyComponent implements OnInit {
     ));
   }
 
+  getLokasiDataFromFirestore$(id: string): Observable<LokasiData> {
+    return this.service.getLokasiDataFromFirestore$(id)
+      .pipe(map(this.toLokasiData.bind(this)));
+  }
+
+  getLokasiDataFromRpc$(id: string): Observable<LokasiData> {
+    return from(this.service.getHierarchy(id))
+      .pipe(map(result => this.toLokasiData(result.data as Lokasi)));
+  }
+
   /**
    * @param id the lokasi id.
-   * @returns {Observable<LokasiData | null>} the cached LokasiData if exists,
+   * @returns {Observable<LokasiData>} the cached LokasiData if exists,
    * and then emit another more fresh LokasiData from the server and cache it.
    */
-  getLokasiDataWithVotes(id: string): Observable<LokasiData | null> {
-    return from(this.service.getHierarchy(id)).pipe(
-      switchMap(async (result) => {
+  getLokasiDataWithVotes(id: string): Observable<LokasiData> {
+    return this.service.user$.pipe(
+      switchMap(user =>
+        (user && id.length < 10)
+          // TODO: only >=MODERATOR.
+          ? this.getLokasiDataFromFirestore$(id)
+          : this.getLokasiDataFromRpc$(id)),
+      switchMap(async (lokasi) => {
         // Artificial delay to test slow loading.
         // await new Promise((resolve) => setTimeout(resolve, 2000));
-        const lokasiWithVotes = result.data as Lokasi;
-        console.log('lokasi with votes', lokasiWithVotes);
-
-        const lokasi = newLokasiData(id);
-        lokasi.parents = [['', 'IDN']];
-        for (let i = 0; i < lokasiWithVotes.names.length; i++) {
-          lokasi.parents.push([
-            lokasi.id.substring(0, idLengths[i]), lokasiWithVotes.names[i]]);
-        }
-        lokasi.level = levelNames[lokasi.parents.length];
-        lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated);
-        lokasi.children.sort((a, b) => {
-          const aName = a[1][0].name, bName = b[1][0].name;
-          if (lokasi.id.length === 10) return +aName - +bName;
-          return aName.localeCompare(bName);
-        });
-        lokasi.total = {
-          pas1: 0, pas2: 0, pas3: 0,
-          totalCompletedTps: 0, totalTps: 0
-        } as AggregateVotes;
-        for (const [_, [c]] of lokasi.children) {
-          lokasi.total.pas1 += c.pas1 ?? 0;
-          lokasi.total.pas2 += c.pas2 ?? 0;
-          lokasi.total.pas3 += c.pas3 ?? 0;
-          lokasi.total.totalCompletedTps += c.totalCompletedTps ?? 0;
-          lokasi.total.totalTps += c.totalTps ?? 0;
-        }
         // Sets the newly fetch lokasi with votes to cache and emit it.
         this.lokasiCache.set(id, lokasi);
         return lokasi;
       }),
       // Starts with the cached lokasi if exists.
       startWith(this.lokasiCache.get(id)),
+      switchMap(lokasi => lokasi ? of(lokasi) : of())
     );
+  }
+
+  toLokasiData(lokasiWithVotes: Lokasi) {
+    const lokasi = newLokasiData(lokasiWithVotes.id);
+    lokasi.parents = [['', 'IDN']];
+    for (let i = 0; i < lokasiWithVotes.names.length; i++) {
+      lokasi.parents.push([
+        lokasi.id.substring(0, idLengths[i]), lokasiWithVotes.names[i]]);
+    }
+    lokasi.level = levelNames[lokasi.parents.length];
+    lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated);
+    lokasi.children.sort((a, b) => {
+      const aName = a[1][0].name, bName = b[1][0].name;
+      if (lokasi.id.length === 10) return +aName - +bName;
+      return aName.localeCompare(bName);
+    });
+    lokasi.total = {
+      pas1: 0, pas2: 0, pas3: 0,
+      totalCompletedTps: 0, totalTps: 0
+    } as AggregateVotes;
+    for (const [_, [c]] of lokasi.children) {
+      lokasi.total.pas1 += c.pas1 ?? 0;
+      lokasi.total.pas2 += c.pas2 ?? 0;
+      lokasi.total.pas3 += c.pas3 ?? 0;
+      lokasi.total.totalCompletedTps += c.totalCompletedTps ?? 0;
+      lokasi.total.totalTps += c.totalTps ?? 0;
+    }
+    return lokasi;
   }
 
   reloadLokasi() {
     this.lokasiWithVotesTrigger$.next(null);
   }
 
-  numPendingUploads(a : AggregateVotes) {
+  numPendingUploads(a: AggregateVotes) {
     return Object.keys(a.pendingUploads || {}).length;
   }
 }

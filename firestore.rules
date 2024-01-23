@@ -25,17 +25,12 @@ service cloud.firestore {
       allow list: if request.query.limit <= 100 && getUserRole() >= 2;
     }
 
-    // Static herarchy for searching.
-    match /h/{userId} {
-      allow list: if request.auth.uid != null && request.query.limit <= 100;
-    }
-
-    // Hierarchy Cache Sum and KPU autofill.
-    match /hc2/{tpsId} {
+    // Lokasi with votes.
+    match /h/{idLokasi} {
       // Anyone can read the cached sum.
       allow get: if request.auth.uid != null;
     }
- 
+
     // Relawan database.
     match /r/{userId} {
       // Moderator can read user profile if know the uid.
