@@ -12,6 +12,12 @@ import {getServingUrl} from "./serving_url";
 admin.initializeApp();
 const firestore = admin.firestore();
 
+// TODO list:
+// - load testing
+// - admin features (banning)
+// - automaitc lapor kesalahan
+// - poles UX nya
+
 /**
  * Returns the TPS data stored in Firestore.
  * @param {string} id The id of the TPS location.
