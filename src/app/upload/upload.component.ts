@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, inject, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ref, uploadString } from "firebase/storage";
 import { Storage } from "@angular/fire/storage";
@@ -29,29 +29,24 @@ export function autoId(n = 20): string {
   templateUrl: './upload.component.html',
   styleUrl: './upload.component.css'
 })
-export class UploadComponent implements OnInit {
+export class UploadComponent {
   @Input() id = '';
   @Output() onUpload = new EventEmitter<string>();
+  @ViewChild('firstInput') firstInput!: ElementRef;
 
   private storage: Storage = inject(Storage);
 
   digitizing = false;
   uploading = false;
-  submitting = false;
 
-  pas1 = 0;
-  pas2 = 0;
-  pas3 = 0;
-  sah = 0;
-  tidakSah = 0;
+  pas1?: number;
+  pas2?: number;
+  pas3?: number;
 
-  submitPhoto = () => {};
-  cancelSubmit = () => {};
+  submitPhoto = () => { };
+  cancelSubmit = () => { };
 
-  constructor(public service: AppService) {}
-
-  async ngOnInit() {
-  }
+  constructor(public service: AppService) { }
 
   async handleUpload(event: any) {
     if (event.target.files.length === 0) {
@@ -110,19 +105,15 @@ export class UploadComponent implements OnInit {
         votes: [votes],
         status: APPROVAL_STATUS.NEW,
       };
-  
-      this.submitting = true;
-      const result = await this.service.upload(request);
-      console.log('Uploaded', result);
-      if (result.data) {
-        this.onUpload.emit(result.data as string);
-      } else {
+
+      this.service.upload(request).then(console.log).catch(e => {
         alert('Unable to upload photo');
-      }
+        console.error('Unable upload', e);
+      });
+      this.onUpload.emit(request.imageId);
     } catch (e) {
       console.error(e);
     }
-    this.submitting = false;
   }
 
   async startUploadPhoto(imgURL: string, metadata: ImageMetadata) {
@@ -139,6 +130,7 @@ export class UploadComponent implements OnInit {
 
   async startDigitize(): Promise<Votes> {
     this.digitizing = true;
+    setTimeout(() => this.firstInput.nativeElement.focus(), 100);
     return new Promise((resolve, reject) => {
       this.submitPhoto = () => {
         this.digitizing = false;
@@ -200,7 +192,7 @@ export class UploadComponent implements OnInit {
           m.m = `${z[piexif.TagValues.ImageIFD.Make]}`;
         }
         if (z[piexif.TagValues.ImageIFD.Model]) {
-          m.m = `${m.m? (m.m + ', ') : ''}${z[piexif.TagValues.ImageIFD.Model]}`;
+          m.m = `${m.m ? (m.m + ', ') : ''}${z[piexif.TagValues.ImageIFD.Model]}`;
         }
         const o = z[piexif.TagValues.ImageIFD.Orientation] as number;
         if (o) m.o = o;

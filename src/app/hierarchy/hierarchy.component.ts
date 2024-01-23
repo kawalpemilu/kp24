@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
-import { AggregateVotes, Lokasi, LruCache } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, AggregateVotes, Lokasi, LruCache, USER_ROLE, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { AppService } from '../app.service';
@@ -14,12 +14,17 @@ import { PhotoComponent } from '../photo/photo.component';
 
 const idLengths = [2, 4, 6, 10];
 const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
-type IdAndAggVotes = [id: string, agg: AggregateVotes[]];
+
+interface ChildLokasi {
+  id: string;
+  agg: AggregateVotes[];
+  userUploads: UploadRequest[];
+}
 
 interface LokasiData {
   id: string;
   parents: string[][];
-  children: IdAndAggVotes[];
+  children: ChildLokasi[];
   total: AggregateVotes;
   level: string;
 }
@@ -45,14 +50,17 @@ export class HierarchyComponent implements OnInit {
   lokasiCache = new LruCache<string, LokasiData>(100);
 
   // Used for trigger the refetching the LokasiData.
-  lokasiWithVotesTrigger$ = new BehaviorSubject(null);
+  lokasiWithVotesTrigger$ = new BehaviorSubject<string>('');
 
   // Whether to open the upload or review component when the drawer is open.
   isUploadDrawer: Record<string, boolean> = {};
 
+  APPROVAL_STATUS = APPROVAL_STATUS;
+  USER_ROLE = USER_ROLE;
+
   constructor(
     private route: ActivatedRoute,
-    private service: AppService) {
+    public service: AppService) {
   }
 
   ngOnInit() {
@@ -63,8 +71,8 @@ export class HierarchyComponent implements OnInit {
         return id;
       }));
 
-    this.lokasi$ = combineLatest([id$, this.lokasiWithVotesTrigger$]).pipe(
-      switchMap(([id]) => {
+    this.lokasi$ = combineLatest([id$, this.service.profile$, this.lokasiWithVotesTrigger$]).pipe(
+      switchMap(([id, profile, imageId]) => {
         // Creates two observables from the given location id.
         // The first observable is fetching from static hierarchy,
         // this observable can emit value very fast because it constructs
@@ -88,9 +96,37 @@ export class HierarchyComponent implements OnInit {
             // Prefer lokasi2 if it's not null.
             const lokasi = lokasi2 ? lokasi2 : lokasi1;
             // Do not emit anything if it's null.
-            return lokasi ? of(lokasi) : of();
+            if (!lokasi) return of();
+            this.populateUserUploads(lokasi, profile);
+            return of(lokasi);
           }), shareReplay(1));
       }));
+  }
+
+  populateUserUploads(lokasi: LokasiData, profile: UserProfile) {
+    for (const c of lokasi.children) {
+      const cid = lokasi.id + c.id;
+      c.userUploads = [];
+
+      const pendingUploads = c.agg[0].pendingUploads;
+      if (!pendingUploads || !profile.uploads) continue;
+      for (const u of Object.values(profile.uploads[cid] ?? {})) {
+        if (pendingUploads[u.imageId]) {
+          u.status = APPROVAL_STATUS.NEW;
+        } else {
+          u.status = APPROVAL_STATUS.REJECTED;
+          for (const approved of c.agg) {
+            if (approved.uploadedPhoto?.imageId == u.imageId) {
+              u.status = APPROVAL_STATUS.APPROVED;
+              break;
+            }
+          }
+        }
+        if (u.status !== APPROVAL_STATUS.APPROVED) {
+          c.userUploads.push(u);
+        }
+      }
+    }
   }
 
   /**
@@ -113,9 +149,10 @@ export class HierarchyComponent implements OnInit {
         if (childrenIds[id]) {
           for (const cid of childrenIds[id]) {
             const idLokasi = id + cid;
-            lokasi.children.push([idLokasi, [{
-              idLokasi, name: id2name[idLokasi]
-            } as AggregateVotes]]);
+            lokasi.children.push({
+              id: idLokasi, agg: [{ idLokasi, name: id2name[idLokasi] } as AggregateVotes],
+              userUploads: []
+            });
           }
         }
         console.log('id prestine', lokasi.id);
@@ -167,9 +204,10 @@ export class HierarchyComponent implements OnInit {
         lokasi.id.substring(0, idLengths[i]), lokasiWithVotes.names[i]]);
     }
     lokasi.level = levelNames[lokasi.parents.length];
-    lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated);
+    lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated)
+      .map(a => ({ id: a[0], agg: a[1], userUploads: [] }));
     lokasi.children.sort((a, b) => {
-      const aName = a[1][0].name, bName = b[1][0].name;
+      const aName = a.agg[0].name, bName = b.agg[0].name;
       if (lokasi.id.length === 10) return +aName - +bName;
       return aName.localeCompare(bName);
     });
@@ -177,18 +215,18 @@ export class HierarchyComponent implements OnInit {
       pas1: 0, pas2: 0, pas3: 0,
       totalCompletedTps: 0, totalTps: 0
     } as AggregateVotes;
-    for (const [_, [c]] of lokasi.children) {
-      lokasi.total.pas1 += c.pas1 ?? 0;
-      lokasi.total.pas2 += c.pas2 ?? 0;
-      lokasi.total.pas3 += c.pas3 ?? 0;
-      lokasi.total.totalCompletedTps += c.totalCompletedTps ?? 0;
-      lokasi.total.totalTps += c.totalTps ?? 0;
+    for (const { agg } of lokasi.children) {
+      lokasi.total.pas1 += agg[0].pas1 ?? 0;
+      lokasi.total.pas2 += agg[0].pas2 ?? 0;
+      lokasi.total.pas3 += agg[0].pas3 ?? 0;
+      lokasi.total.totalCompletedTps += agg[0].totalCompletedTps ?? 0;
+      lokasi.total.totalTps += agg[0].totalTps ?? 0;
     }
     return lokasi;
   }
 
-  reloadLokasi() {
-    this.lokasiWithVotesTrigger$.next(null);
+  reloadLokasi(imageId: string) {
+    this.lokasiWithVotesTrigger$.next(imageId);
   }
 
   numPendingUploads(a: AggregateVotes) {

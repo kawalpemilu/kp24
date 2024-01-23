@@ -22,6 +22,8 @@ export class AppService {
 
   public mobileQuery?: MediaQueryList;
   public hierarchy$?: Observable<StaticHierarchy>;
+  public currentUserProfile?: UserProfile;
+  public viewportWidth = window.innerWidth;
 
   user$ = user(this.auth).pipe(shareReplay(1));
 
@@ -47,6 +49,9 @@ export class AppService {
     return docSnapshots(uRef).pipe(map(snapshot => {
       const u = snapshot.data() as UserProfile;
       console.log(`UserProfile: ${u.name} (${u.email})`);
+      if (this.auth.currentUser && uid === this.auth.currentUser.uid) {
+        this.currentUserProfile = u;
+      }
       return u;
     }));
   }
@@ -104,10 +109,11 @@ export class AppService {
     return callable();
   }
 
-  getHierarchy(id: string) {
-    console.log('RPC hierarchy: ', id);
+  async getHierarchy(id: string) {
     const callable = httpsCallable(this.functions, 'hierarchy');
-    return callable({ id })
+    const result = await callable({ id })
+    console.log('RPC hierarchy: ', id, result);
+    return result;
   }
 
   upload(request: UploadRequest) {
@@ -129,5 +135,10 @@ export class AppService {
     }).catch((error) => {
       console.error('Signout failed', error);
     });
+  }
+
+  userExceedsMaxUploads() {
+    const u = this.currentUserProfile;
+    return u && (u.uploadCount >= u.uploadMaxCount);
   }
 }

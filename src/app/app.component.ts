@@ -1,5 +1,5 @@
 import { MediaMatcher } from '@angular/cdk/layout';
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -108,5 +108,10 @@ export class AppComponent {
 
   isMobile() {
     return this.service.mobileQuery?.matches;
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.service.viewportWidth = window.innerWidth;
   }
 }

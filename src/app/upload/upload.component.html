@@ -3,26 +3,29 @@
     <button mat-raised-button color="warn" (click)="service.login()">
         Sign In to Upload Photo
     </button>
+} @else if (service.userExceedsMaxUploads()) {
+    Max Uploads Exceeded
 } @else if (digitizing) {
     <p>
         Masukkan jumlah suara:
     </p>
+    <form #form="ngForm" (ngSubmit)="submitPhoto()">
     <table class="collapsed_border">
         <tr>
             <td>Paslon #1</td>
-            <td><input type="number" style="width: 50px;" [(ngModel)]="pas1"></td>
+            <td><input type="number" name="pas1" style="width: 50px;" [(ngModel)]="pas1" #firstInput required></td>
         </tr>
         <tr>
             <td>Paslon #2</td>
-            <td><input type="number" style="width: 50px;" [(ngModel)]="pas2"></td>
+            <td><input type="number" name="pas2" style="width: 50px;" [(ngModel)]="pas2" required></td>
         </tr>
         <tr>
             <td>Paslon #3</td>
-            <td><input type="number" style="width: 50px;" [(ngModel)]="pas3"></td>
+            <td><input type="number" name="pas3" style="width: 50px;" [(ngModel)]="pas3" required></td>
         </tr>
         <tr>
             <td colspan="2">
-                <button mat-raised-button color="primary" (click)="submitPhoto()">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">
                     Submit
                 </button>
                 &nbsp; &nbsp;
@@ -32,13 +35,10 @@
             </td>
         </tr>
     </table>
+    </form>
     <br><br>
-} @else if (uploading || submitting) {
-    @if (uploading) {
-        Uploading your photo<br>
-    } @else {
-        Submitting your photo<br>
-    }
+} @else if (uploading) {
+    Uploading your photo<br>
     <mat-spinner></mat-spinner>
 } @else {
     <h3>Upload foto hasil suara:</h3>

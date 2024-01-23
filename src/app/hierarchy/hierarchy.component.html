@@ -11,8 +11,8 @@
 @if (lokasi.id.length === 10) {
     <!-- Level TPS -->
     <table class="collapsed_border">
-    @for (c of lokasi.children; track c[0];) {
-        <tr *ngIf="c[1][0] as a">
+    @for (c of lokasi.children; track c.id) {
+        <tr *ngIf="c.agg[0] as a">
             <td width="145" align="center" nowrap [style.background-color]="a.totalPendingTps ? 'orange' : ''">
                 <br>
                 <b style="font-size: large">TPS #{{ a.name }}</b>
@@ -22,21 +22,23 @@
                 Pas2: <b>{{ a.pas2 }}</b><br>
                 Pas3: <b>{{ a.pas3 }}</b><br>
                 <br>
-                <button *ngIf="a.totalPendingTps"
-                    (click)="isUploadDrawer[lokasi.id + c[0]] = false; drawer.toggle()"
-                    mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
+                @if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
+                    <button *ngIf="a.totalPendingTps"
+                        (click)="isUploadDrawer[lokasi.id + c.id] = false; drawer.toggle()"
+                        mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
+                }
             </td>
-            <td width="*" align="center">
+            <td width="*" align="left">
                 <mat-drawer-container [hasBackdrop]="true">
                     <mat-drawer #drawer mode="over">
                     @defer (on viewport) {
-                        @if (isUploadDrawer[lokasi.id + c[0]]) {
-                            <app-upload [id]="lokasi.id + c[0]"
-                                (onUpload)="reloadLokasi(); drawer.close()">
+                        @if (isUploadDrawer[lokasi.id + c.id]) {
+                            <app-upload [id]="lokasi.id + c.id"
+                                (onUpload)="reloadLokasi($event); drawer.close()">
                             </app-upload>
-                        } @else {
-                            <app-review [id]="lokasi.id + c[0]"
-                                (onReview)="reloadLokasi(); drawer.close()">
+                        } @else if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
+                            <app-review [id]="lokasi.id + c.id"
+                                (onReview)="reloadLokasi('' + $event); drawer.close()">
                             </app-review>
                         }
                     } @placeholder { 
@@ -44,11 +46,12 @@
                     }
                     </mat-drawer>
                     <mat-drawer-content>
-                        <div style="min-width: 300px; width: 100%; overflow-x: scroll">
+                        <div style="min-width: 300px; overflow-x: scroll"
+                         [style.width]="(service.viewportWidth - 150) + 'px'">
                         <table height="250">
                         <tr>
                             <td>
-                                <div (click)="isUploadDrawer[lokasi.id + c[0]] = true; drawer.toggle()"
+                                <div (click)="isUploadDrawer[lokasi.id + c.id] = true; drawer.toggle()"
                                      style="width: 100px; text-align: center; cursor: pointer;">
                                     <button mat-fab color="primary">
                                         <mat-icon>add_a_photo</mat-icon>
@@ -58,8 +61,23 @@
                                     </p>
                                 </div>
                             </td>
-                @if (c[1].length > 1) {
-                    @for (tps of c[1].slice(1); track tps.uploadedPhoto?.imageId) {
+                @if (service.currentUserProfile?.uploads; as uploads) {
+                    @if (uploads[lokasi.id + c.id]; as u) {
+                        @for (u of c.userUploads; track u.imageId) {
+                            <td valign="top">
+                                <app-photo [uploadRequest]="u"></app-photo>
+                                @if (u.status === APPROVAL_STATUS.NEW) {
+                                    Pending
+                                } @else if (u.status === APPROVAL_STATUS.REJECTED) {
+                                    Rejected
+                                }
+                
+                            </td>
+                        }
+                    }
+                }
+                @if (c.agg.length > 1) {
+                    @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
                     <td valign="top">
                         <app-photo [aggregatedVotes]="tps"></app-photo>
                     </td>
@@ -84,10 +102,10 @@
             <th class="paslon">Pas3</th>
             <th class="cov">COV</th>
         </tr>
-        @for (c of lokasi.children; track c[0];) {
-        <tr *ngIf="c[1][0] as a">
+        @for (c of lokasi.children; track c.id;) {
+        <tr *ngIf="c.agg[0] as a">
             <td><div class="lokasi">
-                <a class="hierarchy" [routerLink]="['/h', c[0]]">{{ a.name }}</a>
+                <a class="hierarchy" [routerLink]="['/h', c.id]">{{ a.name }}</a>
                 <b *ngIf="a.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
             </div></td>
             @if (a.idLokasi && a.idLokasi.length > 0) {
