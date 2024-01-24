@@ -20,7 +20,6 @@ export class AppService {
   firestore: Firestore = inject(Firestore);
   functions: Functions = inject(Functions);
 
-  public mobileQuery?: MediaQueryList;
   public hierarchy$?: Observable<StaticHierarchy>;
   public currentUserProfile?: UserProfile;
   public viewportWidth = window.innerWidth;

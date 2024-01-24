@@ -1,12 +1,19 @@
 <div *ngIf="lokasi$ | async as lokasi">
 
-<div class="hierarchy_path">
-    @for (p of lokasi.parents; track p[0]; let last = $last) {
-        <a [routerLink]="['/h', p[0]]" routerLinkActive="active"
-            class="hierarchy">{{ p[1] }}</a>
-        @if (!last) { &gt; }
-    }
-</div>
+<table #hierarchy class="hierarchy_path" cellspacing="0" cellpadding="0">
+    <tr><td valign="middle">
+    <table cellspacing="0" cellpadding="0" border="0">
+        @for (p of lokasi.parents; track p[0]; let last = $last) {
+            <td align="center" valign="middle">
+                &nbsp;&nbsp;<a [routerLink]="['/h', p[0]]" routerLinkActive="active"
+                class="hierarchy">{{ p[1] }}</a>
+            </td>
+            @if (!last) { <td valign="middle">&nbsp;&gt;&nbsp;</td> }
+        }
+        <td valign="middle">&nbsp;&nbsp;</td>
+    </table>
+    </td></tr>
+</table>
 
 @if (lokasi.id.length === 10) {
     <!-- Level TPS -->
@@ -94,14 +101,17 @@
     </table>
 } @else {
     <!-- Level Provinsi, Kecamatan, Kelurahan -->
-    <table class="collapsed_border">
-        <tr bgcolor="lightgrey">
+    <table class="collapsed_border sticky_table">
+    <thead [style.top]="(hierarchyHeight - 1) + 'px'">
+        <tr>
             <th class="lokasi">{{ lokasi.level }}</th>
             <th class="paslon">Pas1</th>
             <th class="paslon">Pas2</th>
             <th class="paslon">Pas3</th>
             <th class="cov">COV</th>
         </tr>
+    </thead>
+    <tbody>
         @for (c of lokasi.children; track c.id;) {
         <tr *ngIf="c.agg[0] as a">
             <td><div class="lokasi">
@@ -125,7 +135,9 @@
             </td>
         </tr>
         }
-        <tr bgcolor="lightgrey">
+    </tbody>
+    <tfoot>
+        <tr>
             <th align="right">TOTAL:</th>
             <th class="paslon">{{ lokasi.total.pas1 }}</th>
             <th class="paslon">{{ lokasi.total.pas2 }}</th>
@@ -137,6 +149,7 @@
                 </span>
             </th>
         </tr>
+    </tfoot>
     </table>
 }
 </div>

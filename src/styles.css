@@ -1,32 +1,41 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 table.collapsed_border {
-    border-collapse: collapse;
-    border-spacing: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 .collapsed_border td,
 .collapsed_border th {
-    padding: 7px;
-    border: 1px solid gray;
+  padding: 7px;
+  border: 1px solid gray;
 }
 
 .truncate-text {
-    width: 200px;
-    overflow: scroll;
-    white-space: nowrap;
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .truncate-text::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .selected {
-    background-color: lightgreen;
-  }
-  
+  width: 200px;
+  overflow: scroll;
+  white-space: nowrap;
+  /* IE and Edge */
+  -ms-overflow-style: none;
+  /* Firefox */
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.truncate-text::-webkit-scrollbar {
+  display: none;
+}
+
+.selected {
+  background-color: lightgreen;
+}

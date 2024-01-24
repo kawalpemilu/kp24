@@ -1,6 +1,11 @@
 .hierarchy_path {
-    padding: 10px;
     background-color: lightblue;
+    position: sticky;
+    top: 0;
+    height: 45px;
+    z-index: 2;
+    width: 100%;
+    font-size: medium;
 }
 
 .hierarchy {
@@ -25,9 +30,28 @@ table td {
     display: table-cell;
 }
 
+.sticky_table thead {
+    position: sticky;
+    top: 45px;
+    border-bottom: 2px solid #ccc;
+    background: lightgray;
+}
+
+.sticky_table tfoot {
+    position: sticky;
+    bottom: 0;
+    border-top: 2px solid #ccc;
+    background: lightgray;
+}
+
 @media (max-width: 600px) {
-    /* Hide the second and third columns on screens narrower than 600px */
-    table .sah {
-        display: none;
+    .hierarchy_path {
+        font-size: small;
+    }
+}
+
+@media (max-width: 500px) {
+    .hierarchy_path {
+        font-size: smaller;
     }
 }

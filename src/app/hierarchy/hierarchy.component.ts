@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
@@ -46,6 +46,8 @@ function newLokasiData(id: string): LokasiData {
   styleUrl: './hierarchy.component.css'
 })
 export class HierarchyComponent implements OnInit {
+  @ViewChild('hierarchy') hierarchyEl!: ElementRef;
+
   lokasi$!: Observable<LokasiData>;
   lokasiCache = new LruCache<string, LokasiData>(100);
 
@@ -54,6 +56,8 @@ export class HierarchyComponent implements OnInit {
 
   // Whether to open the upload or review component when the drawer is open.
   isUploadDrawer: Record<string, boolean> = {};
+
+  hierarchyHeight = 45;
 
   APPROVAL_STATUS = APPROVAL_STATUS;
   USER_ROLE = USER_ROLE;
@@ -98,6 +102,9 @@ export class HierarchyComponent implements OnInit {
             // Do not emit anything if it's null.
             if (!lokasi) return of();
             this.populateUserUploads(lokasi, profile);
+            setTimeout(() => {
+              this.hierarchyHeight = this.hierarchyEl.nativeElement.clientHeight;
+            }, 1);
             return of(lokasi);
           }), shareReplay(1));
       }));
