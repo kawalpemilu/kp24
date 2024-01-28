@@ -120,13 +120,13 @@
             </div></td>
             @if (a.pas1 + a.pas2 + a.pas3; as totalVotes) {
                 <td align="center">
-                    <app-percent [nom]="a.pas1" [den]="totalVotes"></app-percent>
+                    <app-percent [nom]="a.pas1" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
                 <td align="center">
-                    <app-percent [nom]="a.pas2" [den]="totalVotes"></app-percent>
+                    <app-percent [nom]="a.pas2" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
                 <td align="center">
-                    <app-percent [nom]="a.pas3" [den]="totalVotes"></app-percent>
+                    <app-percent [nom]="a.pas3" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
             } @else {
                 <td align="center">-</td>
@@ -147,13 +147,13 @@
             </th>
             @if (lokasi.total.pas1 + lokasi.total.pas2 + lokasi.total.pas3; as totalVotes) {
                 <th align="center">
-                    <app-percent [nom]="lokasi.total.pas1" [den]="totalVotes"></app-percent>
+                    <app-percent [nom]="lokasi.total.pas1" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
                 <th align="center">
-                    <app-percent [nom]="lokasi.total.pas2" [den]="totalVotes"></app-percent>
+                    <app-percent [nom]="lokasi.total.pas2" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
                 <th align="center">
-                    <app-percent [nom]="lokasi.total.pas3" [den]="totalVotes"></app-percent>
+                    <app-percent [nom]="lokasi.total.pas3" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
             } @else {
                 <th align="center">-</th>
@@ -161,10 +161,7 @@
                 <th align="center">-</th>
             }
             <th class="cov">
-                {{ 100.0 * (lokasi.total.totalCompletedTps || 0) / lokasi.total.totalTps | number: '1.2-2' }}%<br>
-                <span style="font-size: xx-small">
-                    {{ (lokasi.total.totalCompletedTps || 0) | number }}/{{ lokasi.total.totalTps | number }}
-                </span>
+                <app-percent [nom]="lokasi.total.totalCompletedTps" [den]="lokasi.total.totalTps"></app-percent>
             </th>
         </tr>
     </tfoot>

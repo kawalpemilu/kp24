@@ -1,7 +1,6 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {
-  APPROVAL_STATUS,
-  AggregateVotes, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi, TpsData,
+  APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi, TpsData,
   USER_ROLE, UploadRequest, UserProfile, Votes, isValidVoteNumbers,
 } from "./interfaces";
 import {getPrestineLokasi} from "./lokasi";
@@ -17,29 +16,12 @@ const firestore = admin.firestore();
 // - automaitc lapor kesalahan
 // - poles UX nya
 
-/**
- * Returns the TPS data stored in Firestore.
- * @param {string} id The id of the TPS location.
- * @return {TpsData} The TpsData of the id.
- */
-async function getTpsData(id: string) {
-  const snapshot = await firestore.collection(`t/${id}/p`).get();
-  const tpsData: TpsData = {id, votes: {}};
-  snapshot.forEach((doc) => {
-    tpsData.votes[doc.id] = doc.data() as AggregateVotes;
-  });
-  return tpsData;
-}
-
 export const hierarchy = onCall(
   {cors: true},
   async (request: CallableRequest<{ id: string }>)
     : Promise<Lokasi | TpsData> => {
     let id = request.data.id;
     if (!(/^\d{0,13}$/.test(id))) id = "";
-
-    // At the TPS level, returns all user submitted photos + votes.
-    if (id.length > 10) return getTpsData(id);
 
     // At Province, Kabupaten, Kecamatan, Desa level, returns the Hierarchy
     // along with the aggregated votes from Firestore (if exists).

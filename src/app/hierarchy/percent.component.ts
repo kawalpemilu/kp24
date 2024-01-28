@@ -7,14 +7,16 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     @if (den) {
+        <span style="font-size: smaller;">
         @if (nom > 0 && nom === den) {
             100%
         } @else {
             {{ 100.0 * nom / den | number: '1.2-2' }}%
         }
+        </span>
         <br>
         <span style="font-size: xx-small">
-            {{ nom | number }}/{{ den | number }}
+            {{ nom | number }}@if(showDen){/{{ den | number }}}
         </span>
     } @else {
         -
@@ -24,4 +26,5 @@ import { CommonModule } from '@angular/common';
 export class PercentComponent {
     @Input() nom = 0;
     @Input() den = 0;
+    @Input() showDen = true;
 }
