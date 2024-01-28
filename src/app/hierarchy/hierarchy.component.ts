@@ -11,6 +11,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
+import { PercentComponent } from './percent.component';
 
 const idLengths = [2, 4, 6, 10];
 const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
@@ -41,7 +42,7 @@ function newLokasiData(id: string): LokasiData {
   selector: 'app-hierarchy',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule, UploadComponent,
-    MatSidenavModule, MatIconModule, ReviewComponent, PhotoComponent],
+    MatSidenavModule, MatIconModule, ReviewComponent, PhotoComponent, PercentComponent],
   templateUrl: './hierarchy.component.html',
   styleUrl: './hierarchy.component.css'
 })

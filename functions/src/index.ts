@@ -13,7 +13,6 @@ admin.initializeApp();
 const firestore = admin.firestore();
 
 // TODO list:
-// - load testing
 // - admin features (banning)
 // - automaitc lapor kesalahan
 // - poles UX nya

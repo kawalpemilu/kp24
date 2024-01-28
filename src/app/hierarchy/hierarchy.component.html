@@ -113,38 +113,53 @@
     </thead>
     <tbody>
         @for (c of lokasi.children; track c.id;) {
-        <tr *ngIf="c.agg[0] as a">
+        <tr *ngIf="c.agg[0] as a" height="56">
             <td><div class="lokasi">
                 <a class="hierarchy" [routerLink]="['/h', c.id]">{{ a.name }}</a>
                 <b *ngIf="a.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
             </div></td>
-            @if (a.idLokasi && a.idLokasi.length > 0) {
-                <td>{{ a.pas1 }}</td>
-                <td>{{ a.pas2 }}</td>
-                <td>{{ a.pas3 }}</td>
-            } @else {
-                <td colspan="3">
-                    &lt;- Click to upload photo.
+            @if (a.pas1 + a.pas2 + a.pas3; as totalVotes) {
+                <td align="center">
+                    <app-percent [nom]="a.pas1" [den]="totalVotes"></app-percent>
                 </td>
+                <td align="center">
+                    <app-percent [nom]="a.pas2" [den]="totalVotes"></app-percent>
+                </td>
+                <td align="center">
+                    <app-percent [nom]="a.pas3" [den]="totalVotes"></app-percent>
+                </td>
+            } @else {
+                <td align="center">-</td>
+                <td align="center">-</td>
+                <td align="center">-</td>
             }
             <td nowrap align="center">
-                {{ 100.0 * (a.totalCompletedTps || 0) / a.totalTps | number: '1.2-2' }}%<br>
-                <span style="font-size: xx-small">
-                    {{ (a.totalCompletedTps || 0) | number }}/{{ a.totalTps | number }}
-                </span>
+                <app-percent [nom]="a.totalCompletedTps" [den]="a.totalTps"></app-percent>
             </td>
         </tr>
         }
     </tbody>
     <tfoot>
-        <tr>
+        <tr height="56">
             <th align="right">
                 TOTAL:
                 <b *ngIf="lokasi.total.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
             </th>
-            <th class="paslon">{{ lokasi.total.pas1 }}</th>
-            <th class="paslon">{{ lokasi.total.pas2 }}</th>
-            <th class="paslon">{{ lokasi.total.pas3 }}</th>
+            @if (lokasi.total.pas1 + lokasi.total.pas2 + lokasi.total.pas3; as totalVotes) {
+                <th align="center">
+                    <app-percent [nom]="lokasi.total.pas1" [den]="totalVotes"></app-percent>
+                </th>
+                <th align="center">
+                    <app-percent [nom]="lokasi.total.pas2" [den]="totalVotes"></app-percent>
+                </th>
+                <th align="center">
+                    <app-percent [nom]="lokasi.total.pas3" [den]="totalVotes"></app-percent>
+                </th>
+            } @else {
+                <th align="center">-</th>
+                <th align="center">-</th>
+                <th align="center">-</th>
+            }
             <th class="cov">
                 {{ 100.0 * (lokasi.total.totalCompletedTps || 0) / lokasi.total.totalTps | number: '1.2-2' }}%<br>
                 <span style="font-size: xx-small">
