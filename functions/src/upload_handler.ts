@@ -61,11 +61,13 @@ async function addDataToUserProfile(
       console.error("User cannot review", uid);
       return false;
     }
+    if (!p.reviews) p.reviews = {};
     if (!p.reviews[data.idLokasi]) p.reviews[data.idLokasi] = 0;
     p.reviews[data.idLokasi]++;
     p.reviewCount++;
   } else {
     // Uploader.
+    if (!p.uploads) p.uploads = {};
     if (!p.uploads[data.idLokasi]) p.uploads[data.idLokasi] = {};
     p.uploads[data.idLokasi][data.imageId] = data;
     p.uploadCount++;

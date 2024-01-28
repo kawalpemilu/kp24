@@ -3,7 +3,7 @@
 
 export const DEFAULT_MAX_UPLOADS = 10;
 
-export const TESTER_UID = "DZACL8WHSLOwSQX2G9csufe6puC2";
+export const TESTER_UID = "tester_uid";
 
 export enum USER_ROLE {
   BANNED = 0,

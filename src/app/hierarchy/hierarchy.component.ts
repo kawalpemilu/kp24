@@ -2,27 +2,23 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
-import { APPROVAL_STATUS, AggregateVotes, Lokasi, LruCache, USER_ROLE, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, AggregateVotes, Lokasi, LruCache, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
 import { AppService } from '../app.service';
-import { UploadComponent } from '../upload/upload.component';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
-import { ReviewComponent } from '../photo/review.component';
-import { PhotoComponent } from '../photo/photo.component';
 import { PercentComponent } from './percent.component';
+import { TpsListComponent } from './tps-list.component';
 
 const idLengths = [2, 4, 6, 10];
 const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
 
-interface ChildLokasi {
+export interface ChildLokasi {
   id: string;
   agg: AggregateVotes[];
   userUploads: UploadRequest[];
 }
 
-interface LokasiData {
+export interface LokasiData {
   id: string;
   parents: string[][];
   children: ChildLokasi[];
@@ -41,8 +37,8 @@ function newLokasiData(id: string): LokasiData {
 @Component({
   selector: 'app-hierarchy',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule, UploadComponent,
-    MatSidenavModule, MatIconModule, ReviewComponent, PhotoComponent, PercentComponent],
+  imports: [CommonModule, RouterLink, RouterLinkActive,
+    MatIconModule, PercentComponent, TpsListComponent],
   templateUrl: './hierarchy.component.html',
   styleUrl: './hierarchy.component.css'
 })
@@ -55,13 +51,7 @@ export class HierarchyComponent implements OnInit {
   // Used for trigger the refetching the LokasiData.
   lokasiWithVotesTrigger$ = new BehaviorSubject<string>('');
 
-  // Whether to open the upload or review component when the drawer is open.
-  isUploadDrawer: Record<string, boolean> = {};
-
   hierarchyHeight = 45;
-
-  APPROVAL_STATUS = APPROVAL_STATUS;
-  USER_ROLE = USER_ROLE;
 
   constructor(
     private route: ActivatedRoute,
@@ -77,7 +67,7 @@ export class HierarchyComponent implements OnInit {
       }));
 
     this.lokasi$ = combineLatest([id$, this.service.profile$, this.lokasiWithVotesTrigger$]).pipe(
-      switchMap(([id, profile, imageId]) => {
+      switchMap(([id, profile]) => {
         // Creates two observables from the given location id.
         // The first observable is fetching from static hierarchy,
         // this observable can emit value very fast because it constructs
@@ -238,11 +228,7 @@ export class HierarchyComponent implements OnInit {
     return lokasi;
   }
 
-  reloadLokasi(imageId: string) {
-    this.lokasiWithVotesTrigger$.next(imageId);
-  }
-
-  numPendingUploads(a: AggregateVotes) {
-    return Object.keys(a.pendingUploads || {}).length;
+  reloadLokasi() {
+    this.lokasiWithVotesTrigger$.next('');
   }
 }
