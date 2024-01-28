@@ -1,4 +1,5 @@
 # Compiled JavaScript files
+lib/**/*.json
 lib/**/*.js
 lib/**/*.js.map
 

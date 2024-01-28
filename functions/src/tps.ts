@@ -5,6 +5,7 @@
 import {parse} from "csv-parse";
 import * as fs from "fs";
 import {Hierarchy} from "./interfaces";
+import { LOKASI } from "./lokasi";
 
 /**
  * Parses the csv.
@@ -32,11 +33,18 @@ function parseCsv(csv: string, limit = -1) {
   });
 }
 
-const RecordKeys = ["no", "dapilDprRi", "dapilDprdProv", "dapilDprdKab",
+/** Headers for the old tps.csv */
+// const RecordKeys = ["no", "dapilDprRi", "dapilDprdProv", "dapilDprdKab",
+//   "idProvinsi", "provinsi",
+//   "idKabupaten", "kabupaten",
+//   "idKecamatan", "kecamatan",
+//   "idDesa", "desa", "noTps"] as const;
+
+const RecordKeys = [
   "idProvinsi", "provinsi",
   "idKabupaten", "kabupaten",
   "idKecamatan", "kecamatan",
-  "idDesa", "desa", "noTps"] as const;
+  "idDesa", "desa", "noTps", "pemilih"] as const;
 
 type AllowedRecordKeys = typeof RecordKeys[number];
 type RecordArray = Record<AllowedRecordKeys, string>[];
@@ -49,7 +57,7 @@ type RecordArray = Record<AllowedRecordKeys, string>[];
 function keyedRecords(records: string[]) {
   const arr: RecordArray = [];
   for (let i = 1; i < records.length; i++) {
-    if (records[i].length != 13) {
+    if (records[i].length != RecordKeys.length) {
       throw new Error("Record columnns mismatch");
     }
     const keyed = {} as Record<AllowedRecordKeys, string>;
@@ -119,30 +127,35 @@ function getNameMap(records: RecordArray) {
  * @return {Hierarchy} The compact hierarchy of all tps.
  */
 function getDistilledTps(
-  records: RecordArray, desaTpsNumbers : Record<string, number[]>) : Hierarchy {
+  records: RecordArray, desaTpsNumbers : Record<string, number[][]>) : [Hierarchy, Record<string, number[]>] {
   const id2name = getNameMap(records);
   const tps: {[idDesa: string]: number[]} = {};
-  for (const [idDesa, v] of Object.entries<number[]>(desaTpsNumbers)) {
-    v.sort((a, b) => (a - b));
+  const dpt: {[idDesa: string]: number[]} = {};
+  for (const [idDesa, v] of Object.entries(desaTpsNumbers)) {
+    v.sort((a, b) => (a[0] - b[0]));
     // TPS number is between [1, n].
-    let i = 0; while (i < v.length && i + 1 == v[i]) i++;
+    let i = 0; while (i < v.length && i + 1 == v[i][0]) i++;
     tps[idDesa] = [i];
     if (i < v.length) {
       // The extended TPS number is between [k, j).
-      let j = v[i];
+      let j = v[i][0];
       const k = j;
-      while (i < v.length && j == v[i]) i++, j++;
+      while (i < v.length && j == v[i][0]) i++, j++;
       if (j > 951) throw new Error();
       tps[idDesa].push(k);
       tps[idDesa].push(j-1);
     }
-    if (v.length != i) throw new Error(v.join(", "));
+    if (v.length != i) throw new Error(v.join(", ") + " idDesa: " + idDesa);
+    dpt[idDesa] = [];
+    for (const [_, pemilih] of v) {
+      dpt[idDesa].push(pemilih);
+    }
   }
-  return {id2name, tps};
+  return [{id2name, tps}, dpt];
 }
 
 (async () => {
-  const csv = fs.readFileSync("../data/tps.csv", "utf-8");
+  const csv = fs.readFileSync("../data/tps_recon.csv", "utf-8");
   const records = keyedRecords(await parseCsv(csv));
 
   // There are 820,162 TPS.
@@ -150,15 +163,37 @@ function getDistilledTps(
 
   ensureHierarchyStructure(records);
 
-  const desaTpsNumbers :{[key: string]: number[]} = {};
+  const desaTpsNumbers :{[key: string]: number[][]} = {};
   for (const r of records) {
     if (!desaTpsNumbers[r.idDesa]) desaTpsNumbers[r.idDesa] = [];
-    desaTpsNumbers[r.idDesa].push(+r.noTps);
+    desaTpsNumbers[r.idDesa].push([+r.noTps, +r.pemilih]);
   }
 
   // There are 83,731 unique desa.
   console.log("unique Desa", Object.keys(desaTpsNumbers).length);
 
-  const tps = getDistilledTps(records, desaTpsNumbers);
-  fs.writeFileSync("../src/assets/tps.json", JSON.stringify(tps));
+  const [H, dpt] = getDistilledTps(records, desaTpsNumbers);
+
+  console.log('Num IDS', Object.keys(LOKASI.H.id2name).length, Object.keys(H.id2name).length);
+  console.log('Num TPS', Object.keys(LOKASI.H.tps).length, Object.keys(H.tps).length);
+
+  const diffNames = [];
+  for (const [id, name] of Object.entries(LOKASI.H.id2name)) {
+    if (H.id2name[id] !== name) {
+      diffNames.push(['id', id, name, '->', H.id2name[id]]);
+    }
+    if (!H.id2name[id]?.length) throw new Error(id);
+  }
+  if (diffNames.length) {
+    console.log('Num names diffs', diffNames.length);
+  }
+
+  for (const [id, details] of Object.entries(LOKASI.H.tps)) {
+    if (H.tps[id]?.join(',') !== details.join(',')) {
+      console.log('tps', id, details, '->', H.tps[id]);
+    }
+  }
+
+  fs.writeFileSync("../data/tps.json", JSON.stringify(H));
+  fs.writeFileSync("../data/dpt.json", JSON.stringify(dpt));
 })();

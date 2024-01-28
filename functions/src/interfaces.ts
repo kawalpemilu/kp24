@@ -59,11 +59,13 @@ export declare interface Hierarchy {
 export class PrestineLokasi {
   public C: Record<string, string[]>;
   T: Record<string, number>;
+  D: Record<string, number> = {};
 
-  constructor(public H: Hierarchy) {
+  constructor(public H: Hierarchy, private dpt?: Record<string, number[]>) {
     this.C = this.getChildrenIds(H.id2name);
     this.T = this.getTotalTps();
-    console.log("Loaded Hierarchy, total TPS: ", this.T[""]);
+    if (this.dpt) this.D = this.getTotalDpt();
+    console.log("Loaded Hierarchy, total TPS: ", this.T[""], Object.keys(this.T).length);
   }
 
   /**
@@ -73,21 +75,31 @@ export class PrestineLokasi {
    * @return {Lokasi} The Lokasi object from hard-coded data.
    */
   getPrestineLokasi(id: string) {
-    const lokasi: Lokasi = { id, names: this.getParentNames(id), aggregated: {}, numWrites: 0 };
+    const lokasi: Lokasi = {
+      id,
+      names: this.getParentNames(id),
+      aggregated: {},
+      numWrites: 0
+    };
     if (id.length === 10) {
       const [maxTpsNo, extBegin, extEnd] = this.H.tps[lokasi.id];
+      const d = this.dpt ? this.dpt[id] : [];
+      let j = 0;
       for (let i = 1; i <= maxTpsNo; i++) {
-        lokasi.aggregated[i] = [this.newAggregateVotes(`${id}${i}`, `${i}`, 1)];
+        lokasi.aggregated[i] = [this.newAggregateVotes(
+          `${id}${i}`, `${i}`, 1, d[j++])];
       }
       if (extBegin) {
         for (let i = extBegin; i <= extEnd; i++) {
-          lokasi.aggregated[i] = [this.newAggregateVotes(`${id}${i}`, `${i}`, 1)];
+          lokasi.aggregated[i] = [this.newAggregateVotes(
+            `${id}${i}`, `${i}`, 1, d[j++])];
         }
       }
     } else {
       for (const suffixId of this.C[lokasi.id]) {
         const cid = lokasi.id + suffixId;
-        lokasi.aggregated[cid] = [this.newAggregateVotes(cid, this.H.id2name[cid], this.T[cid])];
+        lokasi.aggregated[cid] = [this.newAggregateVotes(
+          cid, this.H.id2name[cid], this.T[cid], this.D[cid])];
       }
     }
     return lokasi;
@@ -167,13 +179,41 @@ export class PrestineLokasi {
   }
 
   /**
+   * Compute the total dpt for each id.
+   * @return {Record<string, number>} The map of total dpt by id.
+   */
+  private getTotalDpt() {
+    const totalDpt: Record<string, number> = {};
+    /**
+     * Recursive function to compute number of dpt in the sub hierarchy.
+     * @param {string} id the lokasi id
+     * @return {number} the total number of dpt for the id.
+     */
+    const rec = (id: string) => {
+      let numDpt = 0;
+      if (id.length == 10) {
+        for (const d of this.dpt?.[id] ?? []) {
+          numDpt += d;
+        }
+      } else {
+        for (const suffixId of this.C[id]) {
+          numDpt += rec(id + suffixId);
+        }
+      }
+      return totalDpt[id] = numDpt;
+    }
+    rec("");
+    return totalDpt;
+  }
+
+  /**
    * @param {string} idLokasi
    * @param {string} name
    * @param {number} totalTps
    * @return {AggregateVotes}
    */
   private newAggregateVotes(
-    idLokasi: string, name: string, totalTps: number): AggregateVotes {
+    idLokasi: string, name: string, totalTps: number, dpt?: number): AggregateVotes {
     return {
       idLokasi,
       pas1: 0,
@@ -185,6 +225,7 @@ export class PrestineLokasi {
       totalPendingTps: 0,
       totalErrorTps: 0,
       updateTs: 0,
+      dpt,
     };
   }
 
@@ -253,6 +294,9 @@ export declare interface AggregateVotes extends Votes {
   // List of uid-imageIds to be reviewed.
   // Only available at Desa level.
   pendingUploads?: Record<string, true>;
+
+  // Number of registered voters (daftar pemilih tetap).
+  dpt?: number;
 }
 
 export declare interface UploadedPhoto {
