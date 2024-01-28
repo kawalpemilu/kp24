@@ -3,6 +3,8 @@
 
 export const DEFAULT_MAX_UPLOADS = 10;
 
+export const TESTER_UID = "DZACL8WHSLOwSQX2G9csufe6puC2";
+
 export enum USER_ROLE {
   BANNED = 0,
   RELAWAN = 1,
@@ -29,6 +31,8 @@ export interface UserProfile {
   nTps: number; // Number of different TPS uploaded.
   nKel: number; // Number of different kelurahans uploaded.
 
+  // reviews[tpsId] = number of photos reviewed in that TPS.
+  reviews: Record<string, number>;
   reviewCount: number; // The number of images reviewed.
 
   // reports: ProblemRequest[];
@@ -64,8 +68,8 @@ export declare interface Votes {
   pas2: number;
   pas3: number;
 
-  // The timestamp when the votes were entered.
-  createdTs: number;
+  // The timestamp when the votes were updated.
+  updateTs: number;
 
   // NEW means the uid is the uploader.
   // APPROVED/REJECTED means the uid is the moderator who approved.
@@ -135,6 +139,9 @@ export declare interface Lokasi {
   // At Provinsi, Kabupaten, Kecamatan level, there is only 1 AggregateVotes.
   // At Desa level there can be many AggregateVotes[].
   aggregated: { [cid: string]: AggregateVotes[] };
+
+  // How many times this node is written to Firestore.
+  numWrites: number;
 }
 
 // Photos and votes at Desa level.
@@ -255,4 +262,25 @@ export class LruCache<K, V> {
     this.map.set(key, value);
     return value;
   }
+}
+
+/**
+ * Returns true if the votes is between [0, 999].
+ * @param {number} votes the votes to be checked.
+ * @return {boolean} true if valid.
+ */
+export function isValidVoteNumbers(votes: number) {
+  if (isNaN(votes)) return false;
+  return votes >= 0 && votes < 1000;
+}
+
+/** Returns a random n-character identifier containing [a-zA-Z0-9]. */
+export function autoId(n = 20): string {
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let autoId = '';
+  for (let i = 0; i < n; i++) {
+    autoId += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return autoId;
 }

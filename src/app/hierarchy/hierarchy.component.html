@@ -138,7 +138,10 @@
     </tbody>
     <tfoot>
         <tr>
-            <th align="right">TOTAL:</th>
+            <th align="right">
+                TOTAL:
+                <b *ngIf="lokasi.total.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
+            </th>
             <th class="paslon">{{ lokasi.total.pas1 }}</th>
             <th class="paslon">{{ lokasi.total.pas2 }}</th>
             <th class="paslon">{{ lokasi.total.pas3 }}</th>

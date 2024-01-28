@@ -19,7 +19,7 @@ console.log("Loaded Hierarchy, total TPS: ", T[""]);
  * @return {Lokasi} The Lokasi object from hard-coded data.
  */
 export function getPrestineLokasi(id: string) {
-  const lokasi: Lokasi = {id, names: getParentNames(H, id), aggregated: {}};
+  const lokasi: Lokasi = {id, names: getParentNames(H, id), aggregated: {}, numWrites: 0};
   if (id.length === 10) {
     const [maxTpsNo, extBegin, extEnd] = H.tps[lokasi.id];
     for (let i = 1; i <= maxTpsNo; i++) {
@@ -40,6 +40,17 @@ export function getPrestineLokasi(id: string) {
 }
 
 /**
+ * @returns {string[]} ids for desa.
+ */
+export function getDesaIds() {
+  const desaIds: string[] = [];
+  for (const id of Object.keys(H.id2name)) {
+    if (id.length === 10) desaIds.push(id);
+  }
+  return desaIds;
+}
+
+/**
  * @param {string} idLokasi
  * @param {string} name
  * @param {number} totalTps
@@ -57,7 +68,7 @@ function newAggregateVotes(
     totalCompletedTps: 0,
     totalPendingTps: 0,
     totalErrorTps: 0,
-    createdTs: 0,
+    updateTs: 0,
   };
 }
 

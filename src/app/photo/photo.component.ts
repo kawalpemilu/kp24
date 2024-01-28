@@ -23,6 +23,16 @@ export class PhotoComponent implements OnChanges {
     pas2 = 0;
     pas3 = 0;
 
+    get largePhoto() {
+        if (this.photoUrl.endsWith('.png')) return this.photoUrl;
+        return this.photoUrl + '=s1280';
+    }
+
+    get thumbnail() {
+        if (this.photoUrl.endsWith('.png')) return this.photoUrl;
+        return this.photoUrl + '=s200';
+    }
+
     ngOnChanges(): void {
         if (this.aggregatedVotes) {
             this.uid = this.aggregatedVotes.uid ?? '';
@@ -50,7 +60,7 @@ export class PhotoComponent implements OnChanges {
             pas2: this.pas2,
             pas3: this.pas3,
             status: verdict ? APPROVAL_STATUS.APPROVED : APPROVAL_STATUS.REJECTED,
-            createdTs: 0
+            updateTs: 0
         };
         this.onReview.emit(votes);
     }

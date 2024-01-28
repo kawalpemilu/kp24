@@ -2,7 +2,7 @@ import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {
   APPROVAL_STATUS,
   AggregateVotes, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi, TpsData,
-  USER_ROLE, UploadRequest, UserProfile, Votes,
+  USER_ROLE, UploadRequest, UserProfile, Votes, isValidVoteNumbers,
 } from "./interfaces";
 import {getPrestineLokasi} from "./lokasi";
 import {uploadHandler} from "./upload_handler";
@@ -68,6 +68,7 @@ export const register = onCall(
       lastLoginTs: Date.now(),
       role: USER_ROLE.RELAWAN,
       uploads: {},
+      reviews: {},
       uploadCount: 0,
       uploadMaxCount: DEFAULT_MAX_UPLOADS,
       nTps: 0,
@@ -132,7 +133,7 @@ export const review = onCall(
       votes: [{
         uid: request.auth.uid,
         pas1, pas2, pas3,
-        createdTs: Date.now(),
+        updateTs: Date.now(),
         status,
       }],
       status,
@@ -140,15 +141,6 @@ export const review = onCall(
     return uploadHandler(firestore, sanitized);
   });
 
-/**
- * Returns true if the votes is between [0, 999].
- * @param {number} votes the votes to be checked.
- * @return {boolean} true if valid.
- */
-function isValidVoteNumbers(votes: number) {
-  if (isNaN(votes)) return false;
-  return votes >= 0 && votes < 1000;
-}
 
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
 export const upload = onCall(
@@ -191,7 +183,7 @@ export const upload = onCall(
       votes: [{
         uid: request.auth.uid,
         pas1, pas2, pas3,
-        createdTs: Date.now(),
+        updateTs: Date.now(),
         status: APPROVAL_STATUS.NEW,
       }],
       status: APPROVAL_STATUS.NEW,

@@ -220,13 +220,18 @@ export class HierarchyComponent implements OnInit {
     });
     lokasi.total = {
       pas1: 0, pas2: 0, pas3: 0,
-      totalCompletedTps: 0, totalTps: 0
+      totalCompletedTps: 0,
+      totalPendingTps: 0,
+      totalErrorTps: 0,
+      totalTps: 0
     } as AggregateVotes;
     for (const { agg } of lokasi.children) {
       lokasi.total.pas1 += agg[0].pas1 ?? 0;
       lokasi.total.pas2 += agg[0].pas2 ?? 0;
       lokasi.total.pas3 += agg[0].pas3 ?? 0;
       lokasi.total.totalCompletedTps += agg[0].totalCompletedTps ?? 0;
+      lokasi.total.totalPendingTps += agg[0].totalPendingTps ?? 0;
+      lokasi.total.totalErrorTps += agg[0].totalErrorTps ?? 0;
       lokasi.total.totalTps += agg[0].totalTps ?? 0;
     }
     return lokasi;

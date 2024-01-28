@@ -6,20 +6,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, ImageMetadata, UploadRequest, Votes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, autoId, ImageMetadata, UploadRequest, Votes } from '../../../functions/src/interfaces';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
-
-/** Returns a random n-character identifier containing [a-zA-Z0-9]. */
-export function autoId(n = 20): string {
-  const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let autoId = '';
-  for (let i = 0; i < n; i++) {
-    autoId += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return autoId;
-}
 
 @Component({
   selector: 'app-upload',
