@@ -4,11 +4,11 @@ import { Router, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { AppService, StaticHierarchy } from './app.service';
+import { AppService } from './app.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { USER_ROLE, getChildrenIds } from '../../functions/src/interfaces';
+import { USER_ROLE, Hierarchy, PrestineLokasi } from '../../functions/src/interfaces';
 import { map, shareReplay } from 'rxjs';
 
 @Component({
@@ -78,15 +78,10 @@ export class AppComponent {
     public service: AppService,
     private http: HttpClient) {
 
-    service.hierarchy$ =
-      this.http.get('assets/id2name.json').pipe(
-        map((json): StaticHierarchy => {
-          const id2name = json as Record<string, string>;
-          return {
-            id2name: id2name,
-            childrenIds: getChildrenIds(id2name)
-          }
-        }), shareReplay(1)
+    service.lokasi$ =
+      this.http.get('assets/tps.json').pipe(
+        map(json => new PrestineLokasi(json as Hierarchy)),
+        shareReplay(1)
       );
   }
 

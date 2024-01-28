@@ -56,6 +56,153 @@ export declare interface Hierarchy {
   tps: { [id: string]: number[] };
 }
 
+export class PrestineLokasi {
+  public C: Record<string, string[]>;
+  T: Record<string, number>;
+
+  constructor(public H: Hierarchy) {
+    this.C = this.getChildrenIds(H.id2name);
+    this.T = this.getTotalTps();
+    console.log("Loaded Hierarchy, total TPS: ", this.T[""]);
+  }
+
+  /**
+   * Constructs Lokasi object from hard-coded data.
+   * The data has empty votes for this Lokasi.
+   * @param {string} id The id of a location.
+   * @return {Lokasi} The Lokasi object from hard-coded data.
+   */
+  getPrestineLokasi(id: string) {
+    const lokasi: Lokasi = { id, names: this.getParentNames(id), aggregated: {}, numWrites: 0 };
+    if (id.length === 10) {
+      const [maxTpsNo, extBegin, extEnd] = this.H.tps[lokasi.id];
+      for (let i = 1; i <= maxTpsNo; i++) {
+        lokasi.aggregated[i] = [this.newAggregateVotes(`${id}${i}`, `${i}`, 1)];
+      }
+      if (extBegin) {
+        for (let i = extBegin; i <= extEnd; i++) {
+          lokasi.aggregated[i] = [this.newAggregateVotes(`${id}${i}`, `${i}`, 1)];
+        }
+      }
+    } else {
+      for (const suffixId of this.C[lokasi.id]) {
+        const cid = lokasi.id + suffixId;
+        lokasi.aggregated[cid] = [this.newAggregateVotes(cid, this.H.id2name[cid], this.T[cid])];
+      }
+    }
+    return lokasi;
+  }
+
+  /**
+   * @returns {string[]} ids for desa.
+   */
+  getDesaIds() {
+    const desaIds: string[] = [];
+    for (const id of Object.keys(this.H.id2name)) {
+      if (id.length === 10) desaIds.push(id);
+    }
+    return desaIds;
+  }
+
+  /**
+   * Returns the map of sorted children ids.
+   * @param {Record<string, string>} id2name The map of idLokasi to name.
+   * @return {Record<string, string[]>} The map of sorted children.
+   */
+  private getChildrenIds(id2name: Record<string, string>) {
+    const c: Record<string, Set<string>> = { "": new Set<string>() };
+    for (const idDesa of Object.keys(id2name)) {
+      if (idDesa.length != 10) continue;
+
+      const idProvinsi = idDesa.substring(0, 2);
+      c[""].add(idProvinsi);
+      if (!c[idProvinsi]) c[idProvinsi] = new Set<string>();
+      c[idProvinsi].add(idDesa.substring(2, 4));
+
+      const idKabupaten = idDesa.substring(0, 4);
+      if (!c[idKabupaten]) c[idKabupaten] = new Set<string>();
+      c[idKabupaten].add(idDesa.substring(4, 6));
+
+      const idKecamatan = idDesa.substring(0, 6);
+      if (!c[idKecamatan]) c[idKecamatan] = new Set<string>();
+      c[idKecamatan].add(idDesa.substring(6, 10));
+    }
+    const sortedC: Record<string, string[]> = {};
+    for (const [id, set] of Object.entries(c)) {
+      sortedC[id] = Array.from(set).sort((a, b) => {
+        const na = id2name[id + a];
+        const nb = id2name[id + b];
+        return (na < nb) ? -1 : (na > nb) ? 1 : 0;
+      });
+    }
+    return sortedC;
+  }
+
+  /**
+   * Compute the total tps for each id.
+   * @return {Record<string, number>} The map of total tps by id.
+   */
+  private getTotalTps() {
+    const totalTps: Record<string, number> = {};
+    /**
+     * Recursive function to compute number of tps in the sub hierarchy.
+     * @param {string} id the lokasi id
+     * @return {number} the total number of tps for the id.
+     */
+    const rec = (id: string) => {
+      let numTps = 0;
+      if (id.length == 10) {
+        const [maxTpsNo, extBegin, extEnd] = this.H.tps[id];
+        numTps += maxTpsNo;
+        if (extBegin) numTps += (extEnd - extBegin) + 1;
+      } else {
+        for (const suffixId of this.C[id]) {
+          numTps += rec(id + suffixId);
+        }
+      }
+      return totalTps[id] = numTps;
+    }
+    rec("");
+    return totalTps;
+  }
+
+  /**
+   * @param {string} idLokasi
+   * @param {string} name
+   * @param {number} totalTps
+   * @return {AggregateVotes}
+   */
+  private newAggregateVotes(
+    idLokasi: string, name: string, totalTps: number): AggregateVotes {
+    return {
+      idLokasi,
+      pas1: 0,
+      pas2: 0,
+      pas3: 0,
+      name,
+      totalTps,
+      totalCompletedTps: 0,
+      totalPendingTps: 0,
+      totalErrorTps: 0,
+      updateTs: 0,
+    };
+  }
+
+  /**
+   * Returns an array of names from the top level down to id's level.
+   * @param {string} id The id to be processed.
+   * @return {string[]} The array of names of the path to the id.
+   */
+  private getParentNames(id: string) {
+    const names: string[] = [];
+    if (id.length >= 2) names.push(this.H.id2name[id.substring(0, 2)]);
+    if (id.length >= 4) names.push(this.H.id2name[id.substring(0, 4)]);
+    if (id.length >= 6) names.push(this.H.id2name[id.substring(0, 6)]);
+    if (id.length >= 10) names.push(this.H.id2name[id.substring(0, 10)]);
+    return names;
+  }
+}
+
 export enum APPROVAL_STATUS {
   NEW = 0,
   APPROVED = 1,
@@ -186,40 +333,6 @@ export interface ImageMetadata {
 }
 
 /**
- * Returns the map of sorted children ids.
- * @param {Record<string, string>} id2name The map of idLokasi to name.
- * @return {Record<string, string[]>} The map of sorted children.
- */
-export function getChildrenIds(id2name: Record<string, string>) {
-  const c: Record<string, Set<string>> = {"": new Set<string>()};
-  for (const idDesa of Object.keys(id2name)) {
-    if (idDesa.length != 10) continue;
-
-    const idProvinsi = idDesa.substring(0, 2);
-    c[""].add(idProvinsi);
-    if (!c[idProvinsi]) c[idProvinsi] = new Set<string>();
-    c[idProvinsi].add(idDesa.substring(2, 4));
-
-    const idKabupaten = idDesa.substring(0, 4);
-    if (!c[idKabupaten]) c[idKabupaten] = new Set<string>();
-    c[idKabupaten].add(idDesa.substring(4, 6));
-
-    const idKecamatan = idDesa.substring(0, 6);
-    if (!c[idKecamatan]) c[idKecamatan] = new Set<string>();
-    c[idKecamatan].add(idDesa.substring(6, 10));
-  }
-  const sortedC: Record<string, string[]> = {};
-  for (const [id, set] of Object.entries(c)) {
-    sortedC[id] = Array.from(set).sort((a, b) => {
-      const na = id2name[id + a];
-      const nb = id2name[id + b];
-      return (na < nb) ? -1 : (na > nb) ? 1 : 0;
-    });
-  }
-  return sortedC;
-}
-
-/**
  * Simple implementation of LRU cache.
  */
 export class LruCache<K, V> {
@@ -228,7 +341,7 @@ export class LruCache<K, V> {
   /**
    * @param {number} maxSize The maximum number of items in this cache.
    */
-  constructor(private readonly maxSize = 10) {}
+  constructor(private readonly maxSize = 10) { }
 
   has = this.map.has.bind(this.map);
 

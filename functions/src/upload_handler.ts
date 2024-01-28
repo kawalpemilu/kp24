@@ -2,10 +2,10 @@ import {
   APPROVAL_STATUS, AggregateVotes,
   Lokasi, TESTER_UID, USER_ROLE, UploadRequest, UserProfile,
 } from "./interfaces";
-import { getPrestineLokasi } from "./lokasi";
 
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
+import { LOKASI } from "./lokasi";
 
 /**
  * Check whether the number of votes in a and b are the same.
@@ -126,7 +126,7 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       await t.getAll(...hRefs).then(docs => {
         for (let i = 0; i < hRefs.length; i++) {
           let lokasi = docs[i].data() as Lokasi;
-          if (!lokasi) lokasi = getPrestineLokasi(lokasiIds[i]);
+          if (!lokasi) lokasi = LOKASI.getPrestineLokasi(lokasiIds[i]);
           lokasiMap[lokasiIds[i]] = lokasi;
         }
       });
@@ -218,7 +218,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
   return firestore
     .runTransaction(async (t) => {
       let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
-      if (!lokasi) lokasi = getPrestineLokasi(idDesa);
+      if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
 
       const c = lokasi.aggregated[data.idLokasi.substring(10)];
       const agg = JSON.parse(JSON.stringify(c[0])) as AggregateVotes;
@@ -308,4 +308,28 @@ function aggregate(lokasi: Lokasi) {
     nextAgg.updateTs = Math.max(nextAgg.updateTs, cagg.updateTs);
   }
   return nextAgg;
+}
+
+export async function processPendingUploads(
+  firestore: admin.firestore.Firestore, endlessLoop = true) {
+  while (true) {
+    console.log('Listening to new uploads');
+    const t0 = Date.now();
+    const colRef = firestore.collection('p').orderBy('updateTs', 'asc').limit(100);
+    const [ids, aggs] = await new Promise<[string[], AggregateVotes[]]>(resolve => {
+        const unsub = colRef.onSnapshot(async snapshot => {
+            const ids = snapshot.docs.map(d => d.id);
+            const aggs = snapshot.docs.map(d => d.data() as AggregateVotes);
+            if (!aggs.length) return;
+            console.log('Fetched', aggs.length, 'pending uploads');
+            unsub();
+            resolve([ids, aggs]);
+        });
+    });
+    const t1 = Date.now();
+    await aggregateUp(firestore, ids, aggs);
+    const t2 = Date.now();
+    console.log('AggregatedUp', aggs.length, 'Fetch', t1 - t0, 'Agg', t2 - t1);
+    if (!endlessLoop) break;
+  }
 }

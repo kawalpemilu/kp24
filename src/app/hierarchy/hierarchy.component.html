@@ -10,7 +10,15 @@
             </td>
             @if (!last) { <td valign="middle">&nbsp;&gt;&nbsp;</td> }
         }
-        <td valign="middle">&nbsp;&nbsp;</td>
+        <td valign="middle">
+            <button mat-icon-button color="primary" (click)="reloadLokasi()" [disabled]="rpcIsRunning">
+                @if (lokasi.id.length == 10 && rpcIsRunning) {
+                    <mat-spinner [diameter]="25"></mat-spinner>
+                } @else {
+                    <mat-icon>refresh</mat-icon>
+                }
+            </button>
+        </td>
     </table>
     </td></tr>
 </table>

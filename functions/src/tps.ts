@@ -160,11 +160,5 @@ function getDistilledTps(
   console.log("unique Desa", Object.keys(desaTpsNumbers).length);
 
   const tps = getDistilledTps(records, desaTpsNumbers);
-  fs.writeFileSync("../data/tps.js", JSON.stringify(tps));
-
-  const id2name: Record<string, string> = {};
-  for (const [id, name] of Object.entries(tps.id2name)) {
-    if (id.length <= 10) id2name[id] = name;
-  }
-  fs.writeFileSync("../data/id2name.json", JSON.stringify(id2name));
+  fs.writeFileSync("../src/assets/tps.json", JSON.stringify(tps));
 })();

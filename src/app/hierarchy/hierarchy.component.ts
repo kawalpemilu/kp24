@@ -8,6 +8,8 @@ import { AppService } from '../app.service';
 import { MatIconModule } from '@angular/material/icon';
 import { PercentComponent } from './percent.component';
 import { TpsListComponent } from './tps-list.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const idLengths = [2, 4, 6, 10];
 const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
@@ -37,7 +39,7 @@ function newLokasiData(id: string): LokasiData {
 @Component({
   selector: 'app-hierarchy',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive,
+  imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule, MatProgressSpinnerModule,
     MatIconModule, PercentComponent, TpsListComponent],
   templateUrl: './hierarchy.component.html',
   styleUrl: './hierarchy.component.css'
@@ -52,6 +54,7 @@ export class HierarchyComponent implements OnInit {
   lokasiWithVotesTrigger$ = new BehaviorSubject<string>('');
 
   hierarchyHeight = 45;
+  rpcIsRunning = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -133,29 +136,9 @@ export class HierarchyComponent implements OnInit {
    * or null if the static hierarchy does not exist.
    */
   getLokasiDataWithoutVotes(id: string): Observable<LokasiData | null> {
-    if (!this.service.hierarchy$) return of();
-    return this.service.hierarchy$.pipe(map(
-      ({ id2name, childrenIds }) => {
-        const lokasi = newLokasiData(id);
-        for (const len of idLengths) {
-          if (len <= id.length) {
-            const cid = id.substring(0, len);
-            lokasi.parents.push([cid, id2name[cid]]);
-          }
-        }
-        lokasi.level = levelNames[lokasi.parents.length];
-        if (childrenIds[id]) {
-          for (const cid of childrenIds[id]) {
-            const idLokasi = id + cid;
-            lokasi.children.push({
-              id: idLokasi, agg: [{ idLokasi, name: id2name[idLokasi] } as AggregateVotes],
-              userUploads: []
-            });
-          }
-        }
-        console.log('id prestine', lokasi.id);
-        return lokasi;
-      }
+    if (!this.service.lokasi$) return of();
+    return this.service.lokasi$.pipe(map(
+      LOKASI => this.toLokasiData(LOKASI.getPrestineLokasi(id))
     ));
   }
 
@@ -165,8 +148,12 @@ export class HierarchyComponent implements OnInit {
   }
 
   getLokasiDataFromRpc$(id: string): Observable<LokasiData> {
+    this.rpcIsRunning = true;
     return from(this.service.getHierarchy(id))
-      .pipe(map(result => this.toLokasiData(result.data as Lokasi)));
+      .pipe(map(result => {
+        this.rpcIsRunning = false;
+        return this.toLokasiData(result.data as Lokasi);
+      }));
   }
 
   /**

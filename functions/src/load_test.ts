@@ -1,11 +1,7 @@
-import { getDesaIds, getPrestineLokasi } from "./lokasi";
-import { APPROVAL_STATUS, AggregateVotes, ImageMetadata, TESTER_UID, UploadRequest, autoId } from "./interfaces";
-
+import { APPROVAL_STATUS, ImageMetadata, TESTER_UID, UploadRequest, autoId } from "./interfaces";
+import { LOKASI } from "./lokasi";
+import { processPendingUploads, uploadHandler } from "./upload_handler";
 import * as admin from "firebase-admin";
-import {
-    aggregateUp,
-    uploadHandler
-} from "./upload_handler";
 
 admin.initializeApp();
 const firestore = admin.firestore();
@@ -43,38 +39,10 @@ function createUploadRequest(id: string) {
     return request;
 }
 
-async function listenToNewUploadsAndAggregateUp() {
-    console.log('listening to new uploads');
-    const t0 = Date.now();
-    const colRef = firestore.collection('p').orderBy('updateTs', 'asc').limit(100);
-    const [ids, aggs] = await new Promise<[string[], AggregateVotes[]]>(resolve => {
-        const unsub = colRef.onSnapshot(async snapshot => {
-            const ids = snapshot.docs.map(d => d.id);
-            const aggs = snapshot.docs.map(d => d.data() as AggregateVotes);
-            if (!aggs.length) return;
-            console.log('Fetched', aggs.length, 'pending uploads');
-            unsub();
-            resolve([ids, aggs]);
-        });
-    });
-    const t1 = Date.now();
-    await aggregateUp(firestore, ids, aggs);
-    const t2 = Date.now();
-    console.log('AggregatedUp', aggs.length, 'Fetch', t1 - t0, 'Agg', t2 - t1);
-    return aggs.length;
-}
-
-async function eternalListen() {
-    while (true) {
-        const n = await listenToNewUploadsAndAggregateUp();
-        console.log('aggregated up ', n);
-    }
-}
-
 async function run() {
     const tpsIds = [];
-    for (const idDesa of getDesaIds()) {
-        const lokasi = getPrestineLokasi(idDesa);
+    for (const idDesa of LOKASI.getDesaIds()) {
+        const lokasi = LOKASI.getPrestineLokasi(idDesa);
         for (const [tpsId] of Object.entries(lokasi.aggregated)) {
             tpsIds.push(idDesa + tpsId);
         }
@@ -82,7 +50,7 @@ async function run() {
     console.log('read tps', tpsIds.length);
     shuffleArray(tpsIds);
 
-    const listen = eternalListen();
+    const listen = processPendingUploads(firestore);
 
     const uploadRequests: UploadRequest[] = [];
     for (let i = 0; i < 1000 && i < tpsIds.length; i++) {

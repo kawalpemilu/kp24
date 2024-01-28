@@ -4,12 +4,7 @@ import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
-import { APPROVAL_STATUS, Lokasi, USER_ROLE, UploadRequest, UserProfile, Votes } from '../../functions/src/interfaces';
-
-export declare interface StaticHierarchy {
-  id2name: Record<string, string>;
-  childrenIds: Record<string, string[]>;
-}
+import { APPROVAL_STATUS, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes } from '../../functions/src/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +15,7 @@ export class AppService {
   firestore: Firestore = inject(Firestore);
   functions: Functions = inject(Functions);
 
-  public hierarchy$?: Observable<StaticHierarchy>;
+  public lokasi$?: Observable<PrestineLokasi>;
   public currentUserProfile?: UserProfile;
   public viewportWidth = window.innerWidth;
 

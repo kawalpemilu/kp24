@@ -3,7 +3,7 @@ import {
   APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi, TpsData,
   USER_ROLE, UploadRequest, UserProfile, Votes, isValidVoteNumbers,
 } from "./interfaces";
-import {getPrestineLokasi} from "./lokasi";
+import {LOKASI} from "./lokasi";
 import {uploadHandler} from "./upload_handler";
 
 import * as admin from "firebase-admin";
@@ -30,7 +30,7 @@ export const hierarchy = onCall(
     if (latest) return latest;
 
     // Otherwise, returns the hard-coded hierarchy without any votes.
-    return getPrestineLokasi(id);
+    return LOKASI.getPrestineLokasi(id);
   });
 
 export const register = onCall(
