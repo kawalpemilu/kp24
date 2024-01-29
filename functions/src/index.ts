@@ -1,13 +1,15 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
+
 import {
   APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi, TpsData,
   USER_ROLE, UploadRequest, UserProfile, Votes, isValidVoteNumbers,
 } from "./interfaces";
 import {LOKASI} from "./lokasi";
-import {uploadHandler} from "./upload_handler";
+import {RUN_ID, processPendingUploads, uploadHandler} from "./upload_handler";
+import {getServingUrl} from "./serving_url";
 
 import * as admin from "firebase-admin";
-import {getServingUrl} from "./serving_url";
 admin.initializeApp();
 const firestore = admin.firestore();
 
@@ -15,6 +17,31 @@ const firestore = admin.firestore();
 // - admin features (banning)
 // - automaitc lapor kesalahan
 // - poles UX nya
+
+/**
+ * The pending method is run in a single thread.
+ * This is achieved by setting maxInstances to 1 and guarded by "isLocked".
+ */
+let isLocked = false;
+let skippedDueToLocked = 0;
+const PROCESS_PENDING_TIMEOUT_SECS = 300;
+export const pending = onDocumentCreated({
+  document: "p/{docId}",
+  timeoutSeconds: PROCESS_PENDING_TIMEOUT_SECS,
+  maxInstances: 1,
+}, async (event) => {
+  if (!event?.data) return;
+  if (isLocked) {
+    skippedDueToLocked++;
+    return;
+  }
+  isLocked = true;
+  console.log(RUN_ID, "OnCreated LOCK", event.data.id);
+  await processPendingUploads(firestore, PROCESS_PENDING_TIMEOUT_SECS / 2);
+  console.log(RUN_ID, "Skipped since locked:", skippedDueToLocked);
+  isLocked = false;
+  skippedDueToLocked = 0;
+});
 
 export const hierarchy = onCall(
   {cors: true},

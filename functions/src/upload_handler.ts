@@ -1,11 +1,11 @@
 import {
   APPROVAL_STATUS, AggregateVotes,
-  Lokasi, TESTER_UID, USER_ROLE, UploadRequest, UserProfile,
+  Lokasi, TESTER_UID, USER_ROLE, UploadRequest, UserProfile, autoId,
 } from "./interfaces";
 
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
-import { LOKASI } from "./lokasi";
+import {LOKASI} from "./lokasi";
 
 /**
  * Check whether the number of votes in a and b are the same.
@@ -38,6 +38,12 @@ function getParentId(id: string) {
   return "";
 }
 
+/**
+ * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
+ * @param {admin.firestore.Transaction} t the running transaction.
+ * @param {UploadRequest} data the uploaded photo to be added to the profile.
+ * @return {boolean} true when successfull.
+ */
 async function addDataToUserProfile(
   firestore: admin.firestore.Firestore,
   t: admin.firestore.Transaction,
@@ -91,17 +97,22 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
   data: UploadRequest): Promise<boolean> {
   const lokasi = await updateTps(firestore, data);
   if (!lokasi) {
-    console.log('Fail to upload tps', data.idLokasi, data.status);
+    console.log("Fail to upload tps", data.idLokasi, data.status);
     return false; // Fail to update.
   }
 
   await firestore
-    .collection('p')
+    .collection("p")
     .add(aggregate(lokasi))
     .catch(console.error);
   return true;
 }
 
+/**
+ * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
+ * @param {string[]} ids the ids to be deleted after aggregated up is done.
+ * @param {AggregateVotes[]} aggs the aggregated votes to be aggregated up.
+ */
 export async function aggregateUp(firestore: admin.firestore.Firestore,
   ids: string[], aggs: AggregateVotes[]): Promise<void> {
   const t0 = Date.now();
@@ -111,7 +122,7 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       const t1 = Date.now();
       numRetries++;
       // Read all Lokasi before writing them all later.
-      console.log('Read all lokasi');
+      console.log("Read all lokasi");
       const lokasiMap: { [id: string]: Lokasi } = {};
       for (const a of aggs) {
         for (let id = a.idLokasi; id.length > 0;) {
@@ -122,8 +133,8 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       }
       // Read in parallel to save time.
       const lokasiIds = Object.keys(lokasiMap);
-      const hRefs = lokasiIds.map(id => firestore.doc(`h/i${id}`));
-      await t.getAll(...hRefs).then(docs => {
+      const hRefs = lokasiIds.map((id) => firestore.doc(`h/i${id}`));
+      await t.getAll(...hRefs).then((docs) => {
         for (let i = 0; i < hRefs.length; i++) {
           let lokasi = docs[i].data() as Lokasi;
           if (!lokasi) lokasi = LOKASI.getPrestineLokasi(lokasiIds[i]);
@@ -132,13 +143,13 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       });
       const t2 = Date.now();
 
-      console.log('Aggregating lokasi');
+      console.log("Aggregating lokasi");
       while (aggs[0].idLokasi.length > 0) {
         // Group by the parent ids to save read / write to the same parent.
         const aggParent: { [id: string]: AggregateVotes[] } = {};
-        let length = aggs[0].idLokasi.length;
+        const length = aggs[0].idLokasi.length;
         for (const a of aggs) {
-          if (a.idLokasi.length !== length) throw new Error('Length mismatch');
+          if (a.idLokasi.length !== length) throw new Error("Length mismatch");
           const idParent = getParentId(a.idLokasi);
           if (!aggParent[idParent]) aggParent[idParent] = [];
           aggParent[idParent].push(a);
@@ -177,20 +188,25 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
         t.delete(firestore.doc(`p/${id}`));
       }
       const t4 = Date.now();
-      console.log('Updated lokasi', Object.keys(lokasiMap).length,
-        'init', t1 - t0, 'read', t2 - t1, 'agg', t3 - t2, 'delete', t4 - t3);
+      console.log("Updated lokasi", Object.keys(lokasiMap).length,
+        "init", t1 - t0, "read", t2 - t1, "agg", t3 - t2, "delete", t4 - t3);
     });
 
   try {
     await res;
   } catch (e) {
-    console.error('aggregateUp', e);
+    console.error("aggregateUp", e);
   }
   if (numRetries > 1) {
-    console.warn('Num retries', numRetries);
+    console.warn("Num retries", numRetries);
   }
 }
 
+/**
+ * @param {admin.firestore.Firestore} firestore the database.
+ * @param {UploadRequest} data the upload request.
+ * @return {Lokasi | null} null when failed.
+ */
 async function updateTps(firestore: admin.firestore.Firestore,
   data: UploadRequest): Promise<Lokasi | null> {
   logger.log(`Update TPS t/${data.idLokasi}/p/${data.imageId}:${data.status}`);
@@ -284,6 +300,10 @@ async function updateTps(firestore: admin.firestore.Firestore,
     });
 }
 
+/**
+ * @param {Lokasi} lokasi
+ * @return {AggregateVotes} the aggregated votes of the children.
+ */
 function aggregate(lokasi: Lokasi) {
   const nextAgg: AggregateVotes = {
     idLokasi: lokasi.id,
@@ -310,26 +330,56 @@ function aggregate(lokasi: Lokasi) {
   return nextAgg;
 }
 
-export async function processPendingUploads(
-  firestore: admin.firestore.Firestore, endlessLoop = true) {
-  while (true) {
-    console.log('Listening to new uploads');
+/**
+ * Endlessly process the pending uploads.
+ * @param {admin.firestore.Firestore} firestore the database.
+ */
+export async function processPendingUploadsEternal(
+  firestore: admin.firestore.Firestore) {
+  for (;;) {
+    console.log("Listening to new uploads");
     const t0 = Date.now();
-    const colRef = firestore.collection('p').orderBy('updateTs', 'asc').limit(100);
-    const [ids, aggs] = await new Promise<[string[], AggregateVotes[]]>(resolve => {
-        const unsub = colRef.onSnapshot(async snapshot => {
-            const ids = snapshot.docs.map(d => d.id);
-            const aggs = snapshot.docs.map(d => d.data() as AggregateVotes);
-            if (!aggs.length) return;
-            console.log('Fetched', aggs.length, 'pending uploads');
-            unsub();
-            resolve([ids, aggs]);
+    const qRef = firestore.collection("p")
+      .orderBy("updateTs", "asc").limit(100);
+    const [ids, aggs] = await new Promise<[string[], AggregateVotes[]]>(
+      (resolve) => {
+        const unsub = qRef.onSnapshot(async (snapshot) => {
+          const ids = snapshot.docs.map((d) => d.id);
+          const aggs = snapshot.docs.map((d) => d.data() as AggregateVotes);
+          if (!aggs.length) return;
+          console.log("Fetched", aggs.length, "pending uploads");
+          unsub();
+          resolve([ids, aggs]);
         });
-    });
+      });
     const t1 = Date.now();
     await aggregateUp(firestore, ids, aggs);
     const t2 = Date.now();
-    console.log('AggregatedUp', aggs.length, 'Fetch', t1 - t0, 'Agg', t2 - t1);
-    if (!endlessLoop) break;
+    console.log("AggregatedUp", aggs.length, "Fetch", t1 - t0, "Agg", t2 - t1);
+  }
+}
+
+export const RUN_ID = autoId().substring(0, 5);
+
+/**
+ * @param {admin.firestore.Firestore} firestore the database.
+ * @param {number} budgetSeconds run at most this budget.
+ */
+export async function processPendingUploads(
+  firestore: admin.firestore.Firestore, budgetSeconds: number) {
+  const startTs = Date.now();
+  const qRef = firestore.collection("p").orderBy("updateTs", "asc").limit(100);
+  for (let elapsed = 0; elapsed < budgetSeconds;) {
+    const t0 = Date.now();
+    const snapshot = await qRef.get();
+    const t1 = Date.now();
+    const ids = snapshot.docs.map((d) => d.id);
+    const aggs = snapshot.docs.map((d) => d.data() as AggregateVotes);
+    if (!aggs.length) break;
+    await aggregateUp(firestore, ids, aggs);
+    const t2 = Date.now();
+    elapsed = Math.ceil((t2 - startTs) / 1000);
+    console.log(RUN_ID, "Fetched", aggs.length, "pending uploads in",
+      t1-t0, "ms, agg in", t2 - t1, "ms, total elapsed", elapsed, "s");
   }
 }

@@ -5,7 +5,7 @@
 import {parse} from "csv-parse";
 import * as fs from "fs";
 import {Hierarchy} from "./interfaces";
-import { LOKASI } from "./lokasi";
+import {LOKASI} from "./lokasi";
 
 /**
  * Parses the csv.
@@ -124,10 +124,11 @@ function getNameMap(records: RecordArray) {
  * Reduce all the necessary info from the records.
  * @param {RecordArray} records records keyed by the RecordKeys.
  * @param {Record<string, number[]>} desaTpsNumbers the idDesa tps numbers.
- * @return {Hierarchy} The compact hierarchy of all tps.
+ * @return {[Hierarchy, Record<string, number[]>]} The compact data.
  */
 function getDistilledTps(
-  records: RecordArray, desaTpsNumbers : Record<string, number[][]>) : [Hierarchy, Record<string, number[]>] {
+  records: RecordArray, desaTpsNumbers : Record<string, number[][]>)
+   : [Hierarchy, Record<string, number[]>] {
   const id2name = getNameMap(records);
   const tps: {[idDesa: string]: number[]} = {};
   const dpt: {[idDesa: string]: number[]} = {};
@@ -147,7 +148,7 @@ function getDistilledTps(
     }
     if (v.length != i) throw new Error(v.join(", ") + " idDesa: " + idDesa);
     dpt[idDesa] = [];
-    for (const [_, pemilih] of v) {
+    for (const [, pemilih] of v) {
       dpt[idDesa].push(pemilih);
     }
   }
@@ -174,23 +175,25 @@ function getDistilledTps(
 
   const [H, dpt] = getDistilledTps(records, desaTpsNumbers);
 
-  console.log('Num IDS', Object.keys(LOKASI.H.id2name).length, Object.keys(H.id2name).length);
-  console.log('Num TPS', Object.keys(LOKASI.H.tps).length, Object.keys(H.tps).length);
+  console.log("Num IDS",
+    Object.keys(LOKASI.H.id2name).length, Object.keys(H.id2name).length);
+  console.log("Num TPS",
+    Object.keys(LOKASI.H.tps).length, Object.keys(H.tps).length);
 
   const diffNames = [];
   for (const [id, name] of Object.entries(LOKASI.H.id2name)) {
     if (H.id2name[id] !== name) {
-      diffNames.push(['id', id, name, '->', H.id2name[id]]);
+      diffNames.push(["id", id, name, "->", H.id2name[id]]);
     }
     if (!H.id2name[id]?.length) throw new Error(id);
   }
   if (diffNames.length) {
-    console.log('Num names diffs', diffNames.length);
+    console.log("Num names diffs", diffNames.length);
   }
 
   for (const [id, details] of Object.entries(LOKASI.H.tps)) {
-    if (H.tps[id]?.join(',') !== details.join(',')) {
-      console.log('tps', id, details, '->', H.tps[id]);
+    if (H.tps[id]?.join(",") !== details.join(",")) {
+      console.log("tps", id, details, "->", H.tps[id]);
     }
   }
 

@@ -56,16 +56,24 @@ export declare interface Hierarchy {
   tps: { [id: string]: number[] };
 }
 
+/**
+ * Class that provides Lokasi object with the hard-coded data without votes.
+ */
 export class PrestineLokasi {
   public C: Record<string, string[]>;
   T: Record<string, number>;
   D: Record<string, number> = {};
 
+  /**
+   * @param {Hierarchy} H the id2name and tps detail.
+   * @param {Record<string, number[]>} dpt optionally supplied.
+   */
   constructor(public H: Hierarchy, private dpt?: Record<string, number[]>) {
     this.C = this.getChildrenIds(H.id2name);
     this.T = this.getTotalTps();
     if (this.dpt) this.D = this.getTotalDpt();
-    console.log("Loaded Hierarchy, total TPS: ", this.T[""], Object.keys(this.T).length);
+    console.log("Loaded Hierarchy, total TPS: ",
+      this.T[""], Object.keys(this.T).length);
   }
 
   /**
@@ -79,7 +87,7 @@ export class PrestineLokasi {
       id,
       names: this.getParentNames(id),
       aggregated: {},
-      numWrites: 0
+      numWrites: 0,
     };
     if (id.length === 10) {
       const [maxTpsNo, extBegin, extEnd] = this.H.tps[lokasi.id];
@@ -106,7 +114,7 @@ export class PrestineLokasi {
   }
 
   /**
-   * @returns {string[]} ids for desa.
+   * @return {string[]} ids for desa.
    */
   getDesaIds() {
     const desaIds: string[] = [];
@@ -122,7 +130,7 @@ export class PrestineLokasi {
    * @return {Record<string, string[]>} The map of sorted children.
    */
   private getChildrenIds(id2name: Record<string, string>) {
-    const c: Record<string, Set<string>> = { "": new Set<string>() };
+    const c: Record<string, Set<string>> = {"": new Set<string>()};
     for (const idDesa of Object.keys(id2name)) {
       if (idDesa.length != 10) continue;
 
@@ -173,7 +181,7 @@ export class PrestineLokasi {
         }
       }
       return totalTps[id] = numTps;
-    }
+    };
     rec("");
     return totalTps;
   }
@@ -201,7 +209,7 @@ export class PrestineLokasi {
         }
       }
       return totalDpt[id] = numDpt;
-    }
+    };
     rec("");
     return totalDpt;
   }
@@ -210,10 +218,11 @@ export class PrestineLokasi {
    * @param {string} idLokasi
    * @param {string} name
    * @param {number} totalTps
+   * @param {number} dpt
    * @return {AggregateVotes}
    */
-  private newAggregateVotes(
-    idLokasi: string, name: string, totalTps: number, dpt?: number): AggregateVotes {
+  private newAggregateVotes(idLokasi: string, name: string,
+    totalTps: number, dpt?: number): AggregateVotes {
     return {
       idLokasi,
       pas1: 0,
@@ -431,11 +440,14 @@ export function isValidVoteNumbers(votes: number) {
   return votes >= 0 && votes < 1000;
 }
 
-/** Returns a random n-character identifier containing [a-zA-Z0-9]. */
+/**
+ * @param {number} n the length of random characters.
+ * @return {string} a random n-character identifier containing [a-zA-Z0-9].
+ */
 export function autoId(n = 20): string {
   const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let autoId = '';
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let autoId = "";
   for (let i = 0; i < n; i++) {
     autoId += chars.charAt(Math.floor(Math.random() * chars.length));
   }
