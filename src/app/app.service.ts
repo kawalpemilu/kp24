@@ -15,9 +15,10 @@ export class AppService {
   firestore: Firestore = inject(Firestore);
   functions: Functions = inject(Functions);
 
-  public lokasi$?: Observable<PrestineLokasi>;
+  public lokasi$!: Observable<PrestineLokasi>;
   public currentUserProfile?: UserProfile;
   public viewportWidth = window.innerWidth;
+  public cariTpsQuery = '';
 
   user$ = user(this.auth).pipe(shareReplay(1));
 

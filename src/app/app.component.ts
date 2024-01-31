@@ -22,13 +22,20 @@ import { map, shareReplay } from 'rxjs';
         <button mat-icon-button (click)="snav.toggle()">
           <mat-icon>menu</mat-icon>
         </button>
-        <h1 class="app-name">KawalPemilu 2024</h1>
+        <h1 class="app-name" style="cursor: pointer;" (click)="router.navigate(['/h', '']); snav.close()">
+          KawalPemilu 2024
+        </h1>
+        <span class="spacer"></span>
+        <button mat-icon-button (click)="router.navigate(['/s']); snav.close()">
+          <mat-icon>search</mat-icon>
+        </button>
       </mat-toolbar>
 
       <mat-sidenav-container class="sidenav-container">
         <mat-sidenav #snav mode="over">
           <mat-nav-list>
             <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">Home</a>
+            <a mat-list-item (click)="router.navigate(['/s']); snav.close()">Cari TPS</a>
             @if (service.auth.currentUser; as u) {
               <a mat-list-item (click)="router.navigate(['/u']); snav.close()">My Profile</a>
               @if (service.profile$ | async; as p) {
@@ -67,6 +74,9 @@ import { map, shareReplay } from 'rxjs';
 
     .sidenav-container {
       flex: 1;
+    }
+    .spacer {
+      flex: 1 1 auto;
     }
   `
 })

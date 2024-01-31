@@ -1,0 +1,19 @@
+<mat-form-field style="width: 100%;">
+    <mat-label>Cari Lokasi TPS</mat-label>
+    <input type="text" placeholder="Propinsi / Kabupaten / Kecamatan / Desa" matInput
+        [formControl]="myControl" #firstInput>
+</mat-form-field>
+
+
+@if (results$ | async; as results) {
+    <ul>
+    @for (result of results; track result) {
+        <li>
+            @for (name of result.names; track name; let i = $index) {
+                <a [routerLink]="['/h', result.ids[i]]" routerLinkActive="router-link-active">{{name}}</a>
+                @if ($last) { <br> } @else { &gt; }
+            }
+        </li>
+    }
+    </ul>
+}
