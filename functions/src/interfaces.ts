@@ -453,3 +453,11 @@ export function autoId(n = 20): string {
   }
   return autoId;
 }
+
+/**
+ * @param {number} ms the number of milliseconds to delay.
+ * @returns {Promise<void>} that resolve ms later.
+ */
+export function delayTime(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

@@ -24,13 +24,18 @@ export class PhotoComponent implements OnChanges {
     pas3 = 0;
 
     get largePhoto() {
-        if (this.photoUrl.endsWith('.png')) return this.photoUrl;
+        if (!this.isServingUrl) return this.photoUrl;
         return this.photoUrl + '=s1280';
     }
 
     get thumbnail() {
-        if (this.photoUrl.endsWith('.png')) return this.photoUrl;
+        if (!this.isServingUrl) return this.photoUrl;
         return this.photoUrl + '=s200';
+    }
+
+    get isServingUrl() {
+        return !this.photoUrl.endsWith('.png') &&
+            !this.photoUrl.startsWith('data:');
     }
 
     ngOnChanges(): void {

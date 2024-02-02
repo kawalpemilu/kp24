@@ -24,7 +24,7 @@
                 @defer (on viewport) {
                     @if (isUploadDrawer[lokasi.id + c.id]) {
                         <app-upload [id]="lokasi.id + c.id"
-                            (onUpload)="onChange.emit(); drawer.close()">
+                            (onUpload)="onUpload(c, $event); drawer.close()">
                         </app-upload>
                     } @else if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
                         <app-review [id]="lokasi.id + c.id"
@@ -57,11 +57,10 @@
                         <td valign="top">
                             <app-photo [uploadRequest]="u"></app-photo>
                             @if (u.status === APPROVAL_STATUS.NEW) {
-                                Pending
+                                Pending Review
                             } @else if (u.status === APPROVAL_STATUS.REJECTED) {
                                 Rejected
                             }
-            
                         </td>
                     }
                 }
@@ -70,6 +69,9 @@
                 @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
                 <td valign="top">
                     <app-photo [aggregatedVotes]="tps"></app-photo>
+                    @if (tps.status === APPROVAL_STATUS.NEW) {
+                        Uploading
+                    }
                 </td>
                 }
             }

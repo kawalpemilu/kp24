@@ -19,11 +19,12 @@ export class AppService {
   public currentUserProfile?: UserProfile;
   public viewportWidth = window.innerWidth;
   public cariTpsQuery = '';
+  public rpcIsRunning = false;
 
   user$ = user(this.auth).pipe(shareReplay(1));
 
-  profile$: Observable<UserProfile> = this.user$.pipe(
-    switchMap(user => !user ? of() :
+  profile$: Observable<UserProfile | null> = this.user$.pipe(
+    switchMap(user => !user ? of(null) :
       this.getUserProfile$(user.uid).pipe(
         catchError(() => {
           console.error('User not registered', user.uid);
@@ -105,9 +106,11 @@ export class AppService {
   }
 
   async getHierarchy(id: string) {
+    this.rpcIsRunning = true;
     const callable = httpsCallable(this.functions, 'hierarchy');
     const result = await callable({ id })
     console.log('RPC hierarchy: ', id, result);
+    this.rpcIsRunning = false;
     return result;
   }
 

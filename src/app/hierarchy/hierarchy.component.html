@@ -11,8 +11,9 @@
             @if (!last) { <td valign="middle">&nbsp;&gt;&nbsp;</td> }
         }
         <td valign="middle">
-            <button mat-icon-button color="primary" (click)="reloadLokasi()" [disabled]="rpcIsRunning">
-                @if (lokasi.id.length == 10 && rpcIsRunning) {
+            <button mat-icon-button color="primary" (click)="reloadLokasi()"
+                [disabled]="service.rpcIsRunning">
+                @if (service.rpcIsRunning) {
                     <mat-spinner [diameter]="25"></mat-spinner>
                 } @else {
                     <mat-icon>refresh</mat-icon>

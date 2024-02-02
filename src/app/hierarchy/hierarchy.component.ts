@@ -54,7 +54,6 @@ export class HierarchyComponent implements OnInit {
   lokasiWithVotesTrigger$ = new BehaviorSubject<string>('');
 
   hierarchyHeight = 45;
-  rpcIsRunning = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -104,13 +103,13 @@ export class HierarchyComponent implements OnInit {
       }));
   }
 
-  populateUserUploads(lokasi: LokasiData, profile: UserProfile) {
+  populateUserUploads(lokasi: LokasiData, profile: UserProfile | null) {
     for (const c of lokasi.children) {
       const cid = lokasi.id + c.id;
       c.userUploads = [];
 
       const pendingUploads = c.agg[0].pendingUploads;
-      if (!pendingUploads || !profile.uploads) continue;
+      if (!pendingUploads || !profile?.uploads) continue;
       for (const u of Object.values(profile.uploads[cid] ?? {})) {
         if (pendingUploads[u.imageId]) {
           u.status = APPROVAL_STATUS.NEW;
@@ -148,12 +147,8 @@ export class HierarchyComponent implements OnInit {
   }
 
   getLokasiDataFromRpc$(id: string): Observable<LokasiData> {
-    this.rpcIsRunning = true;
     return from(this.service.getHierarchy(id))
-      .pipe(map(result => {
-        this.rpcIsRunning = false;
-        return this.toLokasiData(result.data as Lokasi);
-      }));
+      .pipe(map(result => this.toLokasiData(result.data as Lokasi)));
   }
 
   /**

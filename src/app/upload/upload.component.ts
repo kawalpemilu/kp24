@@ -6,9 +6,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, autoId, ImageMetadata, UploadRequest, Votes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, autoId, ImageMetadata, UploadRequest, Votes, AggregateVotes } from '../../../functions/src/interfaces';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
+
+export interface PendingAggregateVotes extends AggregateVotes {
+  onSubmitted: Promise<void>;
+}
 
 @Component({
   selector: 'app-upload',
@@ -20,7 +24,7 @@ import * as piexif from 'piexifjs';
 })
 export class UploadComponent {
   @Input() id = '';
-  @Output() onUpload = new EventEmitter<string>();
+  @Output() onUpload = new EventEmitter<PendingAggregateVotes>();
   @ViewChild('firstInput') firstInput!: ElementRef;
 
   private storage: Storage = inject(Storage);
@@ -95,11 +99,29 @@ export class UploadComponent {
         status: APPROVAL_STATUS.NEW,
       };
 
-      this.service.upload(request).then(console.log).catch(e => {
+      const onSubmitted = this.service.upload(request).then(console.log).catch(e => {
         alert('Unable to upload photo');
         console.error('Unable upload', e);
       });
-      this.onUpload.emit(request.imageId);
+      const pendingVotes: PendingAggregateVotes = {
+        idLokasi: this.id,
+        name: '',
+        totalTps: 0,
+        totalPendingTps: 0,
+        totalErrorTps: 0,
+        totalCompletedTps: 0,
+        pas1: votes.pas1,
+        pas2: votes.pas2,
+        pas3: votes.pas3,
+        updateTs: 0,
+        status: APPROVAL_STATUS.NEW,
+        uploadedPhoto: {
+          imageId: request.imageId,
+          photoUrl: imgURL
+        },
+        onSubmitted
+      };
+      this.onUpload.emit(pendingVotes);
     } catch (e) {
       console.error(e);
     }
