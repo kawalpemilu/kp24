@@ -21,8 +21,8 @@ export class TpsListComponent {
   @Input() lokasi!: LokasiData;
   @Output() onChange = new EventEmitter<Promise<void>>();
 
-  // Whether to open the upload or review component when the drawer is open.
   isUploadDrawer: Record<string, boolean> = {};
+  isDrawerOpen: Record<string, boolean> = {};
 
   USER_ROLE = USER_ROLE;
   APPROVAL_STATUS = APPROVAL_STATUS;

@@ -1,11 +1,14 @@
-<div style="width: 250px; padding: 30px 0;">
+<div style="width: 250px">
 @if (!service.auth.currentUser) {
+    <br><br>
     <button mat-raised-button color="warn" (click)="service.login()">
         Sign In to Upload Photo
     </button>
 } @else if (service.userExceedsMaxUploads()) {
+    <br><br>
     Max Uploads Exceeded
 } @else if (digitizing) {
+    <img style="max-width: 250px; max-height: 250px;" [src]="imgURL" />
     <p>
         Masukkan jumlah suara:
     </p>
@@ -38,17 +41,21 @@
     </form>
     <br><br>
 } @else if (uploading) {
+    <br><br>
     Uploading your photo<br>
     <mat-spinner></mat-spinner>
 } @else {
-    <h3>Upload foto hasil suara:</h3>
+    <h3>Instruksi untuk upload foto:</h3>
 
-    <p>TODO: tambahin instruksi</p>
+    <ul>
+        <li>Ambil foto form [C1 plano] yang telah <b>ditanda tangan</b> oleh semua pihak dan simpan foto tersebut di HP anda.</li>
+        <li>Pastikan angka di foto yang diambil terlihat jelas. [link ke contoh]</li>
+        <li>Klik tombol dibawah untuk mengupload foto tersebut ke KawalPemilu:</li>
+    </ul>
 
     <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
-
     <br>
-    <button mat-raised-button color="primary" (click)="u.click()">
+    <button mat-raised-button color="primary" (click)="u.click()" style="margin-left: 10px">
         Upload Foto
     </button>
 }

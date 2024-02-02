@@ -1,7 +1,9 @@
 <table class="collapsed_border">
     @for (c of lokasi.children; track c.id) {
     <tr *ngIf="c.agg[0] as a">
-        <td width="145" align="center" nowrap [style.background-color]="a.totalPendingTps ? 'orange' : ''">
+        @if (lokasi.id + c.id; as tpsId) {
+        <td width="145" align="center" nowrap valign="top"
+            [style.background-color]="a.totalPendingTps ? 'orange' : ''">
             <br>
             <b style="font-size: large">TPS #{{ a.name }}</b>
             <br>
@@ -14,21 +16,21 @@
             <br>
             @if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
                 <button *ngIf="a.totalPendingTps"
-                    (click)="isUploadDrawer[lokasi.id + c.id] = false; drawer.toggle()"
+                    (click)="isUploadDrawer[tpsId] = false; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
                     mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
             }
         </td>
         <td width="*" align="left">
             <mat-drawer-container [hasBackdrop]="true">
-                <mat-drawer #drawer mode="over">
+                <mat-drawer #drawer mode="over" (openedChange)="isDrawerOpen[tpsId] = $event">
                 @defer (on viewport) {
-                    @if (isUploadDrawer[lokasi.id + c.id]) {
-                        <app-upload [id]="lokasi.id + c.id"
-                            (onUpload)="onUpload(c, $event); drawer.close()">
+                    @if (isUploadDrawer[tpsId]) {
+                        <app-upload [id]="tpsId"
+                            (onUpload)="onUpload(c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
                         </app-upload>
                     } @else if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
-                        <app-review [id]="lokasi.id + c.id"
-                            (onReview)="onChange.emit(); drawer.close()">
+                        <app-review [id]="tpsId"
+                            (onReview)="onChange.emit(); isDrawerOpen[tpsId] = false; drawer.close()">
                         </app-review>
                     }
                 } @placeholder { 
@@ -38,10 +40,10 @@
                 <mat-drawer-content>
                     <div style="min-width: 300px; overflow-x: scroll"
                         [style.width]="(service.viewportWidth - 150) + 'px'">
-                    <table height="250">
+                    <table [style.height]="isDrawerOpen[tpsId] ? '500px' : '250px'">
                     <tr>
                         <td>
-                            <div (click)="isUploadDrawer[lokasi.id + c.id] = true; drawer.toggle()"
+                            <div (click)="isUploadDrawer[tpsId] = true; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
                                     style="width: 100px; text-align: center; cursor: pointer;">
                                 <button mat-fab color="primary">
                                     <mat-icon>add_a_photo</mat-icon>
@@ -52,7 +54,7 @@
                             </div>
                         </td>
             @if (service.currentUserProfile?.uploads; as uploads) {
-                @if (uploads[lokasi.id + c.id]; as u) {
+                @if (uploads[tpsId]; as u) {
                     @for (u of c.userUploads; track u.imageId) {
                         <td valign="top">
                             <app-photo [uploadRequest]="u"></app-photo>
@@ -81,6 +83,7 @@
                 </mat-drawer-content>
             </mat-drawer-container>
         </td>
+        }
     </tr>
 }
 </table>

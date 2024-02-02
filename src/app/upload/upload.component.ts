@@ -20,7 +20,7 @@ export interface PendingAggregateVotes extends AggregateVotes {
   imports: [CommonModule, FormsModule,
     MatIconModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './upload.component.html',
-  styleUrl: './upload.component.css'
+  styles: `li { margin-left: -10px; padding-right: 10px; line-height: 2; }`
 })
 export class UploadComponent {
   @Input() id = '';
@@ -35,6 +35,7 @@ export class UploadComponent {
   pas1?: number;
   pas2?: number;
   pas3?: number;
+  imgURL = '';
 
   submitPhoto = () => { };
   cancelSubmit = () => { };
@@ -58,35 +59,35 @@ export class UploadComponent {
       return;
     }
 
-    let imgURL = await this.readAsDataUrl(file);
-    if (!imgURL) {
+    this.imgURL = await this.readAsDataUrl(file);
+    if (!this.imgURL) {
       alert('Invalid image');
       return;
     }
 
-    const metadata: ImageMetadata = { s: imgURL.length, l: file.lastModified };
-    const exifObj = this.populateMetadata(imgURL, metadata);
+    const metadata: ImageMetadata = { s: this.imgURL.length, l: file.lastModified };
+    const exifObj = this.populateMetadata(this.imgURL, metadata);
     if (file.size > 800 * 1024) {
-      imgURL = await this.compress(imgURL as string, 2048);
-      if (!imgURL) {
+      this.imgURL = await this.compress(this.imgURL as string, 2048);
+      if (!this.imgURL) {
         alert('Cannot compress image');
         return;
       }
       if (exifObj) {
         try {
           // https://piexifjs.readthedocs.io/en/2.0/sample.html#insert-exif-into-jpeg
-          imgURL = piexif.insert(piexif.dump(exifObj), imgURL);
+          this.imgURL = piexif.insert(piexif.dump(exifObj), this.imgURL);
         } catch (e) {
           console.error(e);
         }
       }
-      metadata.z = imgURL.length;
+      metadata.z = this.imgURL.length;
     }
     if (metadata.o !== undefined && metadata.o !== 1) {
-      imgURL = await this.rotateImageUrl(imgURL, metadata.o);
+      this.imgURL = await this.rotateImageUrl(this.imgURL, metadata.o);
     }
 
-    const imageId = this.startUploadPhoto(imgURL, metadata);
+    const imageId = this.startUploadPhoto(metadata);
 
     try {
       const votes = await this.startDigitize();
@@ -117,7 +118,7 @@ export class UploadComponent {
         status: APPROVAL_STATUS.NEW,
         uploadedPhoto: {
           imageId: request.imageId,
-          photoUrl: imgURL
+          photoUrl: this.imgURL
         },
         onSubmitted
       };
@@ -127,13 +128,13 @@ export class UploadComponent {
     }
   }
 
-  async startUploadPhoto(imgURL: string, metadata: ImageMetadata) {
+  async startUploadPhoto(metadata: ImageMetadata) {
     const imageId = autoId();
     const filename = `/uploads/${this.id}/${this.service.auth.currentUser?.uid}/${imageId}`;
     console.log('Uploading to', filename, metadata);
 
     this.uploading = true;
-    await uploadString(ref(this.storage, filename), imgURL as string, 'data_url');
+    await uploadString(ref(this.storage, filename), this.imgURL, 'data_url');
     console.log('Uploaded a blob or file!');
     this.uploading = false;
     return imageId;
