@@ -41,6 +41,8 @@
                 <button *ngIf="a.totalPendingTps"
                     (click)="isUploadDrawer[tpsId] = false; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
                     mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
+            } @else {
+                <span *ngIf="a.totalPendingTps">{{ numPendingUploads(a) }} Unreviewed</span>
             }
         </td>
         <td width="*" align="left">
