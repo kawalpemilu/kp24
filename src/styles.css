@@ -15,8 +15,11 @@ table.collapsed_border {
   border-spacing: 0;
 }
 
-.collapsed_border td,
-.collapsed_border th {
+.collapsed_border > tbody > tr > td,
+.collapsed_border > thead > tr > th,
+.collapsed_border > tfoot > tr > th,
+.collapsed_border > tr > td,
+.collapsed_border > tr > th {
   padding: 7px;
   border: 1px solid gray;
 }

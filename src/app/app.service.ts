@@ -20,6 +20,9 @@ export class AppService {
   public viewportWidth = window.innerWidth;
   public cariTpsQuery = '';
   public rpcIsRunning = false;
+  public isPendingTps = false;
+  public isErrorTps = false;
+  public isCompleteTps = false;
 
   user$ = user(this.auth).pipe(shareReplay(1));
 

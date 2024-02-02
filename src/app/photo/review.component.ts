@@ -11,22 +11,7 @@ import { PhotoComponent } from './photo.component';
     selector: 'app-review',
     standalone: true,
     imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule, PhotoComponent],
-    template: `
-<div style="width: 250px">
-@if (pending$ | async; as p) {
-    @if (loading) {
-        <mat-spinner [diameter]="20" style="float:left"></mat-spinner>
-        &nbsp; {{ loading }}
-        <app-photo [uploadRequest]="p"></app-photo>
-    } @else {
-        <app-photo [uploadRequest]="p" [review]="true" (onReview)="approve(p, $event)">
-        </app-photo>
-    }
-} @else {
-    <mat-spinner></mat-spinner>
-}
-</div>
-    `,
+    templateUrl: './review.component.html',
 })
 export class ReviewComponent implements OnInit {
     @Input() id = '';
@@ -47,8 +32,15 @@ export class ReviewComponent implements OnInit {
         this.pending$ = this.service.getNextPendingPhoto$(this.id);
     }
 
-    async approve(p: UploadRequest, votes: Votes) {
-        this.loading = (votes.status === APPROVAL_STATUS.APPROVED) ? 'Approving ...' : 'Rejecting ...' ;
+    async approve(p: UploadRequest, verdict: boolean) {
+        const votes: Votes = {
+            pas1: p.votes[0].pas1,
+            pas2: p.votes[0].pas2,
+            pas3: p.votes[0].pas3,
+            status: verdict ? APPROVAL_STATUS.APPROVED : APPROVAL_STATUS.REJECTED,
+            updateTs: 0
+        };
+        this.loading = (votes.status === APPROVAL_STATUS.APPROVED) ? 'Approving ...' : 'Rejecting ...';
         try {
             const result = await this.service.review(this.id, p.imageId, votes);
             console.log('Approve', result.data, p);

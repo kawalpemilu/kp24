@@ -9,18 +9,26 @@ import { APPROVAL_STATUS, AggregateVotes, USER_ROLE } from '../../../functions/s
 import { PendingAggregateVotes, UploadComponent } from '../upload/upload.component';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-tps-list',
   standalone: true,
   imports: [CommonModule, MatSidenavModule, MatIconModule, MatButtonModule,
-    UploadComponent, ReviewComponent, PhotoComponent],
+    MatInputModule, MatFormFieldModule, FormsModule, ReactiveFormsModule, MatCheckboxModule,
+    UploadComponent, ReviewComponent, PhotoComponent, MatProgressSpinnerModule],
   templateUrl: './tps-list.component.html',
+  styles: ``
 })
 export class TpsListComponent {
   @Input() lokasi!: LokasiData;
   @Output() onChange = new EventEmitter<Promise<void>>();
 
+  myControl = new FormControl('');
   isUploadDrawer: Record<string, boolean> = {};
   isDrawerOpen: Record<string, boolean> = {};
 
@@ -36,5 +44,19 @@ export class TpsListComponent {
 
   numPendingUploads(a: AggregateVotes) {
     return Object.keys(a.pendingUploads || {}).length;
+  }
+
+  filter(arr: ChildLokasi[]) {
+    const tpsNo = this.myControl.getRawValue();
+    if (!tpsNo && !this.service.isPendingTps &&
+      !this.service.isErrorTps && !this.service.isCompleteTps) return arr;
+    return arr.filter(c => {
+      const a = c.agg[0];
+      if (tpsNo && +c.id === +tpsNo) return true;
+      if (this.service.isPendingTps && a.totalPendingTps) return true;
+      if (this.service.isErrorTps && a.totalErrorTps) return true;
+      if (this.service.isCompleteTps && a.totalCompletedTps) return true;
+      return false;
+    });
   }
 }

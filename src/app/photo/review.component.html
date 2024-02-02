@@ -1,0 +1,25 @@
+<div style="width: 250px">
+    @if (pending$ | async; as p) {
+        @if (loading) {
+            <mat-spinner [diameter]="20" style="float:left"></mat-spinner>
+            &nbsp; {{ loading }}
+            <br><br>
+            <app-photo [photoUrl]="p.servingUrl"></app-photo>
+        } @else {
+            <app-photo [photoUrl]="p.servingUrl"></app-photo>
+            <br>
+            @if (p.votes[0]; as v) {
+                Pas1: {{ v.pas1 }}<br>
+                Pas2: {{ v.pas2 }}<br>
+                Pas3: {{ v.pas3 }}<br>
+            }
+            <br>
+            <button (click)="approve(p, true)" mat-raised-button color="primary">Approve</button>
+            <br><br>
+            <button (click)="approve(p, false)" mat-raised-button color="warn">Reject</button>
+        }
+    } @else {
+        <mat-spinner></mat-spinner>
+    }
+</div>
+    

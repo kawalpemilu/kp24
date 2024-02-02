@@ -1,5 +1,27 @@
+<table cellpadding="0" cellspacing="0">
+<tr>
+    <td>
+        <mat-form-field style="width: 100px" subscriptSizing="dynamic">
+            <mat-label>Cari #TPS</mat-label>
+            <input type="text" placeholder="Nomor TPS" matInput
+                [formControl]="myControl" #firstInput>
+        </mat-form-field>
+    </td>
+    <td>
+        <mat-checkbox [(ngModel)]="service.isPendingTps">Pending</mat-checkbox>
+    </td>
+    <td>
+        <mat-checkbox [(ngModel)]="service.isErrorTps">Error</mat-checkbox>
+    </td>
+    <td>
+        <mat-checkbox [(ngModel)]="service.isCompleteTps">Complete</mat-checkbox>
+    </td>
+</tr>
+</table>
+
 <table class="collapsed_border">
-    @for (c of lokasi.children; track c.id) {
+    @for (c of filter(lokasi.children); track c.id) {
+    @defer (on viewport) {
     <tr *ngIf="c.agg[0] as a">
         @if (lokasi.id + c.id; as tpsId) {
         <td width="145" align="center" nowrap valign="top"
@@ -40,11 +62,11 @@
                 <mat-drawer-content>
                     <div style="min-width: 300px; overflow-x: scroll"
                         [style.width]="(service.viewportWidth - 150) + 'px'">
-                    <table [style.height]="isDrawerOpen[tpsId] ? '500px' : '250px'">
+                    <table [style.height]="isDrawerOpen[tpsId] ? '500px' : '250px'" cellpadding="10">
                     <tr>
                         <td>
                             <div (click)="isUploadDrawer[tpsId] = true; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
-                                    style="width: 100px; text-align: center; cursor: pointer;">
+                                    style="width: 80px; text-align: center; cursor: pointer;">
                                 <button mat-fab color="primary">
                                     <mat-icon>add_a_photo</mat-icon>
                                 </button>
@@ -57,7 +79,14 @@
                 @if (uploads[tpsId]; as u) {
                     @for (u of c.userUploads; track u.imageId) {
                         <td valign="top">
-                            <app-photo [uploadRequest]="u"></app-photo>
+                            <div style="height: 125px; padding-bottom: 5px">
+                                <app-photo [photoUrl]="u.servingUrl"></app-photo>
+                            </div>
+                            @if (u.votes[0]; as v) {
+                                Pas1: {{ v.pas1 }}<br>
+                                Pas2: {{ v.pas2 }}<br>
+                                Pas3: {{ v.pas3 }}<br>
+                            }
                             @if (u.status === APPROVAL_STATUS.NEW) {
                                 Pending Review
                             } @else if (u.status === APPROVAL_STATUS.REJECTED) {
@@ -70,9 +99,16 @@
             @if (c.agg.length > 1) {
                 @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
                 <td valign="top">
-                    <app-photo [aggregatedVotes]="tps"></app-photo>
+                    <div style="height: 125px; padding-bottom: 5px">
+                        <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"></app-photo>
+                    </div>
+                    Pas1: {{ tps.pas1 }}<br>
+                    Pas2: {{ tps.pas2 }}<br>
+                    Pas3: {{ tps.pas3 }}<br>
                     @if (tps.status === APPROVAL_STATUS.NEW) {
-                        Uploading
+                        <mat-spinner [diameter]="15" style="float: left; margin-right: 5px">
+                        </mat-spinner>
+                        Uploading ...
                     }
                 </td>
                 }
@@ -85,5 +121,24 @@
         </td>
         }
     </tr>
-}
+    } @placeholder {
+        <br>
+    }
+    } @empty {
+        <br><br>
+        <ul>
+            @if (firstInput.value) {
+                <li>Tidak ada TPS dengan nomor TPS = {{ firstInput.value }}</li>
+            }
+            @if (service.isPendingTps) {
+                <li>Tidak ada TPS dengan status Pending</li>
+            }
+            @if (service.isErrorTps) {
+                <li>Tidak ada TPS dengan status Error.</li>
+            }
+            @if (service.isCompleteTps) {
+                <li>Tidak ada TPS dengan status Complete.</li>
+            }
+        </ul>
+    }
 </table>
