@@ -40,7 +40,7 @@
             @if (a.totalErrorTps) {
                 <b style="color: red">Error!</b>
             }
-            @if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
+            @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                 <button *ngIf="a.totalPendingTps" [disabled]="isProcessing[tpsId] > 0"
                     (click)="isUploadDrawer[tpsId] = false; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
                     mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
@@ -53,10 +53,10 @@
                 <mat-drawer #drawer mode="over" (openedChange)="isDrawerOpen[tpsId] = $event">
                 @defer (on viewport) {
                     @if (isUploadDrawer[tpsId]) {
-                        <app-upload [id]="tpsId" [votes]="a"
+                        <app-upload [id]="tpsId" [votes]="a" [userProfile]="userProfile"
                             (onUpload)="onUploadOrReview(tpsId, c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
                         </app-upload>
-                    } @else if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
+                    } @else if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                         <app-review [id]="tpsId"
                             (onReview)="onUploadOrReview(tpsId, c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
                         </app-review>
@@ -104,7 +104,7 @@
                 </td>
                 }
             }
-            @if (service.currentUserProfile?.uploads; as uploads) {
+            @if (userProfile?.uploads; as uploads) {
                 @if (uploads[tpsId]; as u) {
                     @for (u of c.userUploads; track u.imageId) {
                         <td valign="top">

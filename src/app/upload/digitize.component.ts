@@ -17,8 +17,8 @@ import { APPROVAL_STATUS, Votes } from '../../../functions/src/interfaces';
 export class DigitizeComponent implements OnChanges {
     @ViewChild('firstInput') firstInput!: ElementRef;
 
-    @Input() imageId = '';
-    @Input() votes!: Votes;
+    @Input({required: true}) imageId = '';
+    @Input({required: true}) votes!: Votes;
     @Input() review = false;
     @Output() onSubmit = new EventEmitter<Votes>();
     status = APPROVAL_STATUS.NEW;

@@ -4,7 +4,7 @@
     <button mat-raised-button color="warn" (click)="service.login()">
         Sign In to Upload Photo
     </button>
-} @else if (service.userExceedsMaxUploads()) {
+} @else if (userExceedsMaxUploads()) {
     <br><br>
     Max Uploads Exceeded
 } @else if (digitizing) {

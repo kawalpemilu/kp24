@@ -16,7 +16,7 @@ import { DigitizeComponent } from '../upload/digitize.component';
     templateUrl: './review.component.html',
 })
 export class ReviewComponent implements OnInit {
-    @Input() id = '';
+    @Input({required: true}) id = '';
     @Output() onReview = new EventEmitter<PendingAggregateVotes>();
 
     pending$!: Observable<UploadRequest>;

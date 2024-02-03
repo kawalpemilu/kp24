@@ -21,7 +21,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         <!-- } -->`,
 })
 export class PhotoComponent {
-    @Input() photoUrl = '';
+    @Input({required: true}) photoUrl = '';
     @Input() maxWidth = 125;
     @Input() maxHeight = 125;
     @Input() hiResThumb = false;

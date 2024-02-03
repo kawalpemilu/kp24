@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, autoId, ImageMetadata, Votes, PendingAggregateVotes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, autoId, ImageMetadata, Votes, PendingAggregateVotes, UserProfile } from '../../../functions/src/interfaces';
 import { DigitizeComponent } from './digitize.component';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
@@ -21,8 +21,9 @@ import * as piexif from 'piexifjs';
   styles: `li { margin-left: -10px; padding-right: 10px; line-height: 2; }`
 })
 export class UploadComponent {
-  @Input() id!: string;
-  @Input() votes!: Votes;
+  @Input({required: true}) userProfile!: UserProfile | null;
+  @Input({required: true}) id!: string;
+  @Input({required: true}) votes!: Votes;
   @Output() onUpload = new EventEmitter<PendingAggregateVotes>();
 
   private storage: Storage = inject(Storage);
@@ -312,5 +313,10 @@ export class UploadComponent {
     ctx.drawImage(image, x, y);
     ctx.restore();
     return canvas.toDataURL('image/jpeg');
+  }
+
+  userExceedsMaxUploads() {
+    const u = this.userProfile;
+    return u && (u.uploadCount >= u.uploadMaxCount);
   }
 }

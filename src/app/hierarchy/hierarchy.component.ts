@@ -53,6 +53,7 @@ export class HierarchyComponent implements OnInit {
   // Used for trigger the refetching the LokasiData.
   lokasiWithVotesTrigger$ = new BehaviorSubject<string>('');
 
+  userProfile: UserProfile | null = null;
   hierarchyHeight = 45;
 
   constructor(
@@ -70,6 +71,7 @@ export class HierarchyComponent implements OnInit {
 
     this.lokasi$ = combineLatest([id$, this.service.profile$, this.lokasiWithVotesTrigger$]).pipe(
       switchMap(([id, profile]) => {
+        this.userProfile = profile;
         // Creates two observables from the given location id.
         // The first observable is fetching from static hierarchy,
         // this observable can emit value very fast because it constructs

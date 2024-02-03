@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ChildLokasi, LokasiData } from './hierarchy.component';
 import { AppService } from '../app.service';
-import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes, UserProfile } from '../../../functions/src/interfaces';
 import { UploadComponent } from '../upload/upload.component';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
@@ -25,8 +25,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
   styles: ``
 })
 export class TpsListComponent {
-  @Input() lokasi!: LokasiData;
-  @Output() onChange = new EventEmitter<Promise<void>>();
+  @Input({required: true}) userProfile!: UserProfile | null;
+  @Input({required: true}) lokasi!: LokasiData;
 
   myControl = new FormControl('');
   isUploadDrawer: Record<string, boolean> = {};
@@ -43,7 +43,10 @@ export class TpsListComponent {
     this.isProcessing[tpsId]++;
     c.agg.splice(1, 0, agg);
     agg.onSubmitted.then(() => {
-      this.onChange.emit();
+      console.log('On upload/review success');
+      this.isProcessing[tpsId]--;
+    }).catch(e => {
+      console.error('On upload/review error', e);
       this.isProcessing[tpsId]--;
     });
   }
