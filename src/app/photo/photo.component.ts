@@ -8,11 +8,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     standalone: true,
     imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule],
     template: `
-        <a [href]="largePhoto" target="_blank">
-            <img [style.max-width]="maxWidth + 'px'"
-                 [style.max-height]="maxHeight + 'px'"
-                 [src]="hiResThumb ? largePhoto : thumbnail" /><br>
-        </a>
+        <div [style.width]="maxWidth + 'px'" [style.height]="maxHeight + 'px'">
+            <a [href]="largePhoto" target="_blank">
+                <img [style.max-width]="maxWidth + 'px'"
+                    [style.max-height]="maxHeight + 'px'"
+                    [src]="hiResThumb ? largePhoto : thumbnail" /><br>
+            </a>
+        </div>
         <!-- @if (imageMetadata; as m) { -->
             <!-- Size: {{ (m.z || m.s) / 1024 | number: '1.0-0'}}KB<br> -->
             <!-- <pre style="text-align: left; width: 200px">{{ m | json }}</pre> -->

@@ -6,14 +6,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, autoId, ImageMetadata, Votes, AggregateVotes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, autoId, ImageMetadata, Votes, PendingAggregateVotes } from '../../../functions/src/interfaces';
 import { DigitizeComponent } from './digitize.component';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
-
-export interface PendingAggregateVotes extends AggregateVotes {
-  onSubmitted: Promise<string>;
-}
 
 @Component({
   selector: 'app-upload',
@@ -109,47 +105,48 @@ export class UploadComponent {
       console.error('The image was not parsed yet');
       return;
     }
-    // Capture all the data before it's cleared below.
-    const idLokasi = this.id;
-    const imageId = this.imageId;
-    const imageMetadata = this.metadata;
-    const photoUrl = this.imgURL;
-    const onSubmitted = this.uploadResult$.then(res => {
-      if (!res) return '';
-      return this.service
-        .upload({
-          idLokasi,
-          imageId,
-          imageMetadata,
-          servingUrl: '', // Will be populated by the server.
-          votes: [votes],
-          status: APPROVAL_STATUS.NEW,
-        })
-        .then(v => v.data ? imageId : '')
-    }).catch(e => {
-      alert('Unable to submit votes');
-      console.error('Unable submit votes', e);
-      return '';
-    });
-    this.onUpload.emit({
-      idLokasi,
-      name: '',
-      totalTps: 0,
-      totalPendingTps: 0,
-      totalErrorTps: 0,
-      totalCompletedTps: 0,
-      pas1: votes.pas1,
-      pas2: votes.pas2,
-      pas3: votes.pas3,
-      updateTs: 0,
-      status: APPROVAL_STATUS.NEW,
-      uploadedPhoto: { imageId, photoUrl },
-      onSubmitted
-    });    
-    this.clearState();
-  }
 
-  clearState() {
+    if (votes.status === APPROVAL_STATUS.APPROVED) {
+      // Capture all the data before it's cleared below.
+      const idLokasi = this.id;
+      const imageId = this.imageId;
+      const imageMetadata = this.metadata;
+      const photoUrl = this.imgURL;
+      const onSubmitted = this.uploadResult$.then(res => {
+        if (!res) return '';
+        return this.service
+          .upload({
+            idLokasi,
+            imageId,
+            imageMetadata,
+            servingUrl: '', // Will be populated by the server.
+            votes: [votes],
+            status: APPROVAL_STATUS.NEW,
+          })
+          .then(v => v.data ? imageId : '')
+      }).catch(e => {
+        alert('Unable to submit votes');
+        console.error('Unable submit votes', e);
+        return '';
+      });
+      this.onUpload.emit({
+        idLokasi,
+        name: '',
+        totalTps: 0,
+        totalPendingTps: 0,
+        totalErrorTps: 0,
+        totalCompletedTps: 0,
+        pas1: votes.pas1,
+        pas2: votes.pas2,
+        pas3: votes.pas3,
+        updateTs: 0,
+        status: APPROVAL_STATUS.NEW,
+        uploadedPhoto: { imageId, photoUrl },
+        onSubmitted
+      });
+    }
+
+    // Clear the states.
     this.digitizing = false;
     this.imageId = '';
     this.metadata = undefined;

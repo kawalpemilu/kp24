@@ -1,10 +1,10 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { Votes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, Votes } from '../../../functions/src/interfaces';
 
 @Component({
     selector: 'app-digitize',
@@ -19,8 +19,10 @@ export class DigitizeComponent implements OnChanges {
 
     @Input() imageId = '';
     @Input() votes!: Votes;
+    @Input() review = false;
     @Output() onSubmit = new EventEmitter<Votes>();
-    @Output() onCancel = new EventEmitter<void>();
+    status = APPROVAL_STATUS.NEW;
+    APPROVAL_STATUS = APPROVAL_STATUS;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['imageId']) {
@@ -31,5 +33,10 @@ export class DigitizeComponent implements OnChanges {
                 this.votes = {} as Votes;
             }
         }
+    }
+
+    onDigitized() {
+        this.votes.status = this.status;
+        this.onSubmit.emit(this.votes);
     }
 }

@@ -38,7 +38,7 @@
             DPT: <b>{{ a.dpt }}</b><br>
             <br>
             @if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
-                <button *ngIf="a.totalPendingTps"
+                <button *ngIf="a.totalPendingTps" [disabled]="isProcessing[tpsId] > 0"
                     (click)="isUploadDrawer[tpsId] = false; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
                     mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
             } @else {
@@ -51,11 +51,11 @@
                 @defer (on viewport) {
                     @if (isUploadDrawer[tpsId]) {
                         <app-upload [id]="tpsId" [votes]="a"
-                            (onUpload)="onUpload(c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
+                            (onUpload)="onUploadOrReview(tpsId, c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
                         </app-upload>
                     } @else if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
                         <app-review [id]="tpsId"
-                            (onReview)="onChange.emit(); isDrawerOpen[tpsId] = false; drawer.close()">
+                            (onReview)="onUploadOrReview(tpsId, c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
                         </app-review>
                     }
                 } @placeholder {
@@ -87,10 +87,16 @@
                     Pas1: {{ tps.pas1 }}<br>
                     Pas2: {{ tps.pas2 }}<br>
                     Pas3: {{ tps.pas3 }}<br>
-                    @if (tps.status === APPROVAL_STATUS.NEW) {
+                    @if (tps.updateTs === 0) {
                         <mat-spinner [diameter]="15" style="float: left; margin-right: 5px">
                         </mat-spinner>
-                        Uploading ...
+                        @if (tps.status === APPROVAL_STATUS.NEW) {
+                            Uploading ...
+                        } @else if (tps.status === APPROVAL_STATUS.APPROVED) {
+                            Approving ...
+                        } @else if (tps.status === APPROVAL_STATUS.REJECTED) {
+                            Rejecting ...
+                        }
                     }
                 </td>
                 }

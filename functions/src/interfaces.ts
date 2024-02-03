@@ -308,6 +308,11 @@ export declare interface AggregateVotes extends Votes {
   dpt?: number;
 }
 
+// Extension to signify that the AggregateVotes is being submitted.
+export interface PendingAggregateVotes extends AggregateVotes {
+  onSubmitted: Promise<string>;
+}
+
 export declare interface UploadedPhoto {
   // The blobId of the image file.
   imageId: string;

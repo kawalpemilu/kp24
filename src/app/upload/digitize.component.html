@@ -1,4 +1,4 @@
-<form #form="ngForm" (ngSubmit)="this.onSubmit.emit(this.votes)">
+<form #form="ngForm" (ngSubmit)="onDigitized()">
 <table class="collapsed_border">
     <tr>
         <td>Paslon #1</td>
@@ -20,12 +20,14 @@
     </tr>
     <tr>
         <td colspan="2">
-            <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">
-                Submit
+            <button mat-raised-button color="primary" [disabled]="!form.valid"
+                (click)="status = APPROVAL_STATUS.APPROVED">
+                {{ review ? 'Approve' : 'Submit' }}
             </button>
             &nbsp; &nbsp;
-            <button mat-raised-button color="warn" (click)="onCancel.emit()">
-                Cancel
+            <button mat-raised-button color="warn"
+                (click)="status = APPROVAL_STATUS.REJECTED">
+                {{ review ? 'Reject' : 'Cancel' }}
             </button>
         </td>
     </tr>

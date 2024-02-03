@@ -5,8 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ChildLokasi, LokasiData } from './hierarchy.component';
 import { AppService } from '../app.service';
-import { APPROVAL_STATUS, AggregateVotes, USER_ROLE } from '../../../functions/src/interfaces';
-import { PendingAggregateVotes, UploadComponent } from '../upload/upload.component';
+import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes } from '../../../functions/src/interfaces';
+import { UploadComponent } from '../upload/upload.component';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -31,15 +31,21 @@ export class TpsListComponent {
   myControl = new FormControl('');
   isUploadDrawer: Record<string, boolean> = {};
   isDrawerOpen: Record<string, boolean> = {};
+  isProcessing: Record<string, number> = {};
 
   USER_ROLE = USER_ROLE;
   APPROVAL_STATUS = APPROVAL_STATUS;
 
   constructor(public service: AppService) { }
 
-  onUpload(c: ChildLokasi, agg: PendingAggregateVotes) {
+  onUploadOrReview(tpsId: string, c: ChildLokasi, agg: PendingAggregateVotes) {
+    this.isProcessing[tpsId] = this.isProcessing[tpsId] ?? 0;
+    this.isProcessing[tpsId]++;
     c.agg.splice(1, 0, agg);
-    agg.onSubmitted.then(() => this.onChange.emit());
+    agg.onSubmitted.then(() => {
+      this.onChange.emit();
+      this.isProcessing[tpsId]--;
+    });
   }
 
   numPendingUploads(a: AggregateVotes) {
