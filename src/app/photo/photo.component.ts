@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         <a [href]="largePhoto" target="_blank">
             <img [style.max-width]="maxWidth + 'px'"
                  [style.max-height]="maxHeight + 'px'"
-                 [src]="thumbnail" /><br>
+                 [src]="hiResThumb ? largePhoto : thumbnail" /><br>
         </a>
         <!-- @if (imageMetadata; as m) { -->
             <!-- Size: {{ (m.z || m.s) / 1024 | number: '1.0-0'}}KB<br> -->
@@ -22,6 +22,7 @@ export class PhotoComponent {
     @Input() photoUrl = '';
     @Input() maxWidth = 125;
     @Input() maxHeight = 125;
+    @Input() hiResThumb = false;
 
     get largePhoto() {
         if (!this.isServingUrl) return this.photoUrl;

@@ -12,38 +12,13 @@
     <p>
         Masukkan jumlah suara:
     </p>
-    <form #form="ngForm" (ngSubmit)="submitPhoto()">
-    <table class="collapsed_border">
-        <tr>
-            <td>Paslon #1</td>
-            <td><input type="number" name="pas1" style="width: 50px;" [(ngModel)]="pas1" #firstInput required></td>
-        </tr>
-        <tr>
-            <td>Paslon #2</td>
-            <td><input type="number" name="pas2" style="width: 50px;" [(ngModel)]="pas2" required></td>
-        </tr>
-        <tr>
-            <td>Paslon #3</td>
-            <td><input type="number" name="pas3" style="width: 50px;" [(ngModel)]="pas3" required></td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">
-                    Submit
-                </button>
-                &nbsp; &nbsp;
-                <button mat-raised-button color="warn" (click)="cancelSubmit()">
-                    Cancel
-                </button>
-            </td>
-        </tr>
-    </table>
-    </form>
+    <app-digitize
+        [votes]="votes"
+        [imageId]="imageId"
+        (onSubmit)="onDigitized($event)"
+        (onCancel)="clearState()">
+    </app-digitize>
     <br><br>
-} @else if (uploading) {
-    <br><br>
-    Uploading your photo<br>
-    <mat-spinner></mat-spinner>
 } @else {
     <h3>Instruksi untuk upload foto:</h3>
 

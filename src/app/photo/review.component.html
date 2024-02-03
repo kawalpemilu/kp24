@@ -6,7 +6,9 @@
             <br><br>
             <app-photo [photoUrl]="p.servingUrl"></app-photo>
         } @else {
-            <app-photo [photoUrl]="p.servingUrl"></app-photo>
+            <app-photo [photoUrl]="p.servingUrl" [hiResThumb]="true"
+                       [maxWidth]="250" [maxHeight]="250">
+            </app-photo>
             <br>
             @if (p.votes[0]; as v) {
                 Pas1: {{ v.pas1 }}<br>

@@ -1,44 +1,40 @@
-import { Component, ElementRef, EventEmitter, inject, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ref, uploadString } from "firebase/storage";
+import { ref, uploadString, UploadResult } from "firebase/storage";
 import { Storage } from "@angular/fire/storage";
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, autoId, ImageMetadata, UploadRequest, Votes, AggregateVotes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, autoId, ImageMetadata, Votes, AggregateVotes } from '../../../functions/src/interfaces';
+import { DigitizeComponent } from './digitize.component';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
 
 export interface PendingAggregateVotes extends AggregateVotes {
-  onSubmitted: Promise<void>;
+  onSubmitted: Promise<string>;
 }
 
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule,
+  imports: [CommonModule, FormsModule,  DigitizeComponent, 
     MatIconModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './upload.component.html',
   styles: `li { margin-left: -10px; padding-right: 10px; line-height: 2; }`
 })
 export class UploadComponent {
-  @Input() id = '';
+  @Input() id!: string;
+  @Input() votes!: Votes;
   @Output() onUpload = new EventEmitter<PendingAggregateVotes>();
-  @ViewChild('firstInput') firstInput!: ElementRef;
 
   private storage: Storage = inject(Storage);
 
   digitizing = false;
-  uploading = false;
-
-  pas1?: number;
-  pas2?: number;
-  pas3?: number;
+  imageId = '';
+  metadata?: ImageMetadata;
   imgURL = '';
-
-  submitPhoto = () => { };
-  cancelSubmit = () => { };
+  uploadResult$?: Promise<UploadResult | null>;
 
   constructor(public service: AppService) { }
 
@@ -65,8 +61,8 @@ export class UploadComponent {
       return;
     }
 
-    const metadata: ImageMetadata = { s: this.imgURL.length, l: file.lastModified };
-    const exifObj = this.populateMetadata(this.imgURL, metadata);
+    this.metadata = { s: this.imgURL.length, l: file.lastModified };
+    const exifObj = this.populateMetadata(this.imgURL, this.metadata);
     if (file.size > 800 * 1024) {
       this.imgURL = await this.compress(this.imgURL as string, 2048);
       if (!this.imgURL) {
@@ -81,83 +77,84 @@ export class UploadComponent {
           console.error(e);
         }
       }
-      metadata.z = this.imgURL.length;
+      this.metadata.z = this.imgURL.length;
     }
-    if (metadata.o !== undefined && metadata.o !== 1) {
-      this.imgURL = await this.rotateImageUrl(this.imgURL, metadata.o);
+    if (this.metadata.o !== undefined && this.metadata.o !== 1) {
+      this.imgURL = await this.rotateImageUrl(this.imgURL, this.metadata.o);
     }
 
-    const imageId = this.startUploadPhoto(metadata);
-
-    try {
-      const votes = await this.startDigitize();
-      const request: UploadRequest = {
-        idLokasi: this.id,
-        imageId: await imageId,
-        imageMetadata: metadata,
-        servingUrl: '', // Will be populated by the server.
-        votes: [votes],
-        status: APPROVAL_STATUS.NEW,
-      };
-
-      const onSubmitted = this.service.upload(request).then(console.log).catch(e => {
-        alert('Unable to upload photo');
-        console.error('Unable upload', e);
-      });
-      const pendingVotes: PendingAggregateVotes = {
-        idLokasi: this.id,
-        name: '',
-        totalTps: 0,
-        totalPendingTps: 0,
-        totalErrorTps: 0,
-        totalCompletedTps: 0,
-        pas1: votes.pas1,
-        pas2: votes.pas2,
-        pas3: votes.pas3,
-        updateTs: 0,
-        status: APPROVAL_STATUS.NEW,
-        uploadedPhoto: {
-          imageId: request.imageId,
-          photoUrl: this.imgURL
-        },
-        onSubmitted
-      };
-      this.onUpload.emit(pendingVotes);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  async startUploadPhoto(metadata: ImageMetadata) {
-    const imageId = autoId();
-    const filename = `/uploads/${this.id}/${this.service.auth.currentUser?.uid}/${imageId}`;
-    console.log('Uploading to', filename, metadata);
-
-    this.uploading = true;
-    await uploadString(ref(this.storage, filename), this.imgURL, 'data_url');
-    console.log('Uploaded a blob or file!');
-    this.uploading = false;
-    return imageId;
-  }
-
-  async startDigitize(): Promise<Votes> {
     this.digitizing = true;
-    setTimeout(() => this.firstInput.nativeElement.focus(), 100);
-    return new Promise((resolve, reject) => {
-      this.submitPhoto = () => {
-        this.digitizing = false;
-        resolve({
-          pas1: this.pas1,
-          pas2: this.pas2,
-          pas3: this.pas3,
-        } as Votes);
-      };
-      this.cancelSubmit = () => {
-        this.uploading = false;
-        this.digitizing = false;
-        reject();
-      };
+    this.imageId = autoId();
+    this.uploadResult$ = this.startUploadPhoto();
+  }
+
+  async startUploadPhoto() {
+    const uid = this.service.auth.currentUser?.uid;
+    const filename = `/uploads/${this.id}/${uid}/${this.imageId}`;
+    console.log('Uploading to', filename);
+    try {
+      const uploadRef = ref(this.storage, filename);
+      const result = await uploadString(uploadRef, this.imgURL, 'data_url');
+      console.log('Uploaded a blob or file!', result);
+      return result;
+    } catch (e) {
+      alert('Unable to upload photo');
+      console.error('Unable to upload file', e);
+      return null;
+    }
+  }
+
+  onDigitized(votes: Votes) {
+    if (!this.metadata || !this.uploadResult$) {
+      console.error('The image was not parsed yet');
+      return;
+    }
+    // Capture all the data before it's cleared below.
+    const idLokasi = this.id;
+    const imageId = this.imageId;
+    const imageMetadata = this.metadata;
+    const photoUrl = this.imgURL;
+    const onSubmitted = this.uploadResult$.then(res => {
+      if (!res) return '';
+      return this.service
+        .upload({
+          idLokasi,
+          imageId,
+          imageMetadata,
+          servingUrl: '', // Will be populated by the server.
+          votes: [votes],
+          status: APPROVAL_STATUS.NEW,
+        })
+        .then(v => v.data ? imageId : '')
+    }).catch(e => {
+      alert('Unable to submit votes');
+      console.error('Unable submit votes', e);
+      return '';
     });
+    this.onUpload.emit({
+      idLokasi,
+      name: '',
+      totalTps: 0,
+      totalPendingTps: 0,
+      totalErrorTps: 0,
+      totalCompletedTps: 0,
+      pas1: votes.pas1,
+      pas2: votes.pas2,
+      pas3: votes.pas3,
+      updateTs: 0,
+      status: APPROVAL_STATUS.NEW,
+      uploadedPhoto: { imageId, photoUrl },
+      onSubmitted
+    });    
+    this.clearState();
+  }
+
+  clearState() {
+    this.digitizing = false;
+    this.imageId = '';
+    this.metadata = undefined;
+    this.imgURL = '';
+    this.uploadResult$ = undefined;
   }
 
   private async compress(dataUrl: string, maxDimension: number): Promise<string> {

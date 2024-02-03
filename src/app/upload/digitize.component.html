@@ -1,0 +1,33 @@
+<form #form="ngForm" (ngSubmit)="this.onSubmit.emit(this.votes)">
+<table class="collapsed_border">
+    <tr>
+        <td>Paslon #1</td>
+        <td><input type="number" name="pas1" style="width: 50px;"
+            [(ngModel)]="votes.pas1" required autofocus #firstInput>
+        </td>
+    </tr>
+    <tr>
+        <td>Paslon #2</td>
+        <td><input type="number" name="pas2" style="width: 50px;"
+            [(ngModel)]="votes.pas2" required>
+        </td>
+    </tr>
+    <tr>
+        <td>Paslon #3</td>
+        <td><input type="number" name="pas3" style="width: 50px;"
+            [(ngModel)]="votes.pas3" required>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">
+                Submit
+            </button>
+            &nbsp; &nbsp;
+            <button mat-raised-button color="warn" (click)="onCancel.emit()">
+                Cancel
+            </button>
+        </td>
+    </tr>
+</table>
+</form>

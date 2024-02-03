@@ -126,6 +126,7 @@ export class HierarchyComponent implements OnInit {
           c.userUploads.push(u);
         }
       }
+      c.userUploads.sort((a, b) => (b.votes[0].updateTs - a.votes[0].updateTs))
     }
   }
 
