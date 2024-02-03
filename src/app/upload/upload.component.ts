@@ -1,5 +1,6 @@
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { ref, uploadString, UploadResult } from "firebase/storage";
 import { Storage } from "@angular/fire/storage";
 import { MatIconModule } from '@angular/material/icon';
@@ -14,8 +15,8 @@ import * as piexif from 'piexifjs';
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule,  DigitizeComponent, 
-    MatIconModule, MatButtonModule, MatProgressSpinnerModule],
+  imports: [CommonModule, FormsModule,  DigitizeComponent,
+    MatIconModule, MatButtonModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './upload.component.html',
   styles: `li { margin-left: -10px; padding-right: 10px; line-height: 2; }`
 })
