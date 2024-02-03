@@ -1,9 +1,9 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
-import {AuthData} from "firebase-functions/lib/common/providers/https";
 import {
   APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
-  LruCache, USER_ROLE, UploadRequest, UserProfile, Votes, isValidVoteNumbers,
+  LruCache, USER_ROLE, UploadRequest, UserProfile, Votes,
+  isValidVoteNumbers, shouldRateLimit,
 } from "./interfaces";
 import {LOKASI} from "./lokasi";
 import {RUN_ID, processPendingUploads, uploadHandler} from "./upload_handler";
@@ -37,7 +37,11 @@ export const pending = onDocumentCreated({
   }
   isLocked = true;
   logger.log(RUN_ID, "OnCreated LOCK", event.data.id);
-  await processPendingUploads(firestore, PROCESS_PENDING_TIMEOUT_SECS / 2);
+  try {
+    await processPendingUploads(firestore, PROCESS_PENDING_TIMEOUT_SECS / 2);
+  } catch (e) {
+    logger.error(RUN_ID, "Error processing", e);
+  }
   logger.log(RUN_ID, "Skipped since locked:", skippedDueToLocked);
   isLocked = false;
   skippedDueToLocked = 0;
@@ -54,27 +58,7 @@ function getCacheTimeoutMs(id: string) {
   if (id.length <= 6) return 30 * 60 * 1000; // 30 minutes, about 5 QPS.
   return 50 * 60 * 1000; // 1 hour, about 24 QPS.
 }
-const lastUidCallTs = new LruCache<string, number>(1000);
-/**
- * @param {number} now the current datetime in ms.
- * @param {AuthData} auth the accessing user.
- * @return {boolean} true if the user should be rate-limited.
- */
-function rateLimited(now: number, auth?: AuthData) {
-  if (!auth) return true; // Always rate-limit anonymous users.
-  const lastCallTs = lastUidCallTs.get(auth.uid);
-  if (lastCallTs === undefined) {
-    lastUidCallTs.set(auth.uid, now);
-    return false; // Don't rate-limit logged in users.
-  }
-  const elapsed = now - lastCallTs;
-  if (elapsed < 1000) {
-    logger.warn("DoS from", auth.uid, auth.token.name, auth.token.email);
-    return true; // Unless they are hammering!
-  }
-  lastUidCallTs.set(auth.uid, now);
-  return false;
-}
+const hierarchyRateLimiter = new LruCache<string, number>(1000);
 export const hierarchy = onCall(
   {cors: true},
   async (request: CallableRequest<{ id: string }>) : Promise<Lokasi> => {
@@ -88,7 +72,11 @@ export const hierarchy = onCall(
 
     const now = Date.now();
     const cachedLokasi = lokasiCache[id];
-    if (cachedLokasi?.lastCachedTs && rateLimited(now, request.auth)) {
+    if (cachedLokasi?.lastCachedTs && shouldRateLimit(
+      hierarchyRateLimiter, now, request.auth?.uid)) {
+      if (request.auth?.uid) {
+        logger.info("hierarchy-rate-limited", request.auth?.uid, id);
+      }
       const elapsed = now - cachedLokasi.lastCachedTs;
       if (elapsed < getCacheTimeoutMs(id)) return cachedLokasi;
     }
@@ -103,10 +91,17 @@ export const hierarchy = onCall(
     return lokasi;
   });
 
+const userRateLimiter = new LruCache<string, number>(1000);
 export const register = onCall(
   {cors: true},
   async (request: CallableRequest<void>): Promise<boolean> => {
     if (!request.auth) return false;
+
+    const now = Date.now();
+    if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
+      logger.error("register-rate-limited", request.auth.uid );
+      return false;
+    }
 
     const uRef = firestore.doc(`/u/${request.auth.uid}`);
     const user: UserProfile = {
@@ -116,7 +111,7 @@ export const register = onCall(
       email: request.auth.token.email ?? "",
       pic: request.auth.token.picture ?? "",
       createdTs: request.auth.token.iat * 1000,
-      lastLoginTs: Date.now(),
+      lastLoginTs: now,
       role: USER_ROLE.RELAWAN,
       uploads: {},
       reviews: {},
@@ -141,6 +136,12 @@ export const changeRole = onCall(
     : Promise<string> => {
     if (!request.auth?.uid) return "Not logged in";
 
+    const now = Date.now();
+    if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
+      logger.error("change-role-rate-limited", request.auth.uid );
+      return "rate-limited";
+    }
+
     const adminRef = firestore.doc(`u/${request.auth.uid}`);
     const admin = (await adminRef.get()).data() as UserProfile | undefined;
     if (!admin || admin.role <= USER_ROLE.MODERATOR) return "peasants";
@@ -163,6 +164,12 @@ export const review = onCall(
       : Promise<boolean> => {
     if (!request.auth?.uid) return false;
 
+    const now = Date.now();
+    if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
+      logger.error("review-rate-limited", request.auth.uid );
+      return false;
+    }
+
     const v = request.data.votes;
     const pas1 = Number(v.pas1);
     if (!isValidVoteNumbers(pas1)) return false;
@@ -184,7 +191,7 @@ export const review = onCall(
       votes: [{
         uid: request.auth.uid,
         pas1, pas2, pas3,
-        updateTs: Date.now(),
+        updateTs: now,
         status,
       }],
       status,
@@ -198,6 +205,12 @@ export const upload = onCall(
   {cors: true},
   async (request: CallableRequest<UploadRequest>) => {
     if (!request.auth?.uid) return false;
+
+    const now = Date.now();
+    if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
+      logger.error("upload-rate-limited", request.auth.uid );
+      return false;
+    }
 
     const idLokasi = request.data.idLokasi;
     if (!(/^\d{11,13}$/.test(idLokasi))) return false;

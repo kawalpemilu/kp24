@@ -429,6 +429,27 @@ export class LruCache<K, V> {
 }
 
 /**
+ * @param {LruCache<string, number>} rateLimiter the cache
+ * for keeping track the last timestamp of user access.
+ * @param {number} now the current datetime in ms.
+ * @param {string} uid the accessing user if exists.
+ * @return {boolean} true if the user should be rate-limited.
+ */
+export function shouldRateLimit(rateLimiter: LruCache<string, number>,
+  now: number, uid?: string) {
+  if (!uid) return true; // Always rate-limit anonymous users.
+  const lastCallTs = rateLimiter.get(uid);
+  if (lastCallTs === undefined) {
+    rateLimiter.set(uid, now);
+    return false; // Don't rate-limit logged in users.
+  }
+  const elapsed = now - lastCallTs;
+  if (elapsed < 1000) return true; // Unless they are hammering!
+  rateLimiter.set(uid, now);
+  return false;
+}
+
+/**
  * Returns true if the votes is between [0, 999].
  * @param {number} votes the votes to be checked.
  * @return {boolean} true if valid.
