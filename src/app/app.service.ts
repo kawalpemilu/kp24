@@ -4,7 +4,7 @@ import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
-import { APPROVAL_STATUS, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes } from '../../functions/src/interfaces';
+import { APPROVAL_STATUS, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -42,11 +42,13 @@ export class AppService {
     shareReplay(1));
 
   getUserProfile$(uid: string): Observable<UserProfile | null> {
-    console.log('Firestore UserProfile', uid);
+    console.warn('Listening to UserProfile', uid);
     const uRef = doc(this.firestore, `/u/${uid}`);
-    return docSnapshots(uRef).pipe(map(snapshot => {
+    let counter = 0;
+    return docSnapshots(uRef).pipe(switchMap(async snapshot => {
       const u = snapshot.data() as UserProfile;
       console.log(`UserProfile: ${u.name} (${u.email})`);
+      if (counter++ > 0) await delayTime(1000);
       return u;
     }), startWith(null));
   }

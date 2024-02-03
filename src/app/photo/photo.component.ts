@@ -21,23 +21,24 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         <!-- } -->`,
 })
 export class PhotoComponent {
-    @Input({required: true}) photoUrl = '';
     @Input() maxWidth = 125;
     @Input() maxHeight = 125;
     @Input() hiResThumb = false;
 
-    get largePhoto() {
-        if (!this.isServingUrl) return this.photoUrl;
-        return this.photoUrl + '=s1280';
-    }
+    largePhoto = '';
+    thumbnail = '';
 
-    get thumbnail() {
-        if (!this.isServingUrl) return this.photoUrl;
-        return this.photoUrl + '=s200';
-    }
-
-    get isServingUrl() {
-        return !this.photoUrl.endsWith('.png') &&
-            !this.photoUrl.startsWith('data:');
+    @Input({ required: true })
+    set photoUrl(value: string) {
+        let url = value;
+        if (value.startsWith("http://")) {
+            url = value.replace("http://", "https://");
+        }
+        if (url.endsWith('.png') || url.startsWith('data:')) {
+            this.largePhoto = this.thumbnail = url;
+        } else {
+            this.largePhoto = url + '=s1280';
+            this.thumbnail = url + '=s200';
+        }
     }
 }
