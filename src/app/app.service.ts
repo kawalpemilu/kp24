@@ -16,7 +16,6 @@ export class AppService {
   functions: Functions = inject(Functions);
 
   public lokasi$!: Observable<PrestineLokasi>;
-  public currentUserProfile?: UserProfile;
   public viewportWidth = window.innerWidth;
   public cariTpsQuery = '';
   public rpcIsRunning = false;
@@ -48,9 +47,6 @@ export class AppService {
     return docSnapshots(uRef).pipe(map(snapshot => {
       const u = snapshot.data() as UserProfile;
       console.log(`UserProfile: ${u.name} (${u.email})`);
-      if (this.auth.currentUser && uid === this.auth.currentUser.uid) {
-        this.currentUserProfile = u;
-      }
       return u;
     }), startWith(null));
   }
@@ -136,10 +132,5 @@ export class AppService {
     }).catch((error) => {
       console.error('Signout failed', error);
     });
-  }
-
-  userExceedsMaxUploads() {
-    const u = this.currentUserProfile;
-    return u && (u.uploadCount >= u.uploadMaxCount);
   }
 }
