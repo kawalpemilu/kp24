@@ -1,4 +1,4 @@
-<div style="width: 250px">
+<div>
 @if (!service.auth.currentUser) {
     <br><br>
     <button mat-raised-button color="warn" (click)="service.login()">
@@ -20,12 +20,14 @@
     </app-digitize>
     <br><br>
 } @else {
-    <h3>Instruksi untuk upload foto:</h3>
+    <h3>Cara upload foto:</h3>
 
     <ul>
-        <li>Ambil foto form [C1 plano] yang telah <b>ditanda tangan</b> oleh semua pihak dan simpan foto tersebut di HP anda.</li>
-        <li>Pastikan angka di foto yang diambil terlihat jelas. [link ke contoh]</li>
-        <li>Klik tombol dibawah untuk mengupload foto tersebut ke KawalPemilu:</li>
+        <li>Ambil foto C1 Plano (C.HASIL-PPWP) atau C1 Rekap yang jelas menunjukkan <strong>nomor TPS</strong> dan <strong>lokasinya</strong> (kelurahan, kecamatan), beserta angka perolehan tiap pasangan calon. [link ke contoh].</li>
+        <li>Pastikan angkanya telah final dan telah ditulis dalam bentuk <strong>angka</strong> (32) dan <strong>huruf</strong> (tiga puluh dua), lebih baik lagi jika sudah ditandatangani KPPS dan para Saksi.</li>
+        <li>Anda bisa upload <strong>lebih dari 1 foto</strong> dari 1 TPS. Anda juga <strong>bisa upload foto dari banyak TPS</strong>. Yang penting fotonya adalah form C1, bukan foto lain.</li>
+        <li>Pastikan Anda mengupload di nomor TPS yang tepat.</li>
+        <li>Klik tombol di bawah untuk mulai upload</li>
     </ul>
 
     <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />

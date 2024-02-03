@@ -58,12 +58,12 @@
                             (onReview)="onChange.emit(); isDrawerOpen[tpsId] = false; drawer.close()">
                         </app-review>
                     }
-                } @placeholder { 
+                } @placeholder {
                     <br>
                 }
                 </mat-drawer>
                 <mat-drawer-content>
-                    <div style="min-width: 300px; overflow-x: scroll"
+                    <div style="min-width: 250px; overflow-x: scroll"
                         [style.width]="(service.viewportWidth - 150) + 'px'">
                     <table [style.height]="isDrawerOpen[tpsId] ? '500px' : '250px'" cellpadding="10">
                     <tr>
