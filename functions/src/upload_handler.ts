@@ -57,14 +57,14 @@ async function addDataToUserProfile(
   const uRef = firestore.doc(`u/${uid}`);
   const p = (await t.get(uRef)).data() as UserProfile | undefined;
   if (!p) {
-    console.error("User not registered", uid);
+    logger.error("User not registered", uid);
     return false;
   }
 
   if (data.status) {
     // Reviewer.
     if (p.role < USER_ROLE.MODERATOR) {
-      console.error("User cannot review", uid);
+      logger.error("User cannot review", uid);
       return false;
     }
     if (!p.reviews) p.reviews = {};
@@ -78,7 +78,7 @@ async function addDataToUserProfile(
     p.uploads[data.idLokasi][data.imageId] = data;
     p.uploadCount++;
     if (p.uploadCount > p.uploadMaxCount) {
-      console.error("Uploads exceeded", uid);
+      logger.error("Uploads exceeded", uid);
       return false;
     }
   }
@@ -97,14 +97,16 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
   data: UploadRequest): Promise<boolean> {
   const lokasi = await updateTps(firestore, data);
   if (!lokasi) {
-    console.log("Fail to upload tps", data.idLokasi, data.status);
+    logger.log("Fail to upload tps", data.idLokasi, data.status, data);
     return false; // Fail to update.
   }
+  logger.log(data.votes.length > 1 ? "Reviewed" : "Uploaded",
+    data.idLokasi, data.status, data);
 
   await firestore
     .collection("p")
     .add(aggregate(lokasi))
-    .catch(console.error);
+    .catch(logger.error);
   return true;
 }
 
@@ -122,7 +124,7 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       const t1 = Date.now();
       numRetries++;
       // Read all Lokasi before writing them all later.
-      console.log("Read all lokasi");
+      logger.log("Read all lokasi");
       const lokasiMap: { [id: string]: Lokasi } = {};
       for (const a of aggs) {
         for (let id = a.idLokasi; id.length > 0;) {
@@ -143,7 +145,7 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       });
       const t2 = Date.now();
 
-      console.log("Aggregating lokasi");
+      logger.log("Aggregating lokasi");
       while (aggs[0].idLokasi.length > 0) {
         // Group by the parent ids to save read / write to the same parent.
         const aggParent: { [id: string]: AggregateVotes[] } = {};
@@ -188,17 +190,17 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
         t.delete(firestore.doc(`p/${id}`));
       }
       const t4 = Date.now();
-      console.log("Updated lokasi", Object.keys(lokasiMap).length,
+      logger.log("Updated lokasi", Object.keys(lokasiMap).length,
         "init", t1 - t0, "read", t2 - t1, "agg", t3 - t2, "delete", t4 - t3);
     });
 
   try {
     await res;
   } catch (e) {
-    console.error("aggregateUp", e);
+    logger.error("aggregateUp", e);
   }
   if (numRetries > 1) {
-    console.warn("Num retries", numRetries);
+    logger.warn("Num retries", numRetries);
   }
 }
 
@@ -212,19 +214,19 @@ async function updateTps(firestore: admin.firestore.Firestore,
   logger.log(`Update TPS t/${data.idLokasi}/p/${data.imageId}:${data.status}`);
 
   if (!data.votes || data.votes.length !== 1) {
-    console.error("Invalid votes", JSON.stringify(data, null, 2));
+    logger.error("Invalid votes", JSON.stringify(data, null, 2));
     return null;
   }
   if (data.votes[0].status !== data.status || data.status === undefined) {
-    console.error("Invalid status", JSON.stringify(data, null, 2));
+    logger.error("Invalid status", JSON.stringify(data, null, 2));
     return null;
   }
   if (!data.votes[0].uid) {
-    console.error("Missing uid", JSON.stringify(data, null, 2));
+    logger.error("Missing uid", JSON.stringify(data, null, 2));
     return null;
   }
   if (data.idLokasi.length <= 10) {
-    console.error("Invalid lokasi", JSON.stringify(data, null, 2));
+    logger.error("Invalid lokasi", JSON.stringify(data, null, 2));
     return null;
   }
 
@@ -244,7 +246,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
       if (!upload) {
         // New upload.
         if (!data.servingUrl) {
-          console.error("No serving url", JSON.stringify(data));
+          logger.error("No serving url", JSON.stringify(data));
           return null;
         }
         if (!await addDataToUserProfile(firestore, t, data)) return null;
@@ -254,12 +256,12 @@ async function updateTps(firestore: admin.firestore.Firestore,
       } else {
         // Reviewer or editor for existing upload, must have status.
         if (!data.votes[0].status) {
-          console.error("Status must be set", JSON.stringify(data, null, 2));
+          logger.error("Status must be set", JSON.stringify(data, null, 2));
           return null;
         }
         if (upload.idLokasi !== data.idLokasi ||
           upload.imageId !== data.imageId) {
-          console.error("Mismatch upload request",
+          logger.error("Mismatch upload request",
             JSON.stringify(upload, null, 2), JSON.stringify(agg, null, 2));
           return null;
         }
@@ -349,7 +351,7 @@ function aggregate(lokasi: Lokasi) {
 export async function processPendingUploadsEternal(
   firestore: admin.firestore.Firestore) {
   for (;;) {
-    console.log("Listening to new uploads");
+    logger.log("Listening to new uploads");
     const t0 = Date.now();
     const qRef = firestore.collection("p")
       .orderBy("updateTs", "asc").limit(100);
@@ -359,7 +361,7 @@ export async function processPendingUploadsEternal(
           const ids = snapshot.docs.map((d) => d.id);
           const aggs = snapshot.docs.map((d) => d.data() as AggregateVotes);
           if (!aggs.length) return;
-          console.log("Fetched", aggs.length, "pending uploads");
+          logger.log("Fetched", aggs.length, "pending uploads");
           unsub();
           resolve([ids, aggs]);
         });
@@ -367,7 +369,7 @@ export async function processPendingUploadsEternal(
     const t1 = Date.now();
     await aggregateUp(firestore, ids, aggs);
     const t2 = Date.now();
-    console.log("AggregatedUp", aggs.length, "Fetch", t1 - t0, "Agg", t2 - t1);
+    logger.log("AggregatedUp", aggs.length, "Fetch", t1 - t0, "Agg", t2 - t1);
   }
 }
 
@@ -391,7 +393,7 @@ export async function processPendingUploads(
     await aggregateUp(firestore, ids, aggs);
     const t2 = Date.now();
     elapsed = Math.ceil((t2 - startTs) / 1000);
-    console.log(RUN_ID, "Fetched", aggs.length, "pending uploads in",
+    logger.log(RUN_ID, "Fetched", aggs.length, "pending uploads in",
       t1-t0, "ms, agg in", t2 - t1, "ms, total elapsed", elapsed, "s");
   }
 }

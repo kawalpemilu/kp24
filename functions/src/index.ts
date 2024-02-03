@@ -36,9 +36,9 @@ export const pending = onDocumentCreated({
     return;
   }
   isLocked = true;
-  console.log(RUN_ID, "OnCreated LOCK", event.data.id);
+  logger.log(RUN_ID, "OnCreated LOCK", event.data.id);
   await processPendingUploads(firestore, PROCESS_PENDING_TIMEOUT_SECS / 2);
-  console.log(RUN_ID, "Skipped since locked:", skippedDueToLocked);
+  logger.log(RUN_ID, "Skipped since locked:", skippedDueToLocked);
   isLocked = false;
   skippedDueToLocked = 0;
 });
@@ -130,7 +130,7 @@ export const register = onCall(
       await uRef.set(user);
       return true;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return false;
     }
   });
