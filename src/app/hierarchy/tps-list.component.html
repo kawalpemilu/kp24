@@ -37,6 +37,9 @@
             <br>
             DPT: <b>{{ a.dpt }}</b><br>
             <br>
+            @if (a.totalErrorTps) {
+                <b style="color: red">Error!</b>
+            }
             @if (service.currentUserProfile && service.currentUserProfile.role >= USER_ROLE.MODERATOR) {
                 <button *ngIf="a.totalPendingTps" [disabled]="isProcessing[tpsId] > 0"
                     (click)="isUploadDrawer[tpsId] = false; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"

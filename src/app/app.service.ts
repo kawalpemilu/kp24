@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, from, map, of, shareReplay, switchMap } from 'rxjs';
+import { Observable, catchError, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
 import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
@@ -42,7 +42,7 @@ export class AppService {
     ),
     shareReplay(1));
 
-  getUserProfile$(uid: string): Observable<UserProfile> {
+  getUserProfile$(uid: string): Observable<UserProfile | null> {
     console.log('Firestore UserProfile', uid);
     const uRef = doc(this.firestore, `/u/${uid}`);
     return docSnapshots(uRef).pipe(map(snapshot => {
@@ -52,7 +52,7 @@ export class AppService {
         this.currentUserProfile = u;
       }
       return u;
-    }));
+    }), startWith(null));
   }
 
   getLokasiDataFromFirestore$(id: string): Observable<Lokasi> {

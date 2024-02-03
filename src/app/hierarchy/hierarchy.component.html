@@ -46,6 +46,7 @@
             <td><div class="lokasi">
                 <a class="hierarchy" [routerLink]="['/h', c.id]">{{ a.name }}</a>
                 <b *ngIf="a.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
+                <b *ngIf="a.totalErrorTps as e" style="color: red"> ({{ e }})</b>
             </div></td>
             @if (a.pas1 + a.pas2 + a.pas3; as totalVotes) {
                 <td align="center">
@@ -73,6 +74,7 @@
             <th align="right">
                 TOTAL:
                 <b *ngIf="lokasi.total.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
+                <b *ngIf="lokasi.total.totalErrorTps as e" style="color: red"> ({{ e }})</b>
             </th>
             @if (lokasi.total.pas1 + lokasi.total.pas2 + lokasi.total.pas3; as totalVotes) {
                 <th align="center">
