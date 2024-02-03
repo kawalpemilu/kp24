@@ -1,9 +1,9 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
-
+import {AuthData} from "firebase-functions/lib/common/providers/https";
 import {
-  APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi, TpsData,
-  USER_ROLE, UploadRequest, UserProfile, Votes, isValidVoteNumbers,
+  APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
+  LruCache, USER_ROLE, UploadRequest, UserProfile, Votes, isValidVoteNumbers,
 } from "./interfaces";
 import {LOKASI} from "./lokasi";
 import {RUN_ID, processPendingUploads, uploadHandler} from "./upload_handler";
@@ -13,10 +13,10 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 const firestore = admin.firestore();
 
+import * as logger from "firebase-functions/logger";
+
 // TODO list:
 // - admin features (banning)
-// - automaitc lapor kesalahan
-// - poles UX nya
 
 /**
  * The pending method is run in a single thread.
@@ -43,21 +43,64 @@ export const pending = onDocumentCreated({
   skippedDueToLocked = 0;
 });
 
+const lokasiCache: Record<string, Lokasi> = {};
+/**
+ * @param {string} id the lokasi id.
+ * @return {number} how long should the id be cached in ms.
+ */
+function getCacheTimeoutMs(id: string) {
+  if (id.length <= 2) return 60 * 1000; // 1 minute, about 1 QPS.
+  if (id.length <= 4) return 5 * 60 * 1000; // 5 minutes, about 2 QPS,
+  if (id.length <= 6) return 30 * 60 * 1000; // 30 minutes, about 5 QPS.
+  return 50 * 60 * 1000; // 1 hour, about 24 QPS.
+}
+const lastUidCallTs = new LruCache<string, number>(1000);
+/**
+ * @param {number} now the current datetime in ms.
+ * @param {AuthData} auth the accessing user.
+ * @return {boolean} true if the user should be rate-limited.
+ */
+function rateLimited(now: number, auth?: AuthData) {
+  if (!auth) return true; // Always rate-limit anonymous users.
+  const lastCallTs = lastUidCallTs.get(auth.uid);
+  if (lastCallTs === undefined) {
+    lastUidCallTs.set(auth.uid, now);
+    return false; // Don't rate-limit logged in users.
+  }
+  const elapsed = now - lastCallTs;
+  if (elapsed < 1000) {
+    logger.warn("DoS from", auth.uid, auth.token.name, auth.token.email);
+    return true; // Unless they are hammering!
+  }
+  lastUidCallTs.set(auth.uid, now);
+  return false;
+}
 export const hierarchy = onCall(
   {cors: true},
-  async (request: CallableRequest<{ id: string }>)
-    : Promise<Lokasi | TpsData> => {
+  async (request: CallableRequest<{ id: string }>) : Promise<Lokasi> => {
     let id = request.data.id;
     if (!(/^\d{0,13}$/.test(id))) id = "";
 
-    // At Province, Kabupaten, Kecamatan, Desa level, returns the Hierarchy
-    // along with the aggregated votes from Firestore (if exists).
+    const prestineLokasi = LOKASI.getPrestineLokasi(id);
+    if (!Object.keys(prestineLokasi.aggregated).length) {
+      return {} as Lokasi; // Invalid lokasi id.
+    }
+
+    const now = Date.now();
+    const cachedLokasi = lokasiCache[id];
+    if (cachedLokasi?.lastCachedTs && rateLimited(now, request.auth)) {
+      const elapsed = now - cachedLokasi.lastCachedTs;
+      if (elapsed < getCacheTimeoutMs(id)) return cachedLokasi;
+    }
+
+    // Get the Hierarchy with the aggregated votes from Firestore.
     const hRef = firestore.doc(`h/i${id}`);
     const latest = (await hRef.get()).data() as Lokasi | undefined;
-    if (latest) return latest;
 
-    // Otherwise, returns the hard-coded hierarchy without any votes.
-    return LOKASI.getPrestineLokasi(id);
+    // If not exists, use the hard-coded hierarchy without any votes.
+    const lokasi = lokasiCache[id] = latest ? latest : prestineLokasi;
+    lokasi.lastCachedTs = now;
+    return lokasi;
   });
 
 export const register = onCall(

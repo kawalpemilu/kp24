@@ -347,16 +347,9 @@ export declare interface Lokasi {
 
   // How many times this node is written to Firestore.
   numWrites: number;
-}
 
-// Photos and votes at Desa level.
-export declare interface TpsData {
-  // The idDesa + tpsNo.
-  id: string;
-
-  // One TPS can have many photos.
-  // The votes in each photo is digitized.
-  votes: { [imageId: string]: AggregateVotes };
+  // Only used for caching purposes.
+  lastCachedTs?: number;
 }
 
 export declare interface UploadRequest {
@@ -410,11 +403,11 @@ export class LruCache<K, V> {
    * @param {any} callable function value provider for the given key.
    * @return {V} the value at the given key.
    */
-  get(key: K, callable?: () => V): V {
+  get(key: K, callable?: () => V): V | undefined {
     const value = this.map.get(key);
     if (value !== undefined) return this.set(key, value);
     if (callable) return this.set(key, callable());
-    return undefined as V;
+    return undefined;
   }
 
   /**
@@ -461,8 +454,8 @@ export function autoId(n = 20): string {
 
 /**
  * @param {number} ms the number of milliseconds to delay.
- * @returns {Promise<void>} that resolve ms later.
+ * @return {Promise<void>} that resolve ms later.
  */
 export function delayTime(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
