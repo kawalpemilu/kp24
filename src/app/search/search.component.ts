@@ -39,7 +39,6 @@ export class SearchComponent implements OnInit {
     constructor(public router: Router, public service: AppService) { }
 
     ngOnInit(): void {
-        setTimeout(() => this.firstInput.nativeElement.focus(), 100);
         this.results$ = this.service.lokasi$.pipe(switchMap(P => {
             const lokasiStr: {[id: string]: string} = {};
             for (const idDesa of P.getDesaIds()) {
@@ -51,6 +50,10 @@ export class SearchComponent implements OnInit {
                 map(query => this.getFilteredLokasi(P, lokasiStr, query || '')),
             );
         }));
+    }
+
+    ngAfterViewInit(): void {
+        this.focusAndOpenKeyboard(this.firstInput.nativeElement);
     }
 
     getFilteredLokasi(P: PrestineLokasi, lokasiStr: Record<string, string>, query: string) : Result[] {
@@ -72,6 +75,29 @@ export class SearchComponent implements OnInit {
             if (res.length >= 20) break;
         }
         return res;
+    }
+
+    focusAndOpenKeyboard(el: HTMLElement, timeout: number = 100) {
+      if (el) {
+        // Align temp input element approx. to be where the input element is
+        var tempEl = document.createElement("input");
+        tempEl.style.position = "absolute";
+        tempEl.style.top = el.offsetTop + 7 + "px";
+        tempEl.style.left = el.offsetLeft + "px";
+        tempEl.style.height = '0';
+        tempEl.style.opacity = '0';
+        // Put this temp element as a child of the page <body> and focus on it
+        document.body.appendChild(tempEl);
+        tempEl.focus();
+    
+        // The keyboard is open. Now do a delayed focus on the target element
+        setTimeout(function() {
+          el.focus();
+          el.click();
+          // Remove the temp element
+          document.body.removeChild(tempEl);
+        }, timeout);
+      }
     }
 
     isSubstring(str: string, tokens: string[]) {
