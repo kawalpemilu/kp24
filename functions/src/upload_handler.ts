@@ -73,6 +73,10 @@ async function addDataToUserProfile(
     p.reviewCount++;
   } else {
     // Uploader.
+    if (p.role < USER_ROLE.RELAWAN) {
+      logger.error("User cannot upload", uid);
+      return false;
+    }
     if (!p.uploads) p.uploads = {};
     if (!p.uploads[data.idLokasi]) p.uploads[data.idLokasi] = {};
     p.uploads[data.idLokasi][data.imageId] = data;

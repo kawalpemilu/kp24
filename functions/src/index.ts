@@ -15,9 +15,6 @@ const firestore = admin.firestore();
 
 import * as logger from "firebase-functions/logger";
 
-// TODO list:
-// - admin features (banning)
-
 /**
  * The pending method is run in a single thread.
  * This is achieved by setting maxInstances to 1 and guarded by "isLocked".
