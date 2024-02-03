@@ -48,6 +48,7 @@ import { map, shareReplay } from 'rxjs';
             } @else {
               <a mat-list-item (click)="service.login()">Sign In</a>
             }
+            <a mat-list-item (click)="router.navigate(['/a']); snav.close()">About KP24</a>
           </mat-nav-list>
         </mat-sidenav>
 
