@@ -113,7 +113,7 @@
                     @for (u of c.userUploads; track u.imageId) {
                         <td valign="top">
                             <div style="height: 125px; padding-bottom: 5px">
-                                <app-photo [photoUrl]="u.servingUrl"></app-photo>
+                                <app-photo [photoUrl]="u.servingUrl" [roiToolTip]="roiUrl(lokasi.id, c.id, u.servingUrl)"></app-photo>
                             </div>
                             @if (u.votes[0]; as v) {
                                 Pas1: {{ v.pas1 }}<br>
