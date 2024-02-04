@@ -20,6 +20,9 @@
 </tr>
 </table>
 
+<!-- Needed for automatic sub-and-unsubsciption by the template. -->
+{{ tpsNo$ | async }}
+
 <table class="collapsed_border">
     @for (c of filter(lokasi.children); track c.id) {
     @defer (on viewport) {
@@ -36,9 +39,9 @@
             Pas3: <b>{{ a.pas3 }}</b><br>
             <br>
             DPT: <b>{{ a.dpt }}</b><br>
-            <br>
             @if (a.totalErrorTps) {
-                <b style="color: red">Error!</b>
+                <b style="color: red">Error!</b><br>
+                <br>
             }
             @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                 <button *ngIf="a.totalPendingTps" [disabled]="isProcessing[tpsId] > 0"

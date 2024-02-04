@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, Votes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, Votes, isValidVoteNumbers } from '../../../functions/src/interfaces';
 
 @Component({
     selector: 'app-digitize',
@@ -36,7 +36,20 @@ export class DigitizeComponent implements OnChanges {
     }
 
     onDigitized() {
+        if (!isValidVoteNumbers(this.votes.pas1)) {
+            alert('Invalid votes for Paslon 1');
+            return false;
+        }
+        if (!isValidVoteNumbers(this.votes.pas2)) {
+            alert('Invalid votes for Paslon 2');
+            return false;
+        }
+        if (!isValidVoteNumbers(this.votes.pas3)) {
+            alert('Invalid votes for Paslon 3');
+            return false;
+        }
         this.votes.status = this.status;
         this.onSubmit.emit(this.votes);
+        return true;
     }
 }

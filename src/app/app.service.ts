@@ -54,11 +54,11 @@ export class AppService {
   }
 
   getLokasiDataFromFirestore$(id: string): Observable<Lokasi> {
-    console.log('Firestore Lokasi', id);
     const hRef = doc(this.firestore, `/h/i${id}`);
     return docSnapshots(hRef).pipe(
       switchMap(snapshot => {
         const h = snapshot.data() as Lokasi;
+        console.log('Firestore Lokasi', id);
         return h ? of(h) : of();
       }), shareReplay(1));
   }

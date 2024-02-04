@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
-import { shareReplay, switchMap, startWith, catchError, map } from 'rxjs/operators';
+import { shareReplay, switchMap, startWith, catchError, map, distinctUntilChanged } from 'rxjs/operators';
 import { APPROVAL_STATUS, AggregateVotes, Lokasi, LruCache, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../app.service';
@@ -55,6 +55,7 @@ export class HierarchyComponent implements OnInit {
 
   userProfile: UserProfile | null = null;
   hierarchyHeight = 45;
+  tpsNo = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -66,8 +67,14 @@ export class HierarchyComponent implements OnInit {
       map(params => {
         let id = params.get('id') || '';
         if (!(/^\d{0,13}$/.test(id))) id = '';
+        if (id.length > 10) {
+          this.tpsNo = id.substring(10);
+          id = id.substring(0, 10);
+        } else {
+          this.tpsNo = '';
+        }
         return id;
-      }));
+      }), distinctUntilChanged());
 
     this.lokasi$ = combineLatest([id$, this.service.profile$, this.lokasiWithVotesTrigger$]).pipe(
       switchMap(([id, profile]) => {
@@ -163,7 +170,6 @@ export class HierarchyComponent implements OnInit {
     return this.service.user$.pipe(
       switchMap(user =>
         (user && id.length < 10)
-          // TODO: only >=MODERATOR.
           ? this.getLokasiDataFromFirestore$(id)
           : this.getLokasiDataFromRpc$(id)),
       switchMap(async (lokasi) => {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component,  Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +14,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { map } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tps-list',
@@ -24,7 +26,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
   templateUrl: './tps-list.component.html',
   styles: ``
 })
-export class TpsListComponent {
+export class TpsListComponent implements OnChanges {
+  @Input() tpsNo = '';
   @Input({required: true}) userProfile!: UserProfile | null;
   @Input({required: true}) lokasi!: LokasiData;
 
@@ -33,10 +36,24 @@ export class TpsListComponent {
   isDrawerOpen: Record<string, boolean> = {};
   isProcessing: Record<string, number> = {};
 
+  tpsNo$ = this.myControl.valueChanges.pipe(map(v => {
+    this.router.navigate(['/h', this.lokasi.id + v]);
+    return '';
+  }));
+
   USER_ROLE = USER_ROLE;
   APPROVAL_STATUS = APPROVAL_STATUS;
 
-  constructor(public service: AppService) { }
+  constructor(public service: AppService, private router: Router) { }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['tpsNo']) {
+      if (this.myControl.getRawValue() != this.tpsNo) {
+        console.log('Set tpsNo', this.tpsNo);
+        this.myControl.setValue(this.tpsNo);
+      }
+    }
+  }
 
   onUploadOrReview(tpsId: string, c: ChildLokasi, agg: PendingAggregateVotes) {
     this.isProcessing[tpsId] = this.isProcessing[tpsId] ?? 0;

@@ -308,6 +308,17 @@ async function updateTps(firestore: admin.firestore.Firestore,
         }
       }
 
+      if (agg.totalPendingTps > 0) {
+        agg.anyPendingTps = data.idLokasi;
+      } else {
+        delete agg.anyPendingTps;
+      }
+      if (agg.totalErrorTps > 0) {
+        agg.anyErrorTps = data.idLokasi;
+      } else {
+        delete agg.anyErrorTps;
+      }
+
       if (isIdentical(c[0], agg)) {
         logger.log("Identical", JSON.stringify(agg, null, 2));
         return null;
@@ -344,6 +355,8 @@ function aggregate(lokasi: Lokasi) {
     nextAgg.totalPendingTps += cagg.totalPendingTps ?? 0;
     nextAgg.totalErrorTps += cagg.totalErrorTps ?? 0;
     nextAgg.updateTs = Math.max(nextAgg.updateTs, cagg.updateTs);
+    if (cagg.anyPendingTps) nextAgg.anyPendingTps = cagg.anyPendingTps;
+    if (cagg.anyErrorTps) nextAgg.anyErrorTps = cagg.anyErrorTps;
   }
   return nextAgg;
 }

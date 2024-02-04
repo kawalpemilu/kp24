@@ -306,6 +306,12 @@ export declare interface AggregateVotes extends Votes {
 
   // Number of registered voters (daftar pemilih tetap).
   dpt?: number;
+
+  // Shortcut to the any pending TPS.
+  anyPendingTps?:string;
+
+  // Shortcut to the any error TPS.
+  anyErrorTps?:string;
 }
 
 // Extension to signify that the AggregateVotes is being submitted.
