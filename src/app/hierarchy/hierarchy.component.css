@@ -6,6 +6,8 @@
     z-index: 2;
     width: 100%;
     font-size: medium;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .hierarchy {

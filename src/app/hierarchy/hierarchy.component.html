@@ -5,10 +5,10 @@
     <table cellspacing="0" cellpadding="0" border="0">
         @for (p of lokasi.parents; track p[0]; let last = $last) {
             <td align="center" valign="middle">
-                &nbsp;&nbsp;<a [routerLink]="['/h', p[0]]" routerLinkActive="active"
+                <a [routerLink]="['/h', p[0]]" routerLinkActive="active"
                 class="hierarchy">{{ p[1] }}</a>
             </td>
-            @if (!last) { <td valign="middle">&nbsp;&gt;&nbsp;</td> }
+            @if (!last) { <td valign="middle"><mat-icon style="padding-top: 6px;">chevron_right</mat-icon></td> }
         }
         <td valign="middle">
             <button mat-icon-button color="primary" (click)="reloadLokasi()"

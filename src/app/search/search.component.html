@@ -6,14 +6,21 @@
 
 
 @if (results$ | async; as results) {
-    <ul>
+    <mat-list style="padding-top: 0;" role="list">
     @for (result of results; track result) {
-        <li>
-            @for (name of result.names; track name; let i = $index) {
+        <mat-list-item role="listitem" lines="3">
+            <span matListItemTitle>Desa
+              <a [routerLink]="['/h', result.ids[result.ids.length - 1]]" routerLinkActive="router-link-active">
+                <strong>{{result.names[result.names.length - 1]}}</strong>
+              </a>
+            </span>
+            <span>
+              @for (name of result.names; track name; let i = $index) {
                 <a [routerLink]="['/h', result.ids[i]]" routerLinkActive="router-link-active">{{name}}</a>
-                @if ($last) { <br> } @else { &gt; }
-            }
-        </li>
+                @if ($last) { <br> } @else { <mat-icon style="vertical-align: middle;">chevron_right</mat-icon> }
+              }
+            </span>
+        </mat-list-item>
     }
-    </ul>
+    </mat-list>
 }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
 import { AppService } from '../app.service';
 import { Observable, map, startWith, switchMap } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
@@ -22,7 +23,7 @@ interface Result {
     selector: 'app-root',
     standalone: true,
     imports: [CommonModule, RouterOutlet, RouterLink, MatButtonModule, MatIconModule,
-        MatInputModule, MatFormFieldModule, FormsModule, ReactiveFormsModule],
+        MatInputModule, MatListModule, MatFormFieldModule, FormsModule, ReactiveFormsModule],
     templateUrl: './search.component.html',
     styles: `
     li {
@@ -89,7 +90,7 @@ export class SearchComponent implements OnInit {
         // Put this temp element as a child of the page <body> and focus on it
         document.body.appendChild(tempEl);
         tempEl.focus();
-    
+
         // The keyboard is open. Now do a delayed focus on the target element
         setTimeout(function() {
           el.focus();
