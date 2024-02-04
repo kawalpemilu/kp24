@@ -10,10 +10,10 @@ import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
     imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule, NgxTippyModule],
     template: `
         <div #tippyTemplateRef>
-          <img alt="ROI paslon" [src]="tooltipUrl" style="min-height:120px;width:150px" loading="lazy"/>
+          <img alt="ROI paslon" style="min-height:120px;width:150px" loading="lazy"/>
         </div>
         <div [style.width]="maxWidth + 'px'" [style.height]="maxHeight + 'px'" [ngxTippy]="tippyTemplateRef"
-        [id]="tooltipUrl" [tippyProps]="{
+        [title]="tooltipUrl" [tippyProps]="{
           placement: 'right',
           delay: [200, 200],
           animation: 'shift-toward',
@@ -37,7 +37,7 @@ export class PhotoComponent {
 
     largePhoto = '';
     thumbnail = '';
-    tooltipUrl: string = '';
+    tooltipUrl?: string;
 
     @Input({ required: false })
     set roiToolTip(value: string) {
@@ -45,8 +45,9 @@ export class PhotoComponent {
     }
 
     loadTooltipImage(instance: NgxTippyInstance) {
-      const tooltipPicture = instance.reference.getAttribute('id') || ''
-      console.log("loading tooltip", tooltipPicture)
+      const tooltipPicture = instance.reference.getAttribute('title')
+      if (!tooltipPicture)
+        return
       fetch(tooltipPicture)
         .then((response) => {
           if (!response.ok) {
