@@ -193,7 +193,12 @@ export const review = onCall(
       }],
       status,
     };
-    return uploadHandler(firestore, sanitized);
+    return uploadHandler(firestore, sanitized).then((success) => {
+      if (success) {
+        delete lokasiCache[request.data.tpsId.substring(0, 10)];
+      }
+      return success;
+    });
   });
 
 
@@ -249,5 +254,10 @@ export const upload = onCall(
       }],
       status: APPROVAL_STATUS.NEW,
     };
-    return uploadHandler(firestore, sanitized);
+    return uploadHandler(firestore, sanitized).then((success) => {
+      if (success) {
+        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
+      }
+      return success;
+    });
   });
