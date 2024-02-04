@@ -6,7 +6,7 @@
 
 
 @if (results$ | async; as results) {
-    <ul>
+    <ul style="margin-top: 0;">
     @for (result of results; track result) {
         <li>
             @for (name of result.names; track name; let i = $index) {
