@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -14,7 +14,7 @@ import { map, shareReplay } from 'rxjs';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, MatToolbarModule, MatButtonModule, MatIconModule,
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet, MatToolbarModule, MatButtonModule, MatIconModule,
     MatSidenavModule, MatListModule, HttpClientModule],
   template: `
     <div class="container">
@@ -34,21 +34,21 @@ import { map, shareReplay } from 'rxjs';
       <mat-sidenav-container class="sidenav-container">
         <mat-sidenav #snav mode="over">
           <mat-nav-list>
-            <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">Home</a>
+            <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">Beranda</a>
             <a mat-list-item (click)="router.navigate(['/s']); snav.close()">Cari TPS</a>
             @if (service.auth.currentUser; as u) {
-              <a mat-list-item (click)="router.navigate(['/u']); snav.close()">My Profile</a>
+              <a mat-list-item (click)="router.navigate(['/u']); snav.close()">Profil</a>
               @if (service.profile$ | async; as p) {
                 @if (p.role >= USER_ROLE.ADMIN) {
                   <a mat-list-item (click)="router.navigate(['/m']); snav.close()">User Management</a>
                 }
               }
               <hr>
-              <a mat-list-item (click)="service.logout()">Sign Out</a>
+              <a mat-list-item (click)="service.logout()">Keluar</a>
             } @else {
-              <a mat-list-item (click)="service.login()">Sign In</a>
+              <a mat-list-item (click)="service.login()">Masuk</a>
             }
-            <a mat-list-item (click)="router.navigate(['/a']); snav.close()">About KP24</a>
+            <a mat-list-item (click)="router.navigate(['/a']); snav.close()">Tentang Kami</a>
           </mat-nav-list>
         </mat-sidenav>
 
@@ -56,6 +56,36 @@ import { map, shareReplay } from 'rxjs';
           <router-outlet></router-outlet>
         </mat-sidenav-content>
       </mat-sidenav-container>
+
+      <mat-toolbar color="primary" class="toolbar">
+        <a mat-button routerLink="/h" routerLinkActive="active" ariaCurrentWhenActive="page">
+          <mat-icon>home</mat-icon>
+          <span style="margin-left: 8px;">Beranda</span>
+        </a>
+        <a mat-button routerLink="/s" routerLinkActive="active" ariaCurrentWhenActive="page">
+          <mat-icon>search</mat-icon>
+          <span style="margin-left: 8px;">Cari TPS</span>
+        </a>
+        @if (service.auth.currentUser; as u) {
+          <a mat-button routerLink="/u" routerLinkActive="active" ariaCurrentWhenActive="page">
+            <mat-icon>person</mat-icon>
+            <span style="margin-left: 8px;">Profil</span>
+          </a>
+          @if (service.profile$ | async; as p) {
+            @if (p.role >= USER_ROLE.ADMIN) {
+              <a mat-button routerLink="/m" routerLinkActive="active" ariaCurrentWhenActive="page">
+                <mat-icon>manage_accounts</mat-icon>
+                <span style="margin-left: 8px;">User Management</span>
+              </a>
+            }
+          }
+        } @else {
+          <a mat-button (click)="service.login()">
+            <mat-icon>login</mat-icon>
+            <span style="margin-left: 8px;">Masuk</span>
+          </a>
+        }
+      </mat-toolbar>
     </div>
   `,
   styles: `
@@ -78,6 +108,14 @@ import { map, shareReplay } from 'rxjs';
     }
     .spacer {
       flex: 1 1 auto;
+    }
+
+    .mat-mdc-button {
+      flex: 1 1 auto;
+    }
+
+    .mat-mdc-button.active {
+      color: #ff4081;
     }
   `
 })
