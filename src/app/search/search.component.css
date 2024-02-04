@@ -1,21 +1,21 @@
-.search-results {
+ul.search-results {
   margin-top: -22px;
   padding-inline-start: 0;
   padding-inline-end: 0;
   list-style-type: none;
 }
 
-.search-results > .result {
+ul.search-results > li.result {
   line-height: 3;
   font-size: 1rem;
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
-.search-results > .result:nth-child(odd) {
+ul.search-results > li.result:nth-child(odd) {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.search-results > .result > a.lokasi {
+ul.search-results > li.result > a.lokasi {
   text-decoration: none;
 }
