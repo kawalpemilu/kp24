@@ -2,7 +2,7 @@
 @if (!service.auth.currentUser) {
     <br><br>
     <button mat-raised-button color="warn" (click)="service.login()">
-        Masuk untuk Upload Foto
+        Masuk untuk Unggah Foto
     </button>
 } @else if (userExceedsMaxUploads()) {
     <br><br>
@@ -38,10 +38,10 @@
               </ul>
             </li>
             <li>Pastikan angka di formnya final dan telah ditulis dalam bentuk <strong>angka</strong> (32) dan <strong>huruf</strong> (tiga puluh dua), lebih baik lagi jika sudah ditandatangani KPPS dan para Saksi.</li>
-            <li>Lalu isikan angka perolehan tiap paslon dan klik <strong>Submit</strong></li>
+            <li>Lalu isikan angka perolehan tiap paslon dan klik <strong>Kirim</strong>.</li>
             <li>Anda juga <strong>bisa upload foto dari banyak TPS</strong>. Yang penting fotonya adalah form C1 halaman 2.</li>
             <li>Pastikan Anda mengupload di nomor TPS yang tepat.</li>
-            <li>Klik tombol <strong>Upload Foto</strong> di bawah untuk mulai upload.</li>
+            <li>Klik tombol <strong>Unggah Foto</strong> di bawah untuk mulai upload.</li>
         </ul>
       </mat-expansion-panel>
     </mat-accordion>
@@ -49,7 +49,7 @@
     <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
     <br>
     <button mat-raised-button color="primary" (click)="u.click()" style="margin-left: 10px">
-        Upload Foto
+        Unggah Foto
     </button>
 }
 </div>
