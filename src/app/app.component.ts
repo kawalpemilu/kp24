@@ -35,7 +35,7 @@ import { map, shareReplay } from 'rxjs';
         <mat-sidenav #snav mode="over">
           <mat-nav-list>
             <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">Beranda</a>
-            <a mat-list-item (click)="router.navigate(['/s']); snav.close()">Cari TPS</a>
+            <a mat-list-item (click)="router.navigate(['/s']); snav.close()">Cari Lokasi TPS</a>
             @if (service.auth.currentUser; as u) {
               <a mat-list-item (click)="router.navigate(['/u']); snav.close()">Profil</a>
               @if (service.profile$ | async; as p) {
