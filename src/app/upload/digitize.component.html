@@ -20,15 +20,15 @@
     </tr>
     <tr>
         <td colspan="2">
-            <button mat-raised-button color="primary" [disabled]="!form.valid"
-                (click)="status = APPROVAL_STATUS.APPROVED">
-                {{ review ? 'Approve' : 'Submit' }}
-            </button>
-            &nbsp; &nbsp;
-            <button mat-raised-button color="warn"
-                (click)="status = APPROVAL_STATUS.REJECTED">
-                {{ review ? 'Reject' : 'Cancel' }}
-            </button>
+          <button mat-raised-button color="warn"
+            (click)="status = APPROVAL_STATUS.REJECTED">
+            {{ review ? 'Reject' : 'Batal' }}
+          </button>
+          &nbsp; &nbsp;
+          <button mat-raised-button color="primary" [disabled]="!form.valid"
+              (click)="status = APPROVAL_STATUS.APPROVED">
+              {{ review ? 'Approve' : 'Kirim' }}
+          </button>
         </td>
     </tr>
 </table>
