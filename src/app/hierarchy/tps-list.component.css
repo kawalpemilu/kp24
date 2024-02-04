@@ -1,0 +1,32 @@
+section.table-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+section.table-header > .table-search {
+  flex: 1 1 auto;
+}
+
+section.table-header > .table-search > .mat-mdc-form-field {
+  min-width: 100px;
+}
+
+section.table-header > .table-search > .mat-mdc-form-field .mat-icon {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+section.table-header > .table-filter {
+  flex-grow: 0;
+  padding-right: 1rem;
+  display: flex;
+}
+
+@media (min-width: 414px) {
+  section.table-header > .table-filter {
+    padding-right: 2rem;
+  }
+}

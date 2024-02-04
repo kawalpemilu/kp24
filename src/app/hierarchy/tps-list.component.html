@@ -1,24 +1,20 @@
-<table cellpadding="0" cellspacing="0">
-<tr>
-    <td>
+<section class="table-header">
+    <div class="table-search">
         <mat-form-field style="width: 100px" subscriptSizing="dynamic">
-            <mat-label><mat-icon aria-hidden="false" aria-label="Search icon" fontIcon="search"></mat-icon>
- Cari</mat-label>
+            <mat-label>
+              <mat-icon aria-hidden="false" aria-label="Search icon">search</mat-icon>
+              Cari
+            </mat-label>
             <input type="text" placeholder="No. TPS" matInput
-                [formControl]="myControl" #firstInput>
+            [formControl]="myControl" #firstInput>
         </mat-form-field>
-    </td>
-    <td>
+    </div>
+    <div class="table-filter">
         <mat-checkbox [(ngModel)]="service.isPendingTps">Pending</mat-checkbox>
-    </td>
-    <td>
         <mat-checkbox [(ngModel)]="service.isErrorTps">Error</mat-checkbox>
-    </td>
-    <td>
         <mat-checkbox [(ngModel)]="service.isCompleteTps">Complete</mat-checkbox>
-    </td>
-</tr>
-</table>
+    </div>
+</section>
 
 <!-- Needed for automatic sub-and-unsubsciption by the template. -->
 {{ tpsNo$ | async }}

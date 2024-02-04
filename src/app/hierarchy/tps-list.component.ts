@@ -24,7 +24,7 @@ import { Router } from '@angular/router';
     MatInputModule, MatFormFieldModule, FormsModule, ReactiveFormsModule, MatCheckboxModule,
     UploadComponent, ReviewComponent, PhotoComponent, MatProgressSpinnerModule],
   templateUrl: './tps-list.component.html',
-  styles: ``
+  styleUrl: './tps-list.component.css'
 })
 export class TpsListComponent implements OnChanges {
   @Input() tpsNo = '';
