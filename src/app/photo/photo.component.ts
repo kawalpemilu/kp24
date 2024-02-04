@@ -2,13 +2,23 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
 
 @Component({
     selector: 'app-photo',
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule],
+    imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule, NgxTippyModule],
     template: `
-        <div [style.width]="maxWidth + 'px'" [style.height]="maxHeight + 'px'">
+        <div #tippyTemplateRef>
+          <img alt="ROI paslon" [src]="tooltipUrl" style="min-height:120px;width:150px" loading="lazy"/>
+        </div>
+        <div [style.width]="maxWidth + 'px'" [style.height]="maxHeight + 'px'" [ngxTippy]="tippyTemplateRef"
+        [id]="tooltipUrl" [tippyProps]="{
+          placement: 'right',
+          delay: [200, 200],
+          animation: 'shift-toward',
+          onCreate: loadTooltipImage
+        }">
             <a [href]="largePhoto" target="_blank">
                 <img [style.max-width]="maxWidth + 'px'"
                     [style.max-height]="maxHeight + 'px'"
@@ -27,6 +37,39 @@ export class PhotoComponent {
 
     largePhoto = '';
     thumbnail = '';
+    tooltipUrl: string = '';
+
+    @Input({ required: false })
+    set roiToolTip(value: string) {
+      this.tooltipUrl = value
+    }
+
+    loadTooltipImage(instance: NgxTippyInstance) {
+      const tooltipPicture = instance.reference.getAttribute('id') || ''
+      console.log("loading tooltip", tooltipPicture)
+      fetch(tooltipPicture)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`${response.status} ${response.statusText}`);
+          }
+          return response.blob()
+        })
+        .then((blob) => {
+          const src = URL.createObjectURL(blob);
+          const image = new Image();
+          image.style.display = 'block';
+          image.style.width = '150px';
+          image.src = src;
+          instance.setContent(image);
+          instance.props['maxWidth'] = '170px';
+        })
+        .catch(() => {
+          instance.setContent('');
+          instance.disable();
+        })
+        .finally(() => {
+        });
+    }
 
     @Input({ required: true })
     set photoUrl(value: string) {
