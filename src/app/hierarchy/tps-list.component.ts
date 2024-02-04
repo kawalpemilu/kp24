@@ -41,6 +41,14 @@ export class TpsListComponent implements OnChanges {
     return '';
   }));
 
+  roiUrl = function (lokasiId: string, tps: string, photoUrl: string | undefined) {
+    if (photoUrl == undefined) {
+      return ''
+    }
+    const photoName = photoUrl.replace('http://lh3.googleusercontent.com/', '')
+    return `https://storage.googleapis.com/kawalc1/static/2024/transformed/${lokasiId}/${tps}/extracted/${photoName}%3Ds1280~paslon.webp`
+  }
+
   USER_ROLE = USER_ROLE;
   APPROVAL_STATUS = APPROVAL_STATUS;
 

@@ -89,7 +89,7 @@
                 @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
                 <td valign="top">
                     <div style="height: 125px; padding-bottom: 5px">
-                        <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"></app-photo>
+                      <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''" [roiToolTip]="roiUrl(lokasi.id, c.id, tps.uploadedPhoto?.photoUrl)"></app-photo>
                     </div>
                     Pas1: {{ tps.pas1 }}<br>
                     Pas2: {{ tps.pas2 }}<br>
