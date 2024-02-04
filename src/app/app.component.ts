@@ -35,21 +35,42 @@ import { map, shareReplay } from 'rxjs';
       <mat-sidenav-container class="sidenav-container">
         <mat-sidenav #snav mode="over">
           <mat-nav-list>
-            <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">Beranda</a>
-            <a mat-list-item (click)="router.navigate(['/s']); snav.close()">Cari Lokasi TPS</a>
+            <a mat-list-item (click)="router.navigate(['/h', '']); snav.close()">
+              <mat-icon>home</mat-icon>
+              Beranda
+            </a>
+            <a mat-list-item (click)="router.navigate(['/s']); snav.close()">
+              <mat-icon>search</mat-icon>
+              Cari Lokasi TPS
+            </a>
             @if (service.auth.currentUser; as u) {
-              <a mat-list-item (click)="router.navigate(['/u']); snav.close()">Profil</a>
+              <a mat-list-item (click)="router.navigate(['/u']); snav.close()">
+                <mat-icon>person</mat-icon>
+                Profil Saya
+              </a>
               @if (service.profile$ | async; as p) {
                 @if (p.role >= USER_ROLE.ADMIN) {
-                  <a mat-list-item (click)="router.navigate(['/m']); snav.close()">User Management</a>
+                  <a mat-list-item (click)="router.navigate(['/m']); snav.close()">
+                    <mat-icon>manage_accounts</mat-icon>
+                    User Management
+                  </a>
                 }
               }
               <hr>
-              <a mat-list-item (click)="service.logout()">Keluar</a>
+              <a mat-list-item (click)="service.logout()">
+                <mat-icon>logout</mat-icon>
+                Keluar
+              </a>
             } @else {
-              <a mat-list-item (click)="service.login()">Masuk</a>
+              <a mat-list-item (click)="service.login()">
+                <mat-icon>login</mat-icon>
+                Masuk
+              </a>
             }
-            <a mat-list-item (click)="router.navigate(['/a']); snav.close()">Tentang Kami</a>
+            <a mat-list-item (click)="router.navigate(['/a']); snav.close()">
+              <mat-icon>info</mat-icon>
+              Tentang Kami
+            </a>
           </mat-nav-list>
         </mat-sidenav>
 
@@ -107,6 +128,11 @@ import { map, shareReplay } from 'rxjs';
     .sidenav-container {
       flex: 1;
     }
+
+    .sidenav-container .mat-icon {
+      vertical-align: middle;
+    }
+
     .spacer {
       flex: 1 1 auto;
     }
