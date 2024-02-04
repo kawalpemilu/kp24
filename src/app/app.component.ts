@@ -60,29 +60,29 @@ import { map, shareReplay } from 'rxjs';
       <mat-toolbar color="primary" class="toolbar">
         <a mat-button routerLink="/h" routerLinkActive="active" ariaCurrentWhenActive="page">
           <mat-icon>home</mat-icon>
-          <span style="margin-left: 8px;">Beranda</span>
+          <span>Beranda</span>
         </a>
         <a mat-button routerLink="/s" routerLinkActive="active" ariaCurrentWhenActive="page">
           <mat-icon>search</mat-icon>
-          <span style="margin-left: 8px;">Cari TPS</span>
+          <span>Cari TPS</span>
         </a>
         @if (service.auth.currentUser; as u) {
           <a mat-button routerLink="/u" routerLinkActive="active" ariaCurrentWhenActive="page">
             <mat-icon>person</mat-icon>
-            <span style="margin-left: 8px;">Profil</span>
+            <span>Profil</span>
           </a>
           @if (service.profile$ | async; as p) {
             @if (p.role >= USER_ROLE.ADMIN) {
               <a mat-button routerLink="/m" routerLinkActive="active" ariaCurrentWhenActive="page">
                 <mat-icon>manage_accounts</mat-icon>
-                <span style="margin-left: 8px;">User Management</span>
+                <span>User Management</span>
               </a>
             }
           }
         } @else {
           <a mat-button (click)="service.login()">
             <mat-icon>login</mat-icon>
-            <span style="margin-left: 8px;">Masuk</span>
+            <span>Masuk</span>
           </a>
         }
       </mat-toolbar>
