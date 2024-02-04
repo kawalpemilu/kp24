@@ -4,6 +4,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
 
+interface TippyInstanceWithLoading extends NgxTippyInstance {
+  _isFetching: boolean
+  _failedToLoad: boolean
+}
+
 @Component({
     selector: 'app-photo',
     standalone: true,
@@ -17,7 +22,8 @@ import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
           placement: 'right',
           delay: [200, 200],
           animation: 'shift-toward',
-          onCreate: loadTooltipImage
+          onCreate: loadTooltipImage,
+          onShow: onShowTippy,
         }">
             <a [href]="largePhoto" target="_blank">
                 <img [style.max-width]="maxWidth + 'px'"
@@ -37,17 +43,23 @@ export class PhotoComponent {
 
     largePhoto = '';
     thumbnail = '';
-    tooltipUrl?: string;
+    tooltipUrl?: string = undefined;
 
     @Input({ required: false })
     set roiToolTip(value: string) {
       this.tooltipUrl = value
     }
 
-    loadTooltipImage(instance: NgxTippyInstance) {
+    loadTooltipImage(ngxTippyInstance: NgxTippyInstance) {
+      const instance = ngxTippyInstance as TippyInstanceWithLoading
+      instance._isFetching = true;
+      instance._failedToLoad = true;
+
       const tooltipPicture = instance.reference.getAttribute('title')
-      if (!tooltipPicture)
+      if (!tooltipPicture || tooltipPicture == 'undefined') {
+        instance.disable()
         return
+      }
       fetch(tooltipPicture)
         .then((response) => {
           if (!response.ok) {
@@ -63,13 +75,23 @@ export class PhotoComponent {
           image.src = src;
           instance.setContent(image);
           instance.props['maxWidth'] = '170px';
+          instance._failedToLoad = false
         })
         .catch(() => {
           instance.setContent('');
+          instance._failedToLoad = true;
           instance.disable();
         })
         .finally(() => {
+          instance._isFetching = false;
         });
+    }
+
+    onShowTippy(ngxTippyInstance: NgxTippyInstance) {
+      const instance = ngxTippyInstance as TippyInstanceWithLoading
+      if (instance._isFetching || instance._failedToLoad) {
+        return;
+      }
     }
 
     @Input({ required: true })
