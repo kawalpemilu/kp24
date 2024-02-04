@@ -11,7 +11,7 @@
         <li>
             @for (name of result.names; track name; let i = $index) {
                 <a [routerLink]="['/h', result.ids[i]]" routerLinkActive="router-link-active">{{name}}</a>
-                @if ($last) { <br> } @else { &gt; }
+                @if ($last) { <br> } @else { <mat-icon style="vertical-align: middle;">chevron_right</mat-icon> }
             }
         </li>
     }
