@@ -32,6 +32,10 @@ table td {
     display: table-cell;
 }
 
+.sticky_table {
+    margin: auto;
+}
+
 .sticky_table thead {
     position: sticky;
     top: 45px;
