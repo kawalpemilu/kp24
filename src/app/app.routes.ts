@@ -10,6 +10,6 @@ export const routes: Routes = [
     { path: 'm', component: UserManagementComponent },
     { path: 'h/:id', component: HierarchyComponent },
     { path: 's', component: SearchComponent },
-    { path: 'a', component: AboutComponent },
+    { path: 'about', component: AboutComponent },
     { path: '**', component: HierarchyComponent },
 ];

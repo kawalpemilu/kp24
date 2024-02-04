@@ -67,7 +67,7 @@ import { map, shareReplay } from 'rxjs';
                 Masuk
               </a>
             }
-            <a mat-list-item (click)="router.navigate(['/a']); snav.close()">
+            <a mat-list-item (click)="router.navigate(['/about']); snav.close()">
               <mat-icon>info</mat-icon>
               Tentang Kami
             </a>
