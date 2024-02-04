@@ -11,11 +11,31 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PrestineLokasi } from '../../../functions/src/interfaces';
 
 const idLengths = [2, 4, 6, 10];
+const MAX_RESULTS = 20;
 
 interface Result {
     names: string[];
     ids: string[];
     gaps: number;
+}
+
+function getPermutations<T>(array: T[]): T[][] {
+    if (array.length <= 1) return [array];
+
+    const permutations: T[][] = [];
+    for (let i = 0; i < array.length; i++) {
+        const currentElement = array[i];
+
+        // Remove the current element from the array and get all permutations of the remaining elements
+        const remainingElements = array.slice(0, i).concat(array.slice(i + 1));
+        const remainingPermutations = getPermutations(remainingElements);
+
+        // Prepend the removed element to each of the obtained permutations
+        for (const permutation of remainingPermutations) {
+            permutations.push([currentElement].concat(permutation));
+        }
+    }
+    return permutations;
 }
 
 @Component({
@@ -35,7 +55,7 @@ export class SearchComponent implements OnInit {
 
     ngOnInit(): void {
         this.results$ = this.service.lokasi$.pipe(switchMap(P => {
-            const lokasiStr: {[id: string]: string} = {};
+            const lokasiStr: { [id: string]: string } = {};
             for (const idDesa of P.getDesaIds()) {
                 const lokasi = P.getPrestineLokasi(idDesa);
                 lokasiStr[idDesa] = lokasi.names.join('').replace(/\s+/g, '').toUpperCase();
@@ -51,48 +71,58 @@ export class SearchComponent implements OnInit {
         this.focusAndOpenKeyboard(this.firstInput.nativeElement);
     }
 
-    getFilteredLokasi(P: PrestineLokasi, lokasiStr: Record<string, string>, query: string) : Result[] {
+    getFilteredLokasi(P: PrestineLokasi, lokasiStr: Record<string, string>, query: string): Result[] {
         this.service.cariTpsQuery = query;
         const tokens = query.toUpperCase().split(' ');
-        const res: Result[] = [];
+        const permutationTokens = getPermutations(tokens);
+        const permutationResults: Result[][] = [];
         for (const idDesa of P.getDesaIds()) {
             const lokasi = P.getPrestineLokasi(idDesa);
-            if (!this.isSubstring(lokasiStr[idDesa], tokens)) continue;
-            const r: Result = {
-                names: lokasi.names,
-                ids: [],
-                gaps: 1000
-            };
-            for (let i = 0; i < idLengths.length; i++) {
-                r.ids[i] = lokasi.id.substring(0, idLengths[i]);
+            for (let p = 0; p < permutationTokens.length && p < 10; p++) {
+                if (!permutationResults[p]) permutationResults[p] = [];
+                if (permutationResults[p].length >= MAX_RESULTS) continue;
+                const pTokens = permutationTokens[p];
+                if (!this.isSubstring(lokasiStr[idDesa], pTokens)) continue;
+                const r: Result = {
+                    names: lokasi.names,
+                    ids: [],
+                    gaps: 1000
+                };
+                for (let i = 0; i < idLengths.length; i++) {
+                    r.ids[i] = lokasi.id.substring(0, idLengths[i]);
+                }
+                permutationResults[p].push(r);
             }
-            res.push(r);
-            if (res.length >= 20) break;
+        }
+        let res: Result[] = permutationResults[0];
+        for (let i = 1; i < permutationTokens.length; i++) {
+            res = res.concat(permutationResults[i]);
+            if (res.length >= MAX_RESULTS) break;
         }
         return res;
     }
 
     focusAndOpenKeyboard(el: HTMLElement, timeout: number = 100) {
-      if (el) {
-        // Align temp input element approx. to be where the input element is
-        var tempEl = document.createElement("input");
-        tempEl.style.position = "absolute";
-        tempEl.style.top = el.offsetTop + 7 + "px";
-        tempEl.style.left = el.offsetLeft + "px";
-        tempEl.style.height = '0';
-        tempEl.style.opacity = '0';
-        // Put this temp element as a child of the page <body> and focus on it
-        document.body.appendChild(tempEl);
-        tempEl.focus();
+        if (el) {
+            // Align temp input element approx. to be where the input element is
+            var tempEl = document.createElement("input");
+            tempEl.style.position = "absolute";
+            tempEl.style.top = el.offsetTop + 7 + "px";
+            tempEl.style.left = el.offsetLeft + "px";
+            tempEl.style.height = '0';
+            tempEl.style.opacity = '0';
+            // Put this temp element as a child of the page <body> and focus on it
+            document.body.appendChild(tempEl);
+            tempEl.focus();
 
-        // The keyboard is open. Now do a delayed focus on the target element
-        setTimeout(function() {
-          el.focus();
-          el.click();
-          // Remove the temp element
-          document.body.removeChild(tempEl);
-        }, timeout);
-      }
+            // The keyboard is open. Now do a delayed focus on the target element
+            setTimeout(function () {
+                el.focus();
+                el.click();
+                // Remove the temp element
+                document.body.removeChild(tempEl);
+            }, timeout);
+        }
     }
 
     isSubstring(str: string, tokens: string[]) {
