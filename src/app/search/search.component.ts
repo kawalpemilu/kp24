@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatListModule } from '@angular/material/list';
 import { AppService } from '../app.service';
 import { Observable, map, startWith, switchMap } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
@@ -23,14 +22,9 @@ interface Result {
     selector: 'app-root',
     standalone: true,
     imports: [CommonModule, RouterOutlet, RouterLink, MatButtonModule, MatIconModule,
-        MatInputModule, MatListModule, MatFormFieldModule, FormsModule, ReactiveFormsModule],
+        MatInputModule, MatFormFieldModule, FormsModule, ReactiveFormsModule],
     templateUrl: './search.component.html',
-    styles: `
-    li {
-        line-height: 3;
-        margin-left: -10px;
-        padding-right: 10px;
-    }`
+    styleUrl: './search.component.css'
 })
 export class SearchComponent implements OnInit {
     @ViewChild('firstInput') firstInput!: ElementRef;
