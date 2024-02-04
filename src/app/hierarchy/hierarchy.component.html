@@ -1,28 +1,24 @@
 <div *ngIf="lokasi$ | async as lokasi">
 
-<table #hierarchy class="hierarchy_path" cellspacing="0" cellpadding="0">
-    <tr><td valign="middle">
-    <table cellspacing="0" cellpadding="0" border="0">
-        @for (p of lokasi.parents; track p[0]; let last = $last) {
-            <td align="center" valign="middle">
-                <a [routerLink]="['/h', p[0]]" routerLinkActive="active"
-                class="hierarchy">{{ p[1] }}</a>
-            </td>
-            @if (!last) { <td valign="middle"><mat-icon style="padding-top: 6px;">chevron_right</mat-icon></td> }
-        }
-        <td valign="middle">
-            <button mat-icon-button color="primary" (click)="reloadLokasi()"
-                [disabled]="service.rpcIsRunning">
-                @if (service.rpcIsRunning) {
-                    <mat-spinner [diameter]="25"></mat-spinner>
-                } @else {
-                    <mat-icon>refresh</mat-icon>
-                }
-            </button>
-        </td>
-    </table>
-    </td></tr>
-</table>
+<header class="sticky-header">
+  <nav aria-label="Breadcrumb" class="breadcrumb">
+      <ul class="breadcrumb-list">
+          @for (p of lokasi.parents; track p[0];) {
+              <li class="breadcrumb-item">
+                  <a class="breadcrumb-link" [routerLink]="['/h', p[0]]" routerLinkActive="active">{{ p[1] }}</a>
+              </li>
+          }
+      </ul>
+  </nav>
+  <button class="refresh" mat-icon-button color="primary" (click)="reloadLokasi()"
+      [disabled]="service.rpcIsRunning">
+      @if (service.rpcIsRunning) {
+          <mat-spinner [diameter]="25"></mat-spinner>
+      } @else {
+          <mat-icon>refresh</mat-icon>
+      }
+  </button>
+</header>
 
 @if (lokasi.id.length === 10) {
     <!-- Level TPS -->
