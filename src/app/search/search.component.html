@@ -6,14 +6,14 @@
 
 
 @if (results$ | async; as results) {
-    <ul style="margin-top: 0;">
+    <mat-list role="list">
     @for (result of results; track result) {
-        <li>
+        <mat-list-item role="listitem">
             @for (name of result.names; track name; let i = $index) {
                 <a [routerLink]="['/h', result.ids[i]]" routerLinkActive="router-link-active">{{name}}</a>
                 @if ($last) { <br> } @else { <mat-icon style="vertical-align: middle;">chevron_right</mat-icon> }
             }
-        </li>
+        </mat-list-item>
     }
-    </ul>
+    </mat-list>
 }
