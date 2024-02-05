@@ -23,7 +23,7 @@ import { map, shareReplay } from 'rxjs';
           <mat-icon>menu</mat-icon>
         </button>
         <h1 class="app-name" style="cursor: pointer;" (click)="router.navigate(['/h', '']); snav.close()">
-          <img src="assets/logo-putih.png" style="vertical-align: middle; height: 32px; margin-right: 8px;">
+          <img src="assets/logo-putih.png" width="51px" height="32px" style="vertical-align: middle; height: 32px; margin-right: 8px;">
           KawalPemilu 2024
         </h1>
         <span class="spacer"></span>
