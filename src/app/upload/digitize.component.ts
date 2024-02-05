@@ -12,7 +12,7 @@ import { APPROVAL_STATUS, Votes, isValidVoteNumbers } from '../../../functions/s
     imports: [CommonModule, FormsModule,
         MatIconModule, MatButtonModule, MatProgressSpinnerModule],
     templateUrl: './digitize.component.html',
-    styles: ``
+    styleUrl: './digitize.component.css',
 })
 export class DigitizeComponent implements OnChanges {
     @ViewChild('firstInput') firstInput!: ElementRef;

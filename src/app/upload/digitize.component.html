@@ -20,16 +20,17 @@
     </tr>
     <tr>
         <td colspan="2">
-          <!-- The first button is the default when <ENTER> is pressed. -->
-          <button mat-raised-button color="primary" [disabled]="!form.valid"
-            (click)="status = APPROVAL_STATUS.APPROVED">
-            {{ review ? 'Approve' : 'Kirim' }}
-          </button>
-          &nbsp; &nbsp;
-          <button mat-raised-button color="warn"
-            (click)="status = APPROVAL_STATUS.REJECTED">
-            {{ review ? 'Reject' : 'Batal' }}
-          </button>
+            <div class="action">
+                <!-- The first button is the default when <ENTER> is pressed. -->
+                <button mat-raised-button color="primary" [disabled]="!form.valid"
+                  (click)="status = APPROVAL_STATUS.APPROVED">
+                  {{ review ? 'Approve' : 'Kirim' }}
+                </button>
+                <button mat-raised-button color="warn"
+                  (click)="status = APPROVAL_STATUS.REJECTED">
+                  {{ review ? 'Reject' : 'Batal' }}
+                </button>
+            </div>
       </td>
     </tr>
 </table>

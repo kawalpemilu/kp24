@@ -1,0 +1,6 @@
+.action {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row-reverse;
+  gap: 0.5rem;
+}
