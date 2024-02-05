@@ -1,7 +1,7 @@
-@if (profile$ | async; as p) {
-<table class="collapsed_border">
+@if (profile$ | async; as profileDetails) {
+<table class="collapsed_border" *ngIf="profileDetails.profile as p">
     <tr>
-        <td rowspan="3">
+        <td rowspan="4">
             <img [src]="p.pic" />
         </td>
     </tr>
@@ -13,8 +13,47 @@
         <td>Email:</td>
         <td>{{ p.email }}</td>
     </tr>
+    <tr>
+        <td>Contributions:</td>
+        <td>{{ p.uploadCount }} uploads, {{ p.reviewCount }} reviews</td>
+    </tr>
 </table>
 
-<p>Uploaded Photos:</p>
-<pre>{{ p | json }}</pre>
+<br>
+<h2>Uploaded Photos:</h2>
+<table class="collapsed_border">
+@for (u of profileDetails.uploads; track u.uploadRequest.imageId; let i = $index) {
+    <tr>
+        <td>
+            <app-photo [photoUrl]="u.uploadRequest.servingUrl">
+            </app-photo>
+        </td>
+        <td *ngIf="u.uploadRequest.votes[0] as v">
+            {{ i + 1 }}. {{ v.updateTs | date }} [{{ STATUS[u.uploadRequest.status] }}]
+            <a [routerLink]="['/h', u.uploadRequest.idLokasi]" target="_blank">
+                TPS #{{ u.uploadRequest.idLokasi.substring(10) }}
+            </a>
+            <br>
+            {{ u.lokasi.names | json }}<br>
+            pas1: {{ v.pas1 }}<br>
+            pas2: {{ v.pas2 }}<br>
+            pas3: {{ v.pas3 }}<br>
+        </td>
+    </tr>
+}
+</table>
+
+<br>
+<h2>Reviewed Photos:</h2>
+<ol>
+@for (r of profileDetails.reviews; track r.lokasi.id; let i = $index) {
+    <li>
+        Num Reviews: {{ r.numReviews }} at
+        <a [routerLink]="['/h', r.idLokasi]" target="_blank">
+            TPS #{{ r.idLokasi.substring(10) }}
+        </a>
+    </li>
+}
+</ol>
+    
 }
