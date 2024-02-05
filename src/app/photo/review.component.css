@@ -1,0 +1,15 @@
+.lokasi {
+  width: 150px
+}
+
+.ubah-lokasi-trigger {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.action {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row-reverse;
+  gap: 0.5rem;
+}

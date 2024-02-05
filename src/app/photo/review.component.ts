@@ -20,7 +20,7 @@ interface OptionLokasi {
     imports: [CommonModule, MatButtonModule, FormsModule,
         MatProgressSpinnerModule, PhotoComponent, DigitizeComponent],
     templateUrl: './review.component.html',
-    styles: `.lokasi { width: 150px }`
+    styleUrl: './review.component.css',
 })
 export class ReviewComponent implements OnInit {
     @Input({ required: true }) id = '';
