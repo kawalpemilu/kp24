@@ -14,17 +14,21 @@ interface TippyInstanceWithLoading extends NgxTippyInstance {
     standalone: true,
     imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule, NgxTippyModule],
     template: `
-        <div #tippyTemplateRef>
+        <!-- enabling this caused a lot of error messages to be printed in the console. -->
+        <!-- <div #tippyTemplateRef>
           <img alt="ROI paslon" style="min-height:120px;width:150px" loading="lazy"/>
-        </div>
-        <div [style.width]="maxWidth + 'px'" [style.height]="maxHeight + 'px'" [ngxTippy]="tippyTemplateRef"
-        [title]="tooltipUrl" [tippyProps]="{
-          placement: 'right',
-          delay: [200, 200],
-          animation: 'shift-toward',
-          onCreate: loadTooltipImage,
-          onShow: onShowTippy,
-        }">
+        </div> -->
+        <!-- [ngxTippy]="tippyTemplateRef"
+        [tippyProps]="{
+                placement: 'right',
+                delay: [200, 200],
+                animation: 'shift-toward',
+                onCreate: loadTooltipImage,
+                onShow: onShowTippy,
+             }" -->
+        <div [style.width]="maxWidth + 'px'"
+             [style.height]="maxHeight + 'px'"
+             [title]="tooltipUrl">
             <a [href]="largePhoto" target="_blank">
                 <img [style.max-width]="maxWidth + 'px'"
                     [style.max-height]="maxHeight + 'px'"
