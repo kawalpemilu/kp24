@@ -53,7 +53,7 @@ function getCacheTimeoutMs(id: string) {
   if (id.length <= 2) return 60 * 1000; // 1 minute, about 1 QPS.
   if (id.length <= 4) return 5 * 60 * 1000; // 5 minutes, about 2 QPS,
   if (id.length <= 6) return 30 * 60 * 1000; // 30 minutes, about 5 QPS.
-  return 50 * 60 * 1000; // 1 hour, about 24 QPS.
+  return 60 * 60 * 1000; // 1 hour, about 24 QPS.
 }
 const hierarchyRateLimiter = new LruCache<string, number>(1000);
 export const hierarchy = onCall(

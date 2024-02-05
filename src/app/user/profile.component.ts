@@ -50,7 +50,7 @@ export class UserProfileComponent implements OnInit {
                 uploads: [],
                 reviews: [],
             };
-            for (const images of Object.values(profile.uploads)) {
+            for (const images of Object.values(profile.uploads ?? {})) {
                 for (const uploadRequest of Object.values(images)) {
                     profileDetails.uploads.push({
                         lokasi: P.getPrestineLokasi(uploadRequest.idLokasi.substring(0, 10)),
@@ -61,7 +61,7 @@ export class UserProfileComponent implements OnInit {
             profileDetails.uploads.sort((a, b) => {
                 return b.uploadRequest.votes[0].updateTs - a.uploadRequest.votes[0].updateTs;
             });
-            for (const [idLokasi, numReviews] of Object.entries(profile.reviews)) {
+            for (const [idLokasi, numReviews] of Object.entries(profile.reviews ?? {})) {
                 profileDetails.reviews.push({
                     idLokasi,
                     lokasi: P.getPrestineLokasi(idLokasi.substring(0, 10)),
