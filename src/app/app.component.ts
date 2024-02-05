@@ -79,6 +79,12 @@ import { map, shareReplay } from 'rxjs';
         </mat-sidenav-content>
       </mat-sidenav-container>
 
+      <!-- TODO: Remove this card once we conclude the testing phase. -->
+      <div class="banner">
+          Masa uji coba berlaku hingga <strong>12 Februari 2024</strong>.
+          Setelah itu semua data & foto akan dihapus untuk penghitungan yang sebenarnya.
+      </div>
+
       <mat-toolbar color="primary" class="toolbar">
         <a mat-button routerLink="/h" routerLinkActive="active" ariaCurrentWhenActive="page">
           <mat-icon>home</mat-icon>
@@ -143,6 +149,21 @@ import { map, shareReplay } from 'rxjs';
 
     .mat-mdc-button.active {
       color: #ff4081;
+    }
+
+    .banner {
+      background-color: #FF6F00;
+      color: white;
+      padding: 0.5rem 1rem;
+      text-align: center;
+      font-size: 0.6rem;
+    }
+
+    @media (min-width: 600px) {
+      .banner {
+        font-size: 0.85rem;
+        padding: 0.75rem 2rem;
+      }
     }
   `
 })
