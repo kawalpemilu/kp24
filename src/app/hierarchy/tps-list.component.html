@@ -42,7 +42,9 @@
             }
             @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                 <button *ngIf="a.totalPendingTps" [disabled]="isProcessing[tpsId] > 0"
-                    (click)="isUploadDrawer[tpsId] = false; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
+                    (click)="isUploadDrawer[tpsId] = false;
+                             isDrawerOpen[tpsId] = !drawer.opened;
+                             drawer.toggle()"
                     mat-raised-button color="accent">Review ({{ numPendingUploads(a) }})</button>
             } @else {
                 <span *ngIf="a.totalPendingTps">{{ numPendingUploads(a) }} Unreviewed</span>
@@ -54,11 +56,15 @@
                 @defer (on viewport) {
                     @if (isUploadDrawer[tpsId]) {
                         <app-upload [id]="tpsId" [votes]="a" [userProfile]="userProfile"
-                            (onUpload)="onUploadOrReview(tpsId, c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
+                            (onUpload)="onUploadOrReview(tpsId, c, $event);
+                                        isDrawerOpen[tpsId] = false;
+                                        drawer.close()">
                         </app-upload>
                     } @else if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                         <app-review [id]="tpsId"
-                            (onReview)="onUploadOrReview(tpsId, c, $event); isDrawerOpen[tpsId] = false; drawer.close()">
+                            (onReview)="onUploadOrReview(tpsId, c, $event);
+                                        isDrawerOpen[tpsId] = false;
+                                        drawer.close()">
                         </app-review>
                     }
                 } @placeholder {
@@ -71,7 +77,9 @@
                     <table [style.height]="isDrawerOpen[tpsId] ? '500px' : '250px'" cellpadding="10">
                     <tr>
                         <td>
-                            <div (click)="isUploadDrawer[tpsId] = true; isDrawerOpen[tpsId] = !drawer.opened; drawer.toggle()"
+                            <div (click)="isUploadDrawer[tpsId] = true;
+                                          isDrawerOpen[tpsId] = !drawer.opened;
+                                          drawer.toggle()"
                                     style="width: 80px; text-align: center; cursor: pointer;">
                                 <button mat-fab color="primary">
                                     <mat-icon>add_a_photo</mat-icon>
@@ -85,7 +93,9 @@
                 @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
                 <td valign="top">
                     <div style="height: 125px; padding-bottom: 5px">
-                      <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''" [roiToolTip]="roiUrl(lokasi.id, c.id, tps.uploadedPhoto?.photoUrl)"></app-photo>
+                      <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"
+                                 [roiToolTip]="roiUrl(lokasi.id, c.id, tps.uploadedPhoto?.photoUrl)">
+                      </app-photo>
                     </div>
                     Pas1: {{ tps.pas1 }}<br>
                     Pas2: {{ tps.pas2 }}<br>
@@ -99,6 +109,8 @@
                             Approving ...
                         } @else if (tps.status === APPROVAL_STATUS.REJECTED) {
                             Rejecting ...
+                        } @else if (tps.status === APPROVAL_STATUS.MOVED) {
+                            Moving ...
                         }
                     }
                 </td>
@@ -109,7 +121,9 @@
                     @for (u of c.userUploads; track u.imageId) {
                         <td valign="top">
                             <div style="height: 125px; padding-bottom: 5px">
-                                <app-photo [photoUrl]="u.servingUrl" [roiToolTip]="roiUrl(lokasi.id, c.id, u.servingUrl)"></app-photo>
+                                <app-photo [photoUrl]="u.servingUrl"
+                                           [roiToolTip]="roiUrl(lokasi.id, c.id, u.servingUrl)">
+                                </app-photo>
                             </div>
                             @if (u.votes[0]; as v) {
                                 Pas1: {{ v.pas1 }}<br>
@@ -120,6 +134,8 @@
                                 Pending Review
                             } @else if (u.status === APPROVAL_STATUS.REJECTED) {
                                 Rejected
+                            } @else if (u.status === APPROVAL_STATUS.MOVED) {
+                                Moved
                             }
                         </td>
                     }

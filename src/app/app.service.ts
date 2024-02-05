@@ -76,7 +76,7 @@ export class AppService {
   }
 
   review(tpsId: string, imageId: string, votes: Votes) {
-    console.log('RPC review', tpsId, imageId, votes);
+    console.log('RPC review', tpsId, imageId, JSON.stringify(votes, null, 2));
     const callable = httpsCallable(this.functions, 'review');
     return callable({ tpsId, imageId, votes });
   }

@@ -3,7 +3,7 @@
     <tr>
         <td>Paslon #1</td>
         <td><input type="number" name="pas1" style="width: 50px;"
-            [(ngModel)]="votes.pas1" required autofocus #firstInput>
+            [(ngModel)]="votes.pas1" required #firstInput>
         </td>
     </tr>
     <tr>
@@ -20,16 +20,17 @@
     </tr>
     <tr>
         <td colspan="2">
+          <!-- The first button is the default when <ENTER> is pressed. -->
+          <button mat-raised-button color="primary" [disabled]="!form.valid"
+            (click)="status = APPROVAL_STATUS.APPROVED">
+            {{ review ? 'Approve' : 'Kirim' }}
+          </button>
+          &nbsp; &nbsp;
           <button mat-raised-button color="warn"
             (click)="status = APPROVAL_STATUS.REJECTED">
             {{ review ? 'Reject' : 'Batal' }}
           </button>
-          &nbsp; &nbsp;
-          <button mat-raised-button color="primary" [disabled]="!form.valid"
-              (click)="status = APPROVAL_STATUS.APPROVED">
-              {{ review ? 'Approve' : 'Kirim' }}
-          </button>
-        </td>
+      </td>
     </tr>
 </table>
 </form>

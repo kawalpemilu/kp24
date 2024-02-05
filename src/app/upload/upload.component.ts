@@ -15,15 +15,15 @@ import * as piexif from 'piexifjs';
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule,  DigitizeComponent,
+  imports: [CommonModule, FormsModule, DigitizeComponent,
     MatIconModule, MatButtonModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './upload.component.html',
   styles: `li { margin-left: -10px; padding-right: 10px; line-height: 2; }`
 })
 export class UploadComponent {
-  @Input({required: true}) userProfile!: UserProfile | null;
-  @Input({required: true}) id!: string;
-  @Input({required: true}) votes!: Votes;
+  @Input({ required: true }) userProfile!: UserProfile | null;
+  @Input({ required: true }) id!: string;
+  @Input({ required: true }) votes!: Votes;
   @Output() onUpload = new EventEmitter<PendingAggregateVotes>();
 
   private storage: Storage = inject(Storage);
@@ -125,7 +125,13 @@ export class UploadComponent {
             votes: [votes],
             status: APPROVAL_STATUS.NEW,
           })
-          .then(v => v.data ? imageId : '')
+          .then(res => {
+            if (!res.data) {
+              alert('Fail to submit votes');
+              return '';
+            }
+            return imageId;
+          })
       }).catch(e => {
         alert('Unable to submit votes');
         console.error('Unable submit votes', e);

@@ -42,12 +42,15 @@ function getParentId(id: string) {
  * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
  * @param {admin.firestore.Transaction} t the running transaction.
  * @param {UploadRequest} data the uploaded photo to be added to the profile.
+ * @param {string} oldUid the original uploader uid.
+ * Used for setting the status in the uploader uploaded photos.
  * @return {boolean} true when successfull.
  */
 async function addDataToUserProfile(
   firestore: admin.firestore.Firestore,
   t: admin.firestore.Transaction,
-  data: UploadRequest
+  data: UploadRequest,
+  oldUid = "",
 ) {
   const uid = data.votes[0].uid;
 
@@ -61,7 +64,22 @@ async function addDataToUserProfile(
     return false;
   }
 
-  if (data.status) {
+  let oldP: UserProfile | undefined;
+  const updateStatus = (userProfile: UserProfile | undefined) => {
+    const oldUpload = userProfile?.uploads?.[data.idLokasi]?.[data.imageId];
+    if (!oldUpload) return;
+    oldUpload.votes[0].status = data.status;
+    oldUpload.status = data.status;
+  };
+  if (oldUid === uid) {
+    updateStatus(p);
+  } else if (oldUid) {
+    oldP = (await t.get(firestore.doc(`u/${oldUid}`))).data() as UserProfile;
+    updateStatus(oldP);
+  }
+
+  if (data.status === APPROVAL_STATUS.APPROVED ||
+      data.status === APPROVAL_STATUS.REJECTED || oldUid) {
     // Reviewer.
     if (p.role < USER_ROLE.MODERATOR) {
       logger.error("User cannot review", uid);
@@ -77,6 +95,10 @@ async function addDataToUserProfile(
       logger.error("User cannot upload", uid);
       return false;
     }
+    if (data.status === APPROVAL_STATUS.MOVED && p.role < USER_ROLE.MODERATOR) {
+      logger.error("User cannot move", uid);
+      return false;
+    }
     if (!p.uploads) p.uploads = {};
     if (!p.uploads[data.idLokasi]) p.uploads[data.idLokasi] = {};
     p.uploads[data.idLokasi][data.imageId] = data;
@@ -87,6 +109,7 @@ async function addDataToUserProfile(
     }
   }
   t.set(uRef, p);
+  if (oldP) t.set(firestore.doc(`u/${oldUid}`), oldP);
   return true;
 }
 
@@ -254,6 +277,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
           return null;
         }
         if (!await addDataToUserProfile(firestore, t, data)) return null;
+        data.status = data.votes[0].status = APPROVAL_STATUS.NEW;
         t.set(uploadRef, data);
         if (!agg.pendingUploads) agg.pendingUploads = {};
         agg.pendingUploads[data.imageId] = true;
@@ -264,12 +288,13 @@ async function updateTps(firestore: admin.firestore.Firestore,
           return null;
         }
         if (upload.idLokasi !== data.idLokasi ||
-          upload.imageId !== data.imageId) {
+            upload.imageId !== data.imageId) {
           logger.error("Mismatch upload request",
             JSON.stringify(upload, null, 2), JSON.stringify(agg, null, 2));
           return null;
         }
-        if (!await addDataToUserProfile(firestore, t, data)) return null;
+        if (!await addDataToUserProfile(firestore, t, data,
+          upload.votes[0].uid ?? "")) return null;
         upload.votes.unshift(data.votes[0]);
         upload.status = data.votes[0].status;
         t.set(uploadRef, upload);
@@ -301,7 +326,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
         +(agg.pas1 + agg.pas2 + agg.pas3 > agg.dpt) : 0;
       for (let i = 1; i < c.length; i++) {
         if (agg.pas1 !== c[i].pas1 ||
-           agg.pas2 !== c[i].pas2 ||
+            agg.pas2 !== c[i].pas2 ||
             agg.pas3 !== c[i].pas3) {
           agg.totalErrorTps = 1;
           break;

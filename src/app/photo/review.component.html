@@ -3,15 +3,89 @@
         <app-photo [photoUrl]="p.servingUrl" [hiResThumb]="true"
                     [maxWidth]="250" [maxHeight]="250">
         </app-photo>
-        <br>
-        <app-digitize
-            [votes]="p.votes[0]"
-            [imageId]="p.imageId"
-            [review]="true"
-            (onSubmit)="approve(p, $event)">
-        </app-digitize>
+        @if (ubahLokasi) { @if (service.lokasi$ | async; as P) {
+            <br>
+            <table>
+                <tr>
+                    <td>Propinsi:</td>
+                    <td>
+                        <select *ngIf="getPropinsiList(P) as arr" class="lokasi"
+                                [(ngModel)]="newPropId"
+                                (change)="updateNewId($event)">
+                        @for (p of arr; track p.id) {
+                            <option [value]="p.id">{{ p.name }}</option>
+                        }
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kabupaten:</td>
+                    <td>
+                        <select *ngIf="getKabupatenList(P) as arr" class="lokasi"
+                                [(ngModel)]="newKabId"
+                                (change)="updateNewId($event)">
+                            @for (p of arr; track p.id) {
+                                <option [value]="p.id">{{ p.name }}</option>
+                            }
+                            </select>
+                        </td>
+                </tr>
+                <tr>
+                    <td>Kecamatan:</td>
+                    <td>
+                        <select *ngIf="getKecamatanList(P) as arr" class="lokasi"
+                                [(ngModel)]="newKecId"
+                                (change)="updateNewId($event)">
+                            @for (p of arr; track p.id) {
+                                <option [value]="p.id">{{ p.name }}</option>
+                            }
+                            </select>
+                        </td>
+                </tr>
+                <tr>
+                    <td>Kelurahan:</td>
+                    <td>
+                        <select *ngIf="getKelurahanList(P) as arr" class="lokasi"
+                                [(ngModel)]="newKelId"
+                                (change)="updateNewId($event)">
+                            @for (p of arr; track p.id) {
+                                <option [value]="p.id">{{ p.name }}</option>
+                            }
+                            </select>
+                        </td>
+                </tr>
+                <tr>
+                    <td>TPS #:</td>
+                    <td>
+                        <input [(ngModel)]="newTpsNo" type="number" size="3"
+                                (keydown.enter)="updateLokasi(p)">
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <button [disabled]="!isValid(P)" mat-raised-button color="primary"
+                    (click)="updateLokasi(p)">
+                Update Lokasi
+            </button>
+            &nbsp; &nbsp;
+            <button mat-raised-button color="warn" (click)="ubahLokasi = false">
+                Batal
+            </button>
+        }
+        } @else {
+            <p style="margin-top: 10px;">
+                <button mat-raised-button color="accent" (click)="startUbahLokasi()">
+                    Ubah LOKASI TPS
+                </button>
+            </p>
+            <app-digitize
+                [votes]="p.votes[0]"
+                [imageId]="p.imageId"
+                [review]="true"
+                (onSubmit)="approve(p, $event)">
+            </app-digitize>
+        }
     } @else {
         <mat-spinner></mat-spinner>
     }
 </div>
-    

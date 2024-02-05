@@ -114,17 +114,6 @@ export class HierarchyComponent implements OnInit {
       const pendingUploads = c.agg[0].pendingUploads;
       if (!pendingUploads || !profile?.uploads) continue;
       for (const u of Object.values(profile.uploads[cid] ?? {})) {
-        if (pendingUploads[u.imageId]) {
-          u.status = APPROVAL_STATUS.NEW;
-        } else {
-          u.status = APPROVAL_STATUS.REJECTED;
-          for (const approved of c.agg) {
-            if (approved.uploadedPhoto?.imageId == u.imageId) {
-              u.status = APPROVAL_STATUS.APPROVED;
-              break;
-            }
-          }
-        }
         if (u.status !== APPROVAL_STATUS.APPROVED) {
           c.userUploads.push(u);
         }

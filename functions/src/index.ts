@@ -58,7 +58,7 @@ function getCacheTimeoutMs(id: string) {
 const hierarchyRateLimiter = new LruCache<string, number>(1000);
 export const hierarchy = onCall(
   {cors: true},
-  async (request: CallableRequest<{ id: string }>) : Promise<Lokasi> => {
+  async (request: CallableRequest<{ id: string }>): Promise<Lokasi> => {
     let id = request.data.id;
     if (!(/^\d{0,13}$/.test(id))) id = "";
 
@@ -96,7 +96,7 @@ export const register = onCall(
 
     const now = Date.now();
     if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
-      logger.error("register-rate-limited", request.auth.uid );
+      logger.error("register-rate-limited", request.auth.uid);
       return false;
     }
 
@@ -135,7 +135,7 @@ export const changeRole = onCall(
 
     const now = Date.now();
     if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
-      logger.error("change-role-rate-limited", request.auth.uid );
+      logger.error("change-role-rate-limited", request.auth.uid);
       return "rate-limited";
     }
 
@@ -157,13 +157,14 @@ export const changeRole = onCall(
 export const review = onCall(
   {cors: true},
   async (request: CallableRequest<{
-       tpsId: string, imageId: string, votes: Votes }>)
-      : Promise<boolean> => {
+    tpsId: string, imageId: string, votes: Votes
+  }>)
+    : Promise<boolean> => {
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
     if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
-      logger.error("review-rate-limited", request.auth.uid );
+      logger.error("review-rate-limited", request.auth.uid);
       return false;
     }
 
@@ -180,7 +181,8 @@ export const review = onCall(
     const status = v.status;
     if (!status) return false;
     if (status !== APPROVAL_STATUS.APPROVED &&
-         status !== APPROVAL_STATUS.REJECTED) return false;
+      status !== APPROVAL_STATUS.REJECTED &&
+      status !== APPROVAL_STATUS.MOVED) return false;
     const sanitized: UploadRequest = {
       idLokasi: request.data.tpsId,
       imageId: request.data.imageId,
@@ -210,7 +212,7 @@ export const upload = onCall(
 
     const now = Date.now();
     if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
-      logger.error("upload-rate-limited", request.auth.uid );
+      logger.error("upload-rate-limited", request.auth.uid);
       return false;
     }
 
@@ -231,6 +233,10 @@ export const upload = onCall(
     const pas3 = Number(vs[0].pas3);
     if (!isValidVoteNumbers(pas3)) return false;
 
+    const status = request.data.status;
+    if (status !== APPROVAL_STATUS.NEW &&
+        status !== APPROVAL_STATUS.MOVED) return false;
+
     const m = request.data.imageMetadata;
     const imageMetadata: ImageMetadata = {l: Number(m.l), s: Number(m.s)};
     if (m.z) imageMetadata.z = Number(m.z);
@@ -240,9 +246,12 @@ export const upload = onCall(
     if (m.x) imageMetadata.x = Number(m.x);
 
     // Use the default image for local testing.
-    const servingUrl = (process.env.FUNCTIONS_EMULATOR === "true") ?
-      "https://kp24.web.app/assets/kp.png" :
-      await getServingUrl(`uploads/${idLokasi}/${request.auth.uid}/${imageId}`);
+    const servingUrl = status === APPROVAL_STATUS.MOVED ?
+      request.data.servingUrl :
+      ((process.env.FUNCTIONS_EMULATOR === "true") ?
+        "https://kp24.web.app/assets/kp.png" :
+        await getServingUrl(
+          `uploads/${idLokasi}/${request.auth.uid}/${imageId}`));
 
     const sanitized: UploadRequest = {
       idLokasi, imageId, imageMetadata, servingUrl,
@@ -250,9 +259,9 @@ export const upload = onCall(
         uid: request.auth.uid,
         pas1, pas2, pas3,
         updateTs: Date.now(),
-        status: APPROVAL_STATUS.NEW,
+        status,
       }],
-      status: APPROVAL_STATUS.NEW,
+      status,
     };
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {

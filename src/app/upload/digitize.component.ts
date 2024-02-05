@@ -17,8 +17,8 @@ import { APPROVAL_STATUS, Votes, isValidVoteNumbers } from '../../../functions/s
 export class DigitizeComponent implements OnChanges {
     @ViewChild('firstInput') firstInput!: ElementRef;
 
-    @Input({required: true}) imageId = '';
-    @Input({required: true}) votes!: Votes;
+    @Input({ required: true }) imageId = '';
+    @Input({ required: true }) votes!: Votes;
     @Input() review = false;
     @Output() onSubmit = new EventEmitter<Votes>();
     status = APPROVAL_STATUS.NEW;
@@ -26,7 +26,7 @@ export class DigitizeComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['imageId']) {
-            setTimeout(() => this.firstInput.nativeElement.focus(), 100);
+            setTimeout(() => this.firstInput.nativeElement.focus(), 200);
         }
         if (changes['votes'] && this.votes) {
             if (!this.votes.pas1 && !this.votes.pas2 && !this.votes.pas3) {
@@ -36,17 +36,19 @@ export class DigitizeComponent implements OnChanges {
     }
 
     onDigitized() {
-        if (!isValidVoteNumbers(this.votes.pas1)) {
-            alert('Invalid votes for Paslon 1');
-            return false;
-        }
-        if (!isValidVoteNumbers(this.votes.pas2)) {
-            alert('Invalid votes for Paslon 2');
-            return false;
-        }
-        if (!isValidVoteNumbers(this.votes.pas3)) {
-            alert('Invalid votes for Paslon 3');
-            return false;
+        if (this.status === APPROVAL_STATUS.APPROVED) {
+            if (!isValidVoteNumbers(this.votes.pas1)) {
+                alert('Invalid votes for Paslon 1');
+                return false;
+            }
+            if (!isValidVoteNumbers(this.votes.pas2)) {
+                alert('Invalid votes for Paslon 2');
+                return false;
+            }
+            if (!isValidVoteNumbers(this.votes.pas3)) {
+                alert('Invalid votes for Paslon 3');
+                return false;
+            }
         }
         this.votes.status = this.status;
         this.onSubmit.emit(this.votes);

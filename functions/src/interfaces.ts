@@ -1,7 +1,7 @@
 // These interfaces are shared between the backend (Firestore Functions) and
 // the frontend (Angular).
 
-export const DEFAULT_MAX_UPLOADS = 10;
+export const DEFAULT_MAX_UPLOADS = 100;
 
 export const TESTER_UID = "tester_uid";
 
@@ -256,7 +256,8 @@ export class PrestineLokasi {
 export enum APPROVAL_STATUS {
   NEW = 0,
   APPROVED = 1,
-  REJECTED = 2
+  REJECTED = 2,
+  MOVED = 3
 }
 
 export declare interface Votes {
