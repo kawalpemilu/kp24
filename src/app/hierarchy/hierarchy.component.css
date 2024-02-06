@@ -6,16 +6,13 @@ th.lokasi {
     width: 150px;
 }
 
-th.paslon {
+th.paslon,
+th.cov {
     width: 50px;
 }
 
 th.paslon::before {
     content: "Pas";
-}
-
-th.cov {
-    width: 50px;
 }
 
 /* Default styles - all columns visible */
@@ -24,7 +21,20 @@ table td {
     display: table-cell;
 }
 
-.sticky_table {
+tbody.data,
+tfoot.sum {
+    font-size: small;
+}
+
+tbody.data tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+tbody.data tr:hover {
+    background-color: #e0e0e0;
+}
+
+table.sticky_table {
     margin: auto;
 }
 
@@ -95,7 +105,8 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
         width: 300px;
     }
 
-    th.paslon {
+    th.paslon,
+    th.cov {
         width: 75px;
     }
 
@@ -103,11 +114,12 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
         content: "Paslon ";
     }
 
-    th.cov {
-        width: 75px;
-    }
-
     th.cov::after {
         content: "erage";
+    }
+
+    tbody.data,
+    tfoot.sum {
+        font-size: medium;
     }
 }

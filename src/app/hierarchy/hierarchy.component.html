@@ -39,7 +39,7 @@
             <th class="cov">Cov</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody class="data">
         @for (c of lokasi.children; track c.id;) {
         <tr *ngIf="c.agg[0] as a" height="56">
             <td><div class="lokasi">
@@ -72,7 +72,7 @@
         </tr>
         }
     </tbody>
-    <tfoot>
+    <tfoot class="sum">
         <tr height="56">
             <th align="right">
                 TOTAL:
