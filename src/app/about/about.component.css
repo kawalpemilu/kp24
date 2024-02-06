@@ -6,3 +6,8 @@
   font-style: normal;
   font-weight: bold;
 }
+
+.about header.hero img.hero-image {
+  object-fit: scale-down;
+  max-height: 5rem;
+}
