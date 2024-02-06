@@ -157,12 +157,14 @@ import { map, shareReplay } from 'rxjs';
       padding: 0.5rem 1rem;
       text-align: center;
       font-size: 0.6rem;
+      line-height: 0.9rem;
     }
 
     @media (min-width: 600px) {
       .banner {
         font-size: 0.85rem;
         padding: 0.75rem 2rem;
+        line-height: 1rem;
       }
     }
   `
