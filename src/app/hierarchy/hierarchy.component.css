@@ -10,6 +10,10 @@ th.paslon {
     width: 50px;
 }
 
+th.paslon::before {
+    content: "Pas";
+}
+
 th.cov {
     width: 50px;
 }
@@ -38,23 +42,11 @@ table td {
     background: lightgray;
 }
 
-@media (max-width: 600px) {
-    header.sticky-header>nav.breadcrumb {
-        font-size: small;
-    }
-}
-
-@media (max-width: 500px) {
-    header.sticky-header>nav.breadcrumb {
-        font-size: smaller;
-    }
-}
-
 header.sticky-header {
+    font-size: small;
     position: sticky;
     top: 0;
     z-index: 2;
-    font-size: medium;
     display: flex;
     width: 100%;
     justify-content: space-between;
@@ -92,4 +84,10 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li:not(:last-child)
 
 header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item > a.breadcrumb-link {
     text-decoration: none;
+}
+
+@media (min-width: 600px) {
+  header.sticky-header {
+    font-size: medium;
+  }
 }
