@@ -19,7 +19,7 @@ span.total {
 a.hierarchy.pending,
 span.total.pending {
     background-color: #FFD54F; /* Amber 300 */
-    color: black;
+    color: #000000DE;
 }
 
 a.hierarchy.pending:hover,
