@@ -2,26 +2,37 @@ a.hierarchy {
     text-decoration: none;
 }
 
-a.hierarchy.mdc-fab,
-button.mdc-fab {
-    height: 1.5rem;
+a.hierarchy.pending,
+a.hierarchy.error,
+span.total {
+    height: fit-content;
     width: fit-content;
     border-radius: 1rem;
-    padding: 0.5rem;
+    padding: 0.3rem 0.5rem;
     margin-left: 0.5rem;
     font-size: 0.65rem;
     vertical-align: middle;
-    z-index: -1;
+    color: white;
 }
 
-a.hierarchy.mdc-fab.pending,
-button.mdc-fab.pending {
+a.hierarchy.pending,
+span.total.pending {
     background-color: #E65100;
 }
 
-a.hierarchy.mdc-fab.error,
-button.mdc-fab.error {
-    background-color: #EE161F;
+a.hierarchy.pending:hover,
+span.total.pending:hover {
+  background-color: #FB8C00;
+}
+
+a.hierarchy.error,
+span.total.error {
+    background-color: #D32F2F;
+}
+
+a.hierarchy.error:hover,
+span.total.error:hover {
+    background-color: #EF5350;
 }
 
 th.lokasi {
@@ -149,8 +160,8 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
         font-size: 1rem;
     }
 
-    a.hierarchy.mdc-fab,
-    button.mdc-fab {
+    a.hierarchy,
+    span.total {
         font-size: 0.8rem;
     }
 }

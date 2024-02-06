@@ -44,10 +44,10 @@
         <tr *ngIf="c.agg[0] as a" height="56">
             <td><div class="lokasi">
                 <a class="hierarchy" [routerLink]="['/h', c.id]">{{ a.name }}</a>
-                <a mat-mini-fab class="hierarchy pending" *ngIf="a.totalPendingTps as p" [routerLink]="['/h', a.anyPendingTps]">
+                <a class="hierarchy pending" *ngIf="a.totalPendingTps as p" [routerLink]="['/h', a.anyPendingTps]">
                     {{ p }}
                 </a>
-                <a mat-mini-fab class="hierarchy error" *ngIf="a.totalErrorTps as e" [routerLink]="['/h', a.anyErrorTps]">
+                <a class="hierarchy error" *ngIf="a.totalErrorTps as e" [routerLink]="['/h', a.anyErrorTps]">
                     {{ e }}
                 </a>
             </div></td>
@@ -76,8 +76,8 @@
         <tr height="56">
             <th class="numbers">
                 TOTAL
-                <button mat-mini-fab class="pending" *ngIf="lokasi.total.totalPendingTps as p" >{{ p }}</button>
-                <button mat-mini-fab class="error" *ngIf="lokasi.total.totalErrorTps as e" >{{ e }}</button>
+                <span class="total pending" *ngIf="lokasi.total.totalPendingTps as p" >{{ p }}</span>
+                <span class="total error" *ngIf="lokasi.total.totalErrorTps as e" >{{ e }}</span>
             </th>
             @if (lokasi.total.pas1 + lokasi.total.pas2 + lokasi.total.pas3; as totalVotes) {
                 <th class="numbers">
