@@ -63,7 +63,7 @@ header.sticky-header {
 }
 
 header.sticky-header > nav.breadcrumb {
-    margin-left: 1rem;
+    margin-left: 2rem;
 }
 
 header.sticky-header > button.refresh {
