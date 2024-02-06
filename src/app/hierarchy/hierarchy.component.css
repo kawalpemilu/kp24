@@ -119,7 +119,7 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
     }
 
     th.cov::after {
-        content: "Persentase";
+        content: "Cakupan";
     }
 
     tbody.data,
