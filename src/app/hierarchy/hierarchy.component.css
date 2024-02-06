@@ -18,12 +18,13 @@ span.total {
 
 a.hierarchy.pending,
 span.total.pending {
-    background-color: #F9A825; /* Yellow 800 */
+    background-color: #FFD54F; /* Amber 300 */
+    color: black;
 }
 
 a.hierarchy.pending:hover,
 span.total.pending:hover {
-  background-color: #FFC107; /* Amber 500 */
+  background-color: #FFB300; /* Amber 600 */
 }
 
 a.hierarchy.error,
