@@ -2,6 +2,39 @@ a.hierarchy {
     text-decoration: none;
 }
 
+a.hierarchy.pending,
+a.hierarchy.error,
+span.total {
+    height: fit-content;
+    width: fit-content;
+    border-radius: 1rem;
+    padding: 0.3rem 0.5rem;
+    margin-left: 0.5rem;
+    font-size: 0.65rem;
+    vertical-align: middle;
+    color: white;
+}
+
+a.hierarchy.pending,
+span.total.pending {
+    background-color: #E65100;
+}
+
+a.hierarchy.pending:hover,
+span.total.pending:hover {
+  background-color: #FB8C00;
+}
+
+a.hierarchy.error,
+span.total.error {
+    background-color: #D32F2F;
+}
+
+a.hierarchy.error:hover,
+span.total.error:hover {
+    background-color: #EF5350;
+}
+
 th.lokasi {
     width: 150px;
 }
@@ -32,10 +65,6 @@ tfoot.sum {
 
 tbody.data tr:nth-child(odd) {
     background-color: #f2f2f2;
-}
-
-tbody.data tr:hover {
-    background-color: #e0e0e0;
 }
 
 tbody.data td.numbers {
@@ -129,5 +158,10 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
     tbody.data,
     tfoot.sum {
         font-size: 1rem;
+    }
+
+    a.hierarchy,
+    span.total {
+        font-size: 0.8rem;
     }
 }
