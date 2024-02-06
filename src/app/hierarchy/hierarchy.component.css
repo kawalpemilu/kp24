@@ -7,9 +7,9 @@ button.mdc-fab {
     height: 1.5rem;
     width: fit-content;
     border-radius: 1rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem;
     margin-left: 0.5rem;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     vertical-align: middle;
     z-index: -1;
 }
@@ -147,5 +147,10 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
     tbody.data,
     tfoot.sum {
         font-size: 1rem;
+    }
+
+    a.hierarchy.mdc-fab,
+    button.mdc-fab {
+        font-size: 0.85rem;
     }
 }
