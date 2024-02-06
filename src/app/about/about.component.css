@@ -12,7 +12,12 @@
   max-height: 5rem;
 }
 
-.about a.hashtag {
+.about a {
   color: #914689; /* KawalPemilu 2024 Plum */
   text-wrap: nowrap;
+  text-decoration: none;
+}
+
+.about a:hover {
+  text-decoration: underline;
 }
