@@ -18,22 +18,22 @@ span.total {
 
 a.hierarchy.pending,
 span.total.pending {
-    background-color: #E65100;
+    background-color: #F9A825; /* Yellow 800 */
 }
 
 a.hierarchy.pending:hover,
 span.total.pending:hover {
-  background-color: #FB8C00;
+  background-color: #FFC107; /* Amber 500 */
 }
 
 a.hierarchy.error,
 span.total.error {
-    background-color: #D32F2F;
+    background-color: #D32F2F; /* Red 700 */
 }
 
 a.hierarchy.error:hover,
 span.total.error:hover {
-    background-color: #EF5350;
+    background-color: #EF5350; /* Red 400 */
 }
 
 th.lokasi {
