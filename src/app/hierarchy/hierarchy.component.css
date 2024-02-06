@@ -2,7 +2,7 @@
     text-decoration: none;
 }
 
-.lokasi {
+th.lokasi {
     width: 150px;
 }
 
@@ -86,8 +86,28 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
     text-decoration: none;
 }
 
-@media (min-width: 600px) {
-  header.sticky-header {
-    font-size: medium;
-  }
+@media (min-width: 500px) {
+    header.sticky-header {
+        font-size: medium;
+    }
+
+    th.lokasi {
+        width: 300px;
+    }
+
+    th.paslon {
+        width: 75px;
+    }
+
+    th.paslon::before {
+        content: "Paslon ";
+    }
+
+    th.cov {
+        width: 75px;
+    }
+
+    th.cov::after {
+        content: "erage";
+    }
 }
