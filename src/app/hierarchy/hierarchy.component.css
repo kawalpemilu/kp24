@@ -9,7 +9,7 @@ button.mdc-fab {
     border-radius: 1rem;
     padding: 0.5rem;
     margin-left: 0.5rem;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     vertical-align: middle;
     z-index: -1;
 }
@@ -151,6 +151,6 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
 
     a.hierarchy.mdc-fab,
     button.mdc-fab {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 }
