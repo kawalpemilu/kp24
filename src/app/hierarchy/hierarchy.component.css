@@ -13,6 +13,7 @@ span.total {
     font-size: 0.65rem;
     vertical-align: middle;
     color: white;
+    text-wrap: nowrap;
 }
 
 a.hierarchy.pending,
