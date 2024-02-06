@@ -2,6 +2,28 @@ a.hierarchy {
     text-decoration: none;
 }
 
+a.hierarchy.mdc-fab,
+button.mdc-fab {
+    height: 1.5rem;
+    width: fit-content;
+    border-radius: 1rem;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.5rem;
+    font-size: 0.65rem;
+    vertical-align: middle;
+    z-index: 0;
+}
+
+a.hierarchy.mdc-fab.pending,
+button.mdc-fab.pending {
+    background-color: #E65100;
+}
+
+a.hierarchy.mdc-fab.error,
+button.mdc-fab.error {
+    background-color: #EE161F;
+}
+
 th.lokasi {
     width: 150px;
 }
