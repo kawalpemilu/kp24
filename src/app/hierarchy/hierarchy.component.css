@@ -1,4 +1,4 @@
-.hierarchy {
+a.hierarchy {
     text-decoration: none;
 }
 
@@ -36,6 +36,10 @@ tbody.data tr:nth-child(odd) {
 
 tbody.data tr:hover {
     background-color: #e0e0e0;
+}
+
+tbody.data td.numbers {
+    text-align: center;
 }
 
 table.sticky_table {

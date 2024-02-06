@@ -52,21 +52,21 @@
                 </a>
             </div></td>
             @if (a.pas1 + a.pas2 + a.pas3; as totalVotes) {
-                <td align="center">
+                <td class="numbers">
                     <app-percent [nom]="a.pas1" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
-                <td align="center">
+                <td class="numbers">
                     <app-percent [nom]="a.pas2" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
-                <td align="center">
+                <td class="numbers">
                     <app-percent [nom]="a.pas3" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
             } @else {
-                <td align="center">-</td>
-                <td align="center">-</td>
-                <td align="center">-</td>
+                <td class="numbers">-</td>
+                <td class="numbers">-</td>
+                <td class="numbers">-</td>
             }
-            <td nowrap align="center">
+            <td nowrap class="numbers">
                 <app-percent [nom]="a.totalCompletedTps" [den]="a.totalTps"></app-percent>
             </td>
         </tr>
@@ -74,25 +74,25 @@
     </tbody>
     <tfoot class="sum">
         <tr height="56">
-            <th align="center">
+            <th class="numbers">
                 TOTAL
                 <b *ngIf="lokasi.total.totalPendingTps as p" style="color: orange"> ({{ p }})</b>
                 <b *ngIf="lokasi.total.totalErrorTps as e" style="color: red"> ({{ e }})</b>
             </th>
             @if (lokasi.total.pas1 + lokasi.total.pas2 + lokasi.total.pas3; as totalVotes) {
-                <th align="center">
+                <th class="numbers">
                     <app-percent [nom]="lokasi.total.pas1" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
-                <th align="center">
+                <th class="numbers">
                     <app-percent [nom]="lokasi.total.pas2" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
-                <th align="center">
+                <th class="numbers">
                     <app-percent [nom]="lokasi.total.pas3" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
             } @else {
-                <th align="center">-</th>
-                <th align="center">-</th>
-                <th align="center">-</th>
+                <th class="numbers">-</th>
+                <th class="numbers">-</th>
+                <th class="numbers">-</th>
             }
             <th>
                 <app-percent [nom]="lokasi.total.totalCompletedTps" [den]="lokasi.total.totalTps"></app-percent>
