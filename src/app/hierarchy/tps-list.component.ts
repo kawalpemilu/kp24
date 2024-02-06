@@ -37,7 +37,9 @@ export class TpsListComponent implements OnChanges {
   isProcessing: Record<string, number> = {};
 
   tpsNo$ = this.myControl.valueChanges.pipe(map(v => {
-    this.router.navigate(['/h', this.lokasi.id + v]);
+    if (!v) return '';
+    const tpsNo = +(`${v}`.substring(0, 3));
+    this.router.navigate(['/h', this.lokasi.id + tpsNo]);
     return '';
   }));
 

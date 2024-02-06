@@ -5,8 +5,8 @@
               <mat-icon aria-hidden="false" aria-label="Search icon">search</mat-icon>
               Cari
             </mat-label>
-            <input type="number" placeholder="No. TPS" matInput
-            [formControl]="myControl" #firstInput>
+            <input type="number" placeholder="No. TPS" matInput style="width: 80px"
+                   min="1" max="999" [formControl]="myControl" #firstInput>
         </mat-form-field>
     </div>
     <div class="table-filter">
