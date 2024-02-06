@@ -11,7 +11,7 @@ button.mdc-fab {
     margin-left: 0.5rem;
     font-size: 0.65rem;
     vertical-align: middle;
-    z-index: 0;
+    z-index: -1;
 }
 
 a.hierarchy.mdc-fab.pending,
