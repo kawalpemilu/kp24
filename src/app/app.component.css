@@ -57,7 +57,17 @@ h1.app-name {
   }
 }
 
+.toolbar .mat-mdc-button > .mat-icon,
+.toolbar .about-logo {
+  margin-right: 0px;
+}
+
 @media (min-width: 780px) {
+  .toolbar .mat-mdc-button>.mat-icon,
+  .toolbar .about-logo {
+    margin-right: 8px;
+  }
+
   a.home::after {
     content: 'Beranda';
   }
