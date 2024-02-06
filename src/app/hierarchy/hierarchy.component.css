@@ -15,6 +15,10 @@ th.paslon::before {
     content: "Pas";
 }
 
+th.cov::after {
+  content: "%";
+}
+
 /* Default styles - all columns visible */
 table th,
 table td {
@@ -115,7 +119,7 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
     }
 
     th.cov::after {
-        content: "erage";
+        content: "Persentase";
     }
 
     tbody.data,
