@@ -27,9 +27,15 @@ import { map, shareReplay } from 'rxjs';
           KawalPemilu 2024
         </h1>
         <span class="spacer"></span>
-        <button mat-icon-button (click)="router.navigate(['/s']); snav.close()">
-          <mat-icon>search</mat-icon>
-        </button>
+        @if (service.profile$ | async; as p) {
+          <a (click)="router.navigate(['/u']); snav.close()">
+            <img [src]="p.pic" class="profile-image">
+          </a>
+        } @else {
+          <button mat-icon-button (click)="router.navigate(['/u']); snav.close()">
+            <mat-icon style="font-size: 26px">account_circle</mat-icon>
+          </button>
+        }
       </mat-toolbar>
 
       <mat-sidenav-container class="sidenav-container">
@@ -150,7 +156,13 @@ import { map, shareReplay } from 'rxjs';
     .mat-mdc-button.active {
       color: #ff4081;
     }
-
+    .profile-image {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      vertical-align: middle;
+      cursor: pointer;
+    }
     .banner {
       background-color: #FF6F00;
       color: white;

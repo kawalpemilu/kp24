@@ -7,6 +7,8 @@ import { Observable, combineLatest, of, switchMap } from 'rxjs';
 import { Lokasi, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { PhotoComponent } from '../photo/photo.component';
 import { RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 interface UserUpload {
     lokasi: Lokasi;
@@ -28,8 +30,17 @@ interface ProfileDetails {
 @Component({
     selector: 'app-user-profile',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatRadioModule, PhotoComponent, RouterLink],
+    imports: [CommonModule, FormsModule, MatRadioModule, PhotoComponent, RouterLink,
+    MatIconModule, MatButtonModule],
     templateUrl: './profile.component.html',
+    styles: `
+        .profile {
+            padding: 1.5rem 2rem;
+        }
+        li {
+            margin-left: -15px;
+        }
+    `
 })
 export class UserProfileComponent implements OnInit {
     @Input() uid = '';
@@ -70,5 +81,10 @@ export class UserProfileComponent implements OnInit {
             }
             return of(profileDetails);
         }));
+    }
+
+    getFirstName(name: string) {
+        const parts = name.split(' ');
+        return parts[0];
     }
 }
