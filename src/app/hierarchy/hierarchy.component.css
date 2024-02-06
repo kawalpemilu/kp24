@@ -27,7 +27,7 @@ table td {
 
 tbody.data,
 tfoot.sum {
-    font-size: small;
+    font-size: 0.7rem;
 }
 
 tbody.data tr:nth-child(odd) {
@@ -57,7 +57,7 @@ table.sticky_table {
 }
 
 header.sticky-header {
-    font-size: small;
+    font-size: 0.7rem;
     position: sticky;
     top: 0;
     z-index: 2;
@@ -102,7 +102,7 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
 
 @media (min-width: 500px) {
     header.sticky-header {
-        font-size: medium;
+        font-size: 0.85rem;
     }
 
     th.lokasi {
@@ -124,6 +124,6 @@ header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item 
 
     tbody.data,
     tfoot.sum {
-        font-size: medium;
+        font-size: 1rem;
     }
 }
