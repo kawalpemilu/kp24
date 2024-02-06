@@ -24,7 +24,7 @@
     @defer (on viewport) {
     <tr *ngIf="c.agg[0] as a">
         @if (lokasi.id + c.id; as tpsId) {
-        <td width="145" align="center" nowrap valign="top"
+        <td class="tps" width="145" align="center" nowrap valign="top"
             [style.background-color]="a.totalPendingTps ? '#FFD54F' : ''">
             <br>
             <b style="font-size: large">TPS #{{ a.name }}</b>
@@ -37,7 +37,7 @@
             DPT: <b>{{ a.dpt }}</b><br>
             <br>
             @if (a.totalErrorTps) {
-                <b style="color: red">Error!</b><br>
+                <span class="error">Error!</span><br>
                 <br>
             }
             @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {

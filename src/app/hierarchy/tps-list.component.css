@@ -30,3 +30,12 @@ section.table-header > .table-filter {
     padding-right: 2rem;
   }
 }
+
+td.tps span.error {
+  height: fit-content;
+  width: fit-content;
+  border-radius: 1rem;
+  padding: 0.5rem 0.8rem;
+  background-color: #D32F2F; /* Red 700 */
+  color: white;
+}
