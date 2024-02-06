@@ -56,3 +56,33 @@ h1.app-name {
     line-height: 1rem;
   }
 }
+
+@media (min-width: 780px) {
+  a.home::after {
+    content: 'Beranda';
+  }
+
+  a.search::after {
+    content: 'Cari Lokasi TPS';
+  }
+
+  a.profile::after {
+    content: 'Profil Saya';
+  }
+
+  a.manage::after {
+    content: 'User Management';
+  }
+
+  a.login::after {
+    content: 'Masuk';
+  }
+
+  a.logout::after {
+    content: 'Keluar';
+  }
+
+  a.about::after {
+    content: 'Tentang Kami'
+  }
+}
