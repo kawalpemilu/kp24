@@ -5,12 +5,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ChildLokasi } from './hierarchy.component';
 import { AppService } from '../app.service';
-import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes, UserProfile } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes, UserProfile, UploadRequest, ImageMetadata } from '../../../functions/src/interfaces';
 import { UploadComponent } from '../upload/upload.component';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tps-row',
@@ -25,6 +24,7 @@ export class TpsRowComponent {
   @Input({required: true}) c!: ChildLokasi;
   @Input({required: true}) userProfile!: UserProfile | null;
 
+  reviewUploadRequest: UploadRequest | null = null;
   isUploadDrawer = true;
   isDrawerOpen = false;
   isProcessing = 0;
@@ -32,10 +32,9 @@ export class TpsRowComponent {
   USER_ROLE = USER_ROLE;
   APPROVAL_STATUS = APPROVAL_STATUS;
 
-  constructor(public service: AppService, private router: Router) { }
+  constructor(public service: AppService) { }
 
   onUploadOrReview(agg: PendingAggregateVotes) {
-    this.isProcessing = this.isProcessing ?? 0;
     this.isProcessing++;
     this.c.agg.splice(1, 0, agg);
     agg.onSubmitted.then(() => {
@@ -49,6 +48,26 @@ export class TpsRowComponent {
 
   numPendingUploads(a: AggregateVotes) {
     return Object.keys(a.pendingUploads || {}).length;
+  }
+
+  async reviewNextPendingUpload() {
+    this.reviewUploadRequest = await this.service.getNextPendingPhoto(this.tpsId);
+  }
+
+  reReview(a: AggregateVotes) {
+    this.reviewUploadRequest = {
+        idLokasi: a.idLokasi,
+        imageId: a.uploadedPhoto?.imageId ?? '',
+        imageMetadata: {} as ImageMetadata,
+        servingUrl: a.uploadedPhoto?.photoUrl ?? '',
+        votes: [{
+            pas1: a.pas1,
+            pas2: a.pas2,
+            pas3: a.pas3,
+            updateTs: 0
+        }],
+        status: APPROVAL_STATUS.NEW
+    };
   }
 
   roiUrl(photoUrl: string | undefined) {

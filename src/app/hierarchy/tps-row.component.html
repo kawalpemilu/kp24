@@ -1,5 +1,6 @@
 <mat-drawer-container [hasBackdrop]="true" *ngIf="c.agg[0] as a">
     <mat-drawer #drawer mode="over" (openedChange)="isDrawerOpen = $event">
+    @defer (on viewport) {
         @if (isUploadDrawer) {
             <app-upload [id]="tpsId" [votes]="a" [userProfile]="userProfile"
                 (onUpload)="onUploadOrReview($event);
@@ -7,12 +8,19 @@
                             drawer.close()">
             </app-upload>
         } @else if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
-            <app-review [id]="tpsId"
-                (onReview)="onUploadOrReview($event);
-                            isDrawerOpen = false;
-                            drawer.close()">
-            </app-review>
+            @if (reviewUploadRequest) {
+                <app-review
+                    [id]="reviewUploadRequest.idLokasi"
+                    [imageId]="reviewUploadRequest.imageId"
+                    [servingUrl]="reviewUploadRequest.servingUrl"
+                    [votes]="reviewUploadRequest.votes[0]"
+                    (onReview)="onUploadOrReview($event);
+                                isDrawerOpen = false;
+                                drawer.close()">
+                </app-review>
+            }
         }
+    } @placeholder { <br> }
     </mat-drawer>
     <mat-drawer-content>
         <div style="min-width: 250px; overflow-x: scroll"
@@ -34,7 +42,8 @@
                 @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                     <br>
                     <button *ngIf="a.totalPendingTps" [disabled]="isProcessing > 0"
-                        (click)="isUploadDrawer = false;
+                        (click)="reviewNextPendingUpload();
+                                 isUploadDrawer = false;
                                  isDrawerOpen = !drawer.opened;
                                  drawer.toggle()"
                         mat-raised-button color="accent">
@@ -53,6 +62,17 @@
                         [roiToolTip]="roiUrl(tps.uploadedPhoto?.photoUrl)">
             </app-photo>
             </div>
+            @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
+                <div style="float: right;">
+                <button mat-mini-fab color="basic" (click)="
+                    reReview(tps);
+                    isUploadDrawer = false;
+                    isDrawerOpen = !drawer.opened;
+                    drawer.toggle()">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                </div>
+            }
             Pas1: {{ tps.pas1 }}<br>
             Pas2: {{ tps.pas2 }}<br>
             Pas3: {{ tps.pas3 }}<br>

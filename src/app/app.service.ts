@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
+import { Observable, catchError, firstValueFrom, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
 import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
@@ -63,16 +63,15 @@ export class AppService {
       }), shareReplay(1));
   }
 
-  getNextPendingPhoto$(tpsId: string): Observable<UploadRequest> {
+  async getNextPendingPhoto(tpsId: string): Promise<UploadRequest | null> {
     console.log('Firestore PendingPhotos', tpsId);
     const tRef = collection(this.firestore, `/t/${tpsId}/p`);
     const qRef = query(tRef, where('status', '==', APPROVAL_STATUS.NEW), limit(1));
-    return collectionSnapshots(qRef).pipe(switchMap(snapshots => {
-      if (!snapshots.length) return of();
-      const pending = snapshots[0].data() as UploadRequest;
-      console.log('Pending review', pending);
-      return of(pending);
-    }));
+    const snapshots = await firstValueFrom(collectionSnapshots(qRef));
+    if (!snapshots.length) return null;
+    const pending = snapshots[0].data() as UploadRequest;
+    console.log('Pending review', pending);
+    return pending;
   }
 
   review(tpsId: string, imageId: string, votes: Votes) {

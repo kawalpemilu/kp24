@@ -270,6 +270,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
       const uploadRef = firestore.doc(`t/${data.idLokasi}/p/${data.imageId}`);
       const upload =
         (await t.get(uploadRef)).data() as UploadRequest | undefined;
+      let isEdit = false;
       if (!upload) {
         // New upload.
         if (!data.servingUrl) {
@@ -302,19 +303,43 @@ async function updateTps(firestore: admin.firestore.Firestore,
         if (!agg.pendingUploads) agg.pendingUploads = {};
         delete agg.pendingUploads[data.imageId];
 
+        const existingAggIdx = c.findIndex(a => a.uploadedPhoto?.imageId === data.imageId);
         if (data.votes[0].status == APPROVAL_STATUS.APPROVED) {
-          // Adds the photo and the votes.
           agg.pas1 = data.votes[0].pas1;
           agg.pas2 = data.votes[0].pas2;
           agg.pas3 = data.votes[0].pas3;
           agg.uid = data.votes[0].uid;
-          agg.status = APPROVAL_STATUS.APPROVED;
-          c.splice(1, 0, {
-            ...agg, uploadedPhoto: {
-              imageId: data.imageId,
-              photoUrl: upload.servingUrl,
-            },
-          });
+          if (existingAggIdx > 0) {
+            c[existingAggIdx].pas1 = data.votes[0].pas1;
+            c[existingAggIdx].pas2 = data.votes[0].pas2;
+            c[existingAggIdx].pas3 = data.votes[0].pas3;
+            c[existingAggIdx].uid = data.votes[0].uid;
+          } else {
+            // Adds the photo and the votes.
+            c.splice(1, 0, {
+              ...agg, uploadedPhoto: {
+                imageId: data.imageId,
+                photoUrl: upload.servingUrl,
+              },
+            });
+          }
+          isEdit = true;
+        } else if (existingAggIdx > 0) {
+          // Delete the photo and the votes.
+          c.splice(existingAggIdx, 1);
+          // Use the next approved photo if any.
+          if (c.length > 1) {
+            agg.pas1 = c[1].pas1;
+            agg.pas2 = c[1].pas2;
+            agg.pas3 = c[1].pas3;
+            agg.uid = c[1].uid;
+          } else {
+            agg.pas1 = 0;
+            agg.pas2 = 0;
+            agg.pas3 = 0;
+            delete agg.uid;
+          }
+          isEdit = true;
         }
       }
       agg.updateTs = now;
@@ -345,7 +370,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
         delete agg.anyErrorTps;
       }
 
-      if (isIdentical(c[0], agg)) {
+      if (!isEdit && isIdentical(c[0], agg)) {
         logger.log("Identical", JSON.stringify(agg, null, 2));
         return null;
       }

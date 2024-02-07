@@ -1,9 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { APPROVAL_STATUS, PendingAggregateVotes, PrestineLokasi, UploadRequest, Votes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, ImageMetadata, PendingAggregateVotes, PrestineLokasi, UploadRequest, Votes } from '../../../functions/src/interfaces';
 import { AppService } from '../app.service';
 import { PhotoComponent } from './photo.component';
 import { DigitizeComponent } from '../upload/digitize.component';
@@ -22,11 +21,13 @@ interface OptionLokasi {
     templateUrl: './review.component.html',
     styleUrl: './review.component.css',
 })
-export class ReviewComponent implements OnInit {
-    @Input({ required: true }) id = '';
+export class ReviewComponent {
+    @Input({required: true}) id!: string;
+    @Input({required: true}) votes!: Votes;
+    @Input({required: true}) imageId!: string;
+    @Input({required: true}) servingUrl!: string;
     @Output() onReview = new EventEmitter<PendingAggregateVotes>();
 
-    pending$!: Observable<UploadRequest>;
     ubahLokasi = false;
     newId = '';
     newPropId = '';
@@ -37,19 +38,9 @@ export class ReviewComponent implements OnInit {
 
     constructor(public service: AppService) { }
 
-    ngOnInit() {
-        console.log('Review', this.id);
-        if (this.id.length <= 10) {
-            console.error('ID is not a TPS:', this.id);
-            return;
-        }
-
-        this.pending$ = this.service.getNextPendingPhoto$(this.id);
-    }
-
-    approve(p: UploadRequest, votes: Votes) {
+    approve(votes: Votes) {
         const onSubmitted = this.service
-            .review(this.id, p.imageId, votes)
+            .review(this.id, this.imageId, votes)
             .then(v => {
                 if (!v.data) {
                     alert('Fail to submit the review');
@@ -62,7 +53,7 @@ export class ReviewComponent implements OnInit {
                 return '';
             });
         this.onReview.emit({
-            idLokasi: p.idLokasi,
+            idLokasi: this.id,
             name: '',
             totalTps: 0,
             totalPendingTps: 0,
@@ -73,7 +64,10 @@ export class ReviewComponent implements OnInit {
             pas3: votes.pas3,
             updateTs: 0,
             status: votes.status,
-            uploadedPhoto: { imageId: p.imageId, photoUrl: p.servingUrl },
+            uploadedPhoto: {
+                imageId: this.imageId,
+                photoUrl: this.servingUrl
+            },
             onSubmitted
         });
     }
@@ -125,16 +119,16 @@ export class ReviewComponent implements OnInit {
         const lokasi = P.getPrestineLokasi(this.newKelId);
         return !!lokasi.aggregated[this.newTpsNo];
     }
-    updateLokasi(p: UploadRequest) {
+    updateLokasi() {
         this.service
             .upload({
                 idLokasi: this.newKelId + this.newTpsNo,
-                imageId: p.imageId,
-                imageMetadata: p.imageMetadata,
-                servingUrl: p.servingUrl,
-                votes: [ { ...p.votes[0], status: APPROVAL_STATUS.MOVED } ],
+                imageId: this.imageId,
+                imageMetadata: {} as ImageMetadata,
+                servingUrl: this.servingUrl,
+                votes: [ { ...this.votes, status: APPROVAL_STATUS.MOVED } ],
                 status: APPROVAL_STATUS.MOVED,
             });
-        this.approve(p, { ...p.votes[0], status: APPROVAL_STATUS.MOVED });
+        this.approve({ ...this.votes, status: APPROVAL_STATUS.MOVED });
     }
 }
