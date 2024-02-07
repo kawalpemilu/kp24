@@ -101,6 +101,11 @@ async function addDataToUserProfile(
     }
     if (!p.uploads) p.uploads = {};
     if (!p.uploads[data.idLokasi]) p.uploads[data.idLokasi] = {};
+    // Check if the imageId has been used before.
+    if (p.uploads[data.idLokasi][data.imageId]) {
+      logger.error("Image id already exists", data);
+      return false;
+    }
     p.uploads[data.idLokasi][data.imageId] = data;
     p.uploadCount++;
     if (p.uploadCount > p.uploadMaxCount) {
