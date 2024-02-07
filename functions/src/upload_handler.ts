@@ -308,6 +308,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
           agg.pas2 = data.votes[0].pas2;
           agg.pas3 = data.votes[0].pas3;
           agg.uid = data.votes[0].uid;
+          agg.status = APPROVAL_STATUS.APPROVED;
           c.splice(1, 0, {
             ...agg, uploadedPhoto: {
               imageId: data.imageId,

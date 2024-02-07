@@ -1,0 +1,104 @@
+<mat-drawer-container [hasBackdrop]="true" *ngIf="c.agg[0] as a">
+    <mat-drawer #drawer mode="over" (openedChange)="isDrawerOpen = $event">
+        @if (isUploadDrawer) {
+            <app-upload [id]="tpsId" [votes]="a" [userProfile]="userProfile"
+                (onUpload)="onUploadOrReview($event);
+                            isDrawerOpen = false;
+                            drawer.close()">
+            </app-upload>
+        } @else if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
+            <app-review [id]="tpsId"
+                (onReview)="onUploadOrReview($event);
+                            isDrawerOpen = false;
+                            drawer.close()">
+            </app-review>
+        }
+    </mat-drawer>
+    <mat-drawer-content>
+        <div style="min-width: 250px; overflow-x: scroll"
+            [style.width]="(service.viewportWidth - 150) + 'px'">
+        <table [style.height]="isDrawerOpen ? '500px' : '250px'" cellpadding="10">
+        <tr>
+            <td>
+                <div (click)="isUploadDrawer = true;
+                              isDrawerOpen = !drawer.opened;
+                              drawer.toggle()"
+                        style="width: 80px; text-align: center; cursor: pointer;">
+                    <button mat-fab color="primary">
+                        <mat-icon>add_a_photo</mat-icon>
+                    </button>
+                    <p style="margin-top: 10px;">
+                        <b>Unggah<br>Foto</b>
+                    </p>
+                </div>
+                @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
+                    <br>
+                    <button *ngIf="a.totalPendingTps" [disabled]="isProcessing > 0"
+                        (click)="isUploadDrawer = false;
+                                 isDrawerOpen = !drawer.opened;
+                                 drawer.toggle()"
+                        mat-raised-button color="accent">
+                        <mat-icon>description</mat-icon>
+                         ({{ numPendingUploads(a) }})
+                    </button>
+                } @else {
+                    <span *ngIf="a.totalPendingTps">{{ numPendingUploads(a) }} Unreviewed</span>
+                }
+            </td>
+    @if (c.agg.length > 1) {
+        @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
+        <td valign="top">
+            <div style="height: 125px; padding-bottom: 5px">
+            <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"
+                        [roiToolTip]="roiUrl(tps.uploadedPhoto?.photoUrl)">
+            </app-photo>
+            </div>
+            Pas1: {{ tps.pas1 }}<br>
+            Pas2: {{ tps.pas2 }}<br>
+            Pas3: {{ tps.pas3 }}<br>
+            @if (tps.updateTs === 0) {
+                <mat-spinner [diameter]="15" style="float: left; margin-right: 5px">
+                </mat-spinner>
+                @if (tps.status === APPROVAL_STATUS.NEW) {
+                    Uploading ...
+                } @else if (tps.status === APPROVAL_STATUS.APPROVED) {
+                    Approving ...
+                } @else if (tps.status === APPROVAL_STATUS.REJECTED) {
+                    Rejecting ...
+                } @else if (tps.status === APPROVAL_STATUS.MOVED) {
+                    Moving ...
+                }
+            }
+        </td>
+        }
+    }
+    @if (userProfile?.uploads; as uploads) {
+        @if (uploads[tpsId]; as u) {
+            @for (u of c.userUploads; track u.imageId) {
+                <td valign="top">
+                    <div style="height: 125px; padding-bottom: 5px">
+                        <app-photo [photoUrl]="u.servingUrl"
+                                [roiToolTip]="roiUrl(u.servingUrl)">
+                        </app-photo>
+                    </div>
+                    @if (u.votes[0]; as v) {
+                        Pas1: {{ v.pas1 }}<br>
+                        Pas2: {{ v.pas2 }}<br>
+                        Pas3: {{ v.pas3 }}<br>
+                    }
+                    @if (u.status === APPROVAL_STATUS.NEW) {
+                        Pending Review
+                    } @else if (u.status === APPROVAL_STATUS.REJECTED) {
+                        Rejected
+                    } @else if (u.status === APPROVAL_STATUS.MOVED) {
+                        Moved
+                    }
+                </td>
+            }
+        }
+    }
+            </tr>
+        </table>
+        </div>
+    </mat-drawer-content>
+</mat-drawer-container>
