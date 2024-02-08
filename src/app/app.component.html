@@ -1,12 +1,9 @@
 <div class="container">
   <mat-toolbar color="primary" class="toolbar">
-    <button mat-icon-button (click)="snav.toggle()">
-      <mat-icon>menu</mat-icon>
+    <button class="app-menu" style="cursor: pointer;" (click)="snav.toggle()">
+      <img class="app-logo" src="assets/logo-putih.png" width="63px" height="40px">
+      <h1 class="sr-only">KawalPemilu 2024</h1>
     </button>
-    <h1 class="app-name" style="cursor: pointer;" (click)="router.navigate(['/h', '']); snav.close()">
-      <img src="assets/logo-putih.png" width="51px" height="32px" style="vertical-align: middle; height: 32px; margin-right: 8px;">
-      KawalPemilu 2024
-    </h1>
     <span class="spacer"></span>
     @if (service.profile$ | async; as p) {
       <a (click)="router.navigate(['/u']); snav.close()">
@@ -75,28 +72,34 @@
   <mat-toolbar class="toolbar">
     <a class="home" mat-button routerLink="/h" routerLinkActive="active" ariaCurrentWhenActive="page">
       <mat-icon>home</mat-icon>
+      <span class="sr-only">Beranda</span>
     </a>
     <a class="search" mat-button routerLink="/s" routerLinkActive="active" ariaCurrentWhenActive="page">
       <mat-icon>search</mat-icon>
+      <span class="sr-only">Cari Lokasi TPS</span>
     </a>
     @if (service.auth.currentUser; as u) {
       <a class="profile" mat-button routerLink="/u" routerLinkActive="active" ariaCurrentWhenActive="page">
         <mat-icon>person</mat-icon>
+        <span class="sr-only">Profil Saya</span>
       </a>
       @if (service.profile$ | async; as p) {
         @if (p.role >= USER_ROLE.ADMIN) {
           <a class="manage" mat-button routerLink="/m" routerLinkActive="active" ariaCurrentWhenActive="page">
             <mat-icon>manage_accounts</mat-icon>
+            <span class="sr-only">User Management</span>
           </a>
         }
       }
     } @else {
       <a class="login" mat-button (click)="service.login()">
         <mat-icon>login</mat-icon>
+        <span class="sr-only">Masuk</span>
       </a>
     }
     <a class="about" mat-button routerLink="/about" routerLinkActive="active" ariaCurrentWhenActive="page">
       <img class="about-logo" src="assets/apple-touch-icon.png" width="24px" height="24px" style="vertical-align: middle; height: 24px;">
+      <span class="sr-only">Tentang Kami</span>
     </a>
   </mat-toolbar>
 </div>

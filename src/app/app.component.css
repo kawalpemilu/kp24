@@ -8,8 +8,31 @@
   right: 0;
 }
 
-h1.app-name {
-  margin-left: 8px;
+button.app-menu {
+  background: none;
+  border: none;
+  padding: 0 1rem;
+}
+
+button.app-menu:hover {
+  background-color: #91468933;/* KawalPemilu 2024 Plum */
+}
+
+button.app-menu img.app-logo {
+  height: 40px;
+  width: auto;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .sidenav-container {
@@ -29,7 +52,7 @@ h1.app-name {
 }
 
 .mat-mdc-button.active {
-  color: #EE161F;
+  color: #EE161F; /* KawalPemilu 2024 Red */
 }
 
 .profile-image {
