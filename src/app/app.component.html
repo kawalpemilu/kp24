@@ -1,22 +1,29 @@
 <div class="container">
-  <mat-toolbar color="primary" class="toolbar">
-    <button class="app-menu" style="cursor: pointer;" (click)="snav.toggle()">
-      <img class="app-logo" src="assets/logo-putih.png" width="63px" height="40px" alt="Logo KawalPemilu 2024">
-    </button>
-    <a class="app-home-link" routerLink="/h">
-      <h1 class="app-home-title">KawalPemilu 2024</h1>
-    </a>
-    <span class="spacer"></span>
-    @if (service.profile$ | async; as p) {
-      <a (click)="router.navigate(['/u']); snav.close()">
-        <img [src]="p.pic" alt="Profile picture" class="profile-image">
-      </a>
-    } @else {
-      <button mat-icon-button (click)="router.navigate(['/u']); snav.close()">
-        <mat-icon style="font-size: 26px">account_circle</mat-icon>
-      </button>
-    }
-  </mat-toolbar>
+    <header class="toolbar">
+        <div class="top-nav-container">
+            <button class="app-menu" style="cursor: pointer;" (click)="snav.toggle()">
+                <img class="app-logo" src="assets/kp.png" width="63px" height="40px" alt="Logo KawalPemilu 2024">
+            </button>
+            <a class="app-home-link" routerLink="/h">
+                <h1 class="app-home-title">
+                    <span class="kp">KawalPemilu</span>
+                    <span class="kp24">2024</span>
+                </h1>
+            </a>
+            <span class="spacer"></span>
+            @if (service.profile$ | async; as p) {
+                <a routerLink="/u">
+                    <img [src]="p.pic" alt="Profile picture" class="profile-image">
+                    <span class="sr-only">Profil Saya</span>
+                </a>
+            } @else {
+                <a mat-icon-button routerLink="/u">
+                    <mat-icon style="font-size: 26px">account_circle</mat-icon>
+                    <span class="sr-only">Masuk</span>
+                </a>
+            }
+        </div>
+    </header>
 
   <mat-sidenav-container class="sidenav-container">
     <mat-sidenav #snav mode="over">
@@ -67,41 +74,45 @@
 
   <!-- TODO: Remove this card once we conclude the testing phase. -->
   <div class="banner">
-      Masa uji coba berlaku hingga <strong>12 Februari 2024</strong>.
-      Setelah itu semua data & foto akan dihapus untuk penghitungan yang sebenarnya.
+      <div class="banner-text">
+          Masa uji coba berlaku hingga <strong>12 Februari 2024</strong>.
+          Setelah itu semua data & foto akan dihapus untuk penghitungan yang sebenarnya.
+      </div>
   </div>
 
-  <mat-toolbar class="toolbar">
-    <a class="home" mat-button routerLink="/h" routerLinkActive="active" ariaCurrentWhenActive="page">
-      <mat-icon>home</mat-icon>
-      <span class="sr-only">Beranda</span>
-    </a>
-    <a class="search" mat-button routerLink="/s" routerLinkActive="active" ariaCurrentWhenActive="page">
-      <mat-icon>search</mat-icon>
-      <span class="sr-only">Cari Lokasi TPS</span>
-    </a>
-    @if (service.auth.currentUser; as u) {
-      <a class="profile" mat-button routerLink="/u" routerLinkActive="active" ariaCurrentWhenActive="page">
-        <mat-icon>person</mat-icon>
-        <span class="sr-only">Profil Saya</span>
-      </a>
-      @if (service.profile$ | async; as p) {
-        @if (p.role >= USER_ROLE.ADMIN) {
-          <a class="manage" mat-button routerLink="/m" routerLinkActive="active" ariaCurrentWhenActive="page">
-            <mat-icon>manage_accounts</mat-icon>
-            <span class="sr-only">User Management</span>
+  <footer class="toolbar">
+      <div class="bottom-nav-container">
+          <a class="home" mat-button routerLink="/h" routerLinkActive="active" ariaCurrentWhenActive="page">
+              <mat-icon>home</mat-icon>
+              <span class="sr-only">Beranda</span>
           </a>
-        }
-      }
-    } @else {
-      <a class="login" mat-button (click)="service.login()">
-        <mat-icon>login</mat-icon>
-        <span class="sr-only">Masuk</span>
-      </a>
-    }
-    <a class="about" mat-button routerLink="/about" routerLinkActive="active" ariaCurrentWhenActive="page">
-      <img class="about-logo" src="assets/apple-touch-icon.png" alt="Logo KawalPemilu 2024" width="24px" height="24px" style="vertical-align: middle; height: 24px;">
-      <span class="sr-only">Tentang Kami</span>
-    </a>
-  </mat-toolbar>
+          <a class="search" mat-button routerLink="/s" routerLinkActive="active" ariaCurrentWhenActive="page">
+              <mat-icon>search</mat-icon>
+              <span class="sr-only">Cari Lokasi TPS</span>
+          </a>
+          @if (service.auth.currentUser; as u) {
+            <a class="profile" mat-button routerLink="/u" routerLinkActive="active" ariaCurrentWhenActive="page">
+              <mat-icon>person</mat-icon>
+              <span class="sr-only">Profil Saya</span>
+            </a>
+            @if (service.profile$ | async; as p) {
+              @if (p.role >= USER_ROLE.ADMIN) {
+                <a class="manage" mat-button routerLink="/m" routerLinkActive="active" ariaCurrentWhenActive="page">
+                  <mat-icon>manage_accounts</mat-icon>
+                  <span class="sr-only">User Management</span>
+                </a>
+              }
+            }
+          } @else {
+            <a class="login" mat-button (click)="service.login()">
+                <mat-icon>login</mat-icon>
+                <span class="sr-only">Masuk</span>
+            </a>
+          }
+          <a class="about" mat-button routerLink="/about" routerLinkActive="active" ariaCurrentWhenActive="page">
+            <img class="about-logo" src="assets/apple-touch-icon.png" alt="Logo KawalPemilu 2024" width="48px" height="48px">
+            <span class="sr-only">Tentang Kami</span>
+          </a>
+      </div>
+  </footer>
 </div>

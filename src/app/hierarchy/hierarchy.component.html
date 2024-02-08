@@ -1,23 +1,26 @@
 <div *ngIf="lokasi$ | async as lokasi">
 
 <header class="sticky-header">
-  <nav aria-label="Breadcrumb" class="breadcrumb">
-      <ul class="breadcrumb-list">
-          @for (p of lokasi.parents; track p[0];) {
-              <li class="breadcrumb-item">
-                  <a class="breadcrumb-link" [routerLink]="['/h', p[0]]" routerLinkActive="active">{{ p[1] }}</a>
-              </li>
+  <div class="header-container">
+      <nav aria-label="Breadcrumb" class="breadcrumb">
+          <ul class="breadcrumb-list">
+              @for (p of lokasi.parents; track p[0];) {
+                  <li class="breadcrumb-item">
+                      <a class="breadcrumb-link" [routerLink]="['/h', p[0]]" routerLinkActive="active">{{ p[1] }}</a>
+                  </li>
+              }
+          </ul>
+      </nav>
+      <button class="refresh" mat-icon-button color="primary" (click)="reloadLokasi()"
+          [disabled]="service.rpcIsRunning">
+          @if (service.rpcIsRunning) {
+              <mat-spinner [diameter]="25"></mat-spinner>
+          } @else {
+              <mat-icon>refresh</mat-icon>
           }
-      </ul>
-  </nav>
-  <button class="refresh" mat-icon-button color="primary" (click)="reloadLokasi()"
-      [disabled]="service.rpcIsRunning">
-      @if (service.rpcIsRunning) {
-          <mat-spinner [diameter]="25"></mat-spinner>
-      } @else {
-          <mat-icon>refresh</mat-icon>
-      }
-  </button>
+          <span class="sr-only">Refresh</span>
+      </button>
+  </div>
 </header>
 
 @if (lokasi.id.length === 10) {

@@ -38,12 +38,12 @@ span.total.error:hover {
 }
 
 th.lokasi {
-    width: 150px;
+    width: 16rem;
 }
 
 th.paslon,
 th.cov {
-    width: 50px;
+    width: 4rem;
 }
 
 th.paslon::before {
@@ -82,6 +82,7 @@ table.sticky_table {
     top: 45px;
     border-bottom: 2px solid #ccc;
     background: lightgray;
+    max-width: 48rem;
 }
 
 .sticky_table tfoot {
@@ -96,42 +97,48 @@ header.sticky-header {
     position: sticky;
     top: 0;
     z-index: 2;
+    background-color: #E0F7FA; /* Cyan 100 */
+    padding: 0 2rem;
+}
+
+header.sticky-header div.header-container {
+    max-width: 48rem;
+    margin: auto;
     display: flex;
-    width: 100%;
     justify-content: space-between;
     align-items: center;
-    background-color: #E0F2F1;
 }
 
-header.sticky-header > nav.breadcrumb {
-    margin-left: 2rem;
+header.sticky-header nav.breadcrumb {
+    min-height: 3rem;
+    margin-right: auto;
 }
 
-header.sticky-header > button.refresh {
+header.sticky-header button.refresh {
     margin-left: 1rem;
-    margin-right: 1rem;
 }
 
-header.sticky-header > nav.breadcrumb > ul.breadcrumb-list {
+header.sticky-header nav.breadcrumb > ul.breadcrumb-list {
     margin: 0;
     padding: 0;
     list-style: none;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    min-height: 3rem;
 }
 
-header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item {
+header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item {
     line-height: 3;
 }
 
-header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li:not(:last-child)::after {
+header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li:not(:last-child)::after {
     display: inline-block;
     margin: 0 .25rem;
     content: "→";
 }
 
-header.sticky-header > nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item > a.breadcrumb-link {
+header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item > a.breadcrumb-link {
     text-decoration: none;
 }
 

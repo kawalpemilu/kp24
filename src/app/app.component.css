@@ -11,7 +11,8 @@
 button.app-menu {
   background: none;
   border: none;
-  padding: 0 1rem;
+  padding-left: 0;
+  padding-right: 1rem;
 }
 
 button.app-menu img.app-logo {
@@ -34,22 +35,20 @@ a.app-home-link h1.app-home-title {
   text-decoration: none;
   color: white;
   line-height: 60px;
+  font-weight: bold;
+}
+
+a.app-home-link h1.app-home-title .kp {
+  color: #6C6D73; /* KawalPemilu 2024 Dim Gray */
+  margin-right: 0.5rem;
+}
+
+a.app-home-link h1.app-home-title .kp24 {
+  color: #EE161F; /* KawalPemilu 2024 Red */
 }
 
 a.app-home-link h1.app-home-title:hover {
   color: rgba(255, 255, 255, 0.9);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }
 
 .sidenav-container {
@@ -73,23 +72,30 @@ a.app-home-link h1.app-home-title:hover {
 }
 
 .profile-image {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 1rem;
+  top: -0.25rem;
   vertical-align: middle;
   cursor: pointer;
+  margin-right: 0.5rem;
 }
 
 .banner {
   background-color: #FFB74D; /* Orange 300 */
   color: #000000DE;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 2rem;
   text-align: center;
   font-size: 0.6rem;
   line-height: 0.9rem;
 }
 
-@media (min-width: 600px) {
+.banner-text {
+  margin: auto;
+  max-width: 48rem;
+}
+
+@media (min-width: 36rem) {
   .banner {
     font-size: 0.85rem;
     padding: 0.75rem 2rem;
@@ -97,15 +103,44 @@ a.app-home-link h1.app-home-title:hover {
   }
 }
 
-.toolbar .mat-mdc-button > .mat-icon,
-.toolbar .about-logo {
-  margin-right: 0px;
+.toolbar {
+  height: 4rem;
+  background-color: #91468933; /* KawalPemilu 2024 Plum with transparency */
+  padding: 0 2rem;
 }
 
-@media (min-width: 780px) {
+.toolbar .top-nav-container,
+.toolbar .bottom-nav-container {
+  max-width: 48rem;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.toolbar .bottom-nav-container .mat-mdc-button {
+  padding: 0.5rem 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.toolbar .mat-mdc-button > .mat-icon,
+.toolbar .about-logo {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+@media (min-width: 48rem) {
   .toolbar .mat-mdc-button>.mat-icon,
   .toolbar .about-logo {
-    margin-right: 8px;
+    font-size: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
   }
 
   a.home::after {

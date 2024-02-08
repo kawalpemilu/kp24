@@ -1,3 +1,9 @@
+.search {
+  padding: 0 2rem;
+  max-width: 48rem;
+  margin: auto;
+}
+
 ul.search-results {
   padding-inline-start: 0;
   padding-inline-end: 0;

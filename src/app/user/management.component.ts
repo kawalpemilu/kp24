@@ -15,6 +15,7 @@ import {
     standalone: true,
     imports: [CommonModule, FormsModule, MatRadioModule, MatInputModule],
     templateUrl: './management.component.html',
+    styleUrl: './management.component.css'
 })
 export class UserManagementComponent implements OnInit {
     cari$ = new BehaviorSubject<string>('');
