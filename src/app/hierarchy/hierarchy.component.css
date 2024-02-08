@@ -96,7 +96,7 @@ header.sticky-header {
     position: sticky;
     top: 0;
     z-index: 2;
-    background-color: #E0F2F1;
+    background-color: #EE161F22; /* KawalPemilu 2024 Red with transparency */
     padding: 0 2rem;
 }
 
