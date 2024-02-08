@@ -65,8 +65,8 @@ button.app-menu img.app-logo:hover {
 }
 
 .banner {
-  background-color: #FF6F00;
-  color: white;
+  background-color: #FFB74D; /* Orange 300 */
+  color: #000000DE;
   padding: 0.5rem 1rem;
   text-align: center;
   font-size: 0.6rem;
