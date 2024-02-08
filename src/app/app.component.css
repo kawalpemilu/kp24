@@ -40,18 +40,6 @@ a.app-home-link h1.app-home-title:hover {
   color: rgba(255, 255, 255, 0.9);
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
 .sidenav-container {
   flex: 1;
 }
@@ -83,7 +71,7 @@ a.app-home-link h1.app-home-title:hover {
 .banner {
   background-color: #FFB74D; /* Orange 300 */
   color: #000000DE;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 2rem;
   text-align: center;
   font-size: 0.6rem;
   line-height: 0.9rem;
