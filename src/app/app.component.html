@@ -1,13 +1,13 @@
 <div class="container">
   <mat-toolbar color="primary" class="toolbar">
     <button class="app-menu" style="cursor: pointer;" (click)="snav.toggle()">
-      <img class="app-logo" src="assets/logo-putih.png" width="63px" height="40px">
+      <img class="app-logo" src="assets/logo-putih.png" width="63px" height="40px" alt="Logo KawalPemilu 2024">
       <h1 class="sr-only">KawalPemilu 2024</h1>
     </button>
     <span class="spacer"></span>
     @if (service.profile$ | async; as p) {
       <a (click)="router.navigate(['/u']); snav.close()">
-        <img [src]="p.pic" class="profile-image">
+        <img [src]="p.pic" alt="Profile picture" class="profile-image">
       </a>
     } @else {
       <button mat-icon-button (click)="router.navigate(['/u']); snav.close()">
@@ -98,7 +98,7 @@
       </a>
     }
     <a class="about" mat-button routerLink="/about" routerLinkActive="active" ariaCurrentWhenActive="page">
-      <img class="about-logo" src="assets/apple-touch-icon.png" width="24px" height="24px" style="vertical-align: middle; height: 24px;">
+      <img class="about-logo" src="assets/apple-touch-icon.png" alt="Logo KawalPemilu 2024" width="24px" height="24px" style="vertical-align: middle; height: 24px;">
       <span class="sr-only">Tentang Kami</span>
     </a>
   </mat-toolbar>
