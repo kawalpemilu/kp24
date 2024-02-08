@@ -78,6 +78,7 @@ a.app-home-link h1.app-home-title:hover {
   top: -0.25rem;
   vertical-align: middle;
   cursor: pointer;
+  margin-right: 0.5rem;
 }
 
 .banner {
@@ -108,15 +109,7 @@ a.app-home-link h1.app-home-title:hover {
   padding: 0 2rem;
 }
 
-.toolbar .top-nav-container {
-  max-width: 48rem;
-  margin: auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-}
-
+.toolbar .top-nav-container,
 .toolbar .bottom-nav-container {
   max-width: 48rem;
   margin: auto;

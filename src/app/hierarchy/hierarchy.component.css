@@ -96,8 +96,8 @@ header.sticky-header {
     position: sticky;
     top: 0;
     z-index: 2;
-    width: 100%;
     background-color: #E0F2F1;
+    padding: 0 2rem;
 }
 
 header.sticky-header div.header-container {
@@ -110,13 +110,11 @@ header.sticky-header div.header-container {
 
 header.sticky-header nav.breadcrumb {
     min-height: 3rem;
-    margin-left: 2rem;
     margin-right: auto;
 }
 
 header.sticky-header button.refresh {
     margin-left: 1rem;
-    margin-right: 1rem;
 }
 
 header.sticky-header nav.breadcrumb > ul.breadcrumb-list {
