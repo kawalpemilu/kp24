@@ -24,6 +24,22 @@ button.app-menu img.app-logo:hover {
   transform: scale(1.2);
 }
 
+a.app-home-link {
+  text-decoration: none;
+  color: white;
+  height: 60px;
+}
+
+a.app-home-link h1.app-home-title {
+  text-decoration: none;
+  color: white;
+  line-height: 60px;
+}
+
+a.app-home-link h1.app-home-title:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

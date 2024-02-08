@@ -2,8 +2,10 @@
   <mat-toolbar color="primary" class="toolbar">
     <button class="app-menu" style="cursor: pointer;" (click)="snav.toggle()">
       <img class="app-logo" src="assets/logo-putih.png" width="63px" height="40px" alt="Logo KawalPemilu 2024">
-      <h1 class="sr-only">KawalPemilu 2024</h1>
     </button>
+    <a class="app-home-link" routerLink="/h">
+      <h1 class="app-home-title">KawalPemilu 2024</h1>
+    </a>
     <span class="spacer"></span>
     @if (service.profile$ | async; as p) {
       <a (click)="router.navigate(['/u']); snav.close()">
