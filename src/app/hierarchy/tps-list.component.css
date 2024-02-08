@@ -1,4 +1,6 @@
 section.table-header {
+  margin: auto;
+  max-width: 48rem;
   display: flex;
   width: 100%;
   justify-content: space-between;
