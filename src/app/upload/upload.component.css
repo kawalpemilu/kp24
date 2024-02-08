@@ -1,0 +1,10 @@
+ul.instructions {
+  padding-inline-start: 10px;
+  font-size: 0.75rem;
+}
+
+li {
+  margin-left: -10px;
+  padding-right: 10px;
+  line-height: 2;
+}

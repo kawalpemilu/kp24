@@ -3,20 +3,19 @@
 <h1>Halo, {{ getFirstName(profileDetails.profile.name) }}</h1>
 
 @if (!profileDetails.uploads.length) {
-    <p>Untuk mengupload foto, ikuti langkah berikut:</p>
-    <ol>
+    <p>Untuk mengunggah foto, ikuti langkah berikut:</p>
+    <ol class="instructions">
         <li>
-            Cari Lokasi TPS anda:<br>
-            <img src="assets/cari-lokasi.png" width="300" />
+            Cari Lokasi TPS Anda:<br>
+            <img src="assets/cari-lokasi-tps.png" width="300" />
         </li>
         <li>
-            Ikuti instruksi disana:<br>
-            <img src="assets/cara-upload-foto.png" width="300" />
+            Ikuti instruksi di sana:<br>
+            <img src="assets/cara-unggah-foto.png" width="300" />
         </li>
     </ol>
 
-    <br>
-    <p>Sudah siap? klik tombol dibawah untuk mencari TPS anda:</p>
+    <p>Sudah siap? Klik tombol di bawah ini untuk mencari TPS Anda:</p>
     <button mat-raised-button color="primary" [routerLink]="['/s']">
         <mat-icon>search</mat-icon>
         Cari Lokasi TPS

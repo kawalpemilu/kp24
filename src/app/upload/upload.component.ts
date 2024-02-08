@@ -18,7 +18,7 @@ import * as piexif from 'piexifjs';
   imports: [CommonModule, FormsModule, DigitizeComponent,
     MatIconModule, MatButtonModule, MatExpansionModule, MatProgressSpinnerModule],
   templateUrl: './upload.component.html',
-  styles: `li { margin-left: -10px; padding-right: 10px; line-height: 2; }`
+  styleUrl: './upload.component.css'
 })
 export class UploadComponent {
   @Input({ required: true }) userProfile!: UserProfile | null;

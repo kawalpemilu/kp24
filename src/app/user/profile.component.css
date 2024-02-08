@@ -1,0 +1,12 @@
+.profile {
+  padding: 1.5rem 2rem;
+}
+
+ol.instructions {
+  padding-inline-start: 1rem;
+}
+
+ol.instructions li img {
+  margin: 1rem 0;
+  width: 300px;
+}

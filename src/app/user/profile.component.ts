@@ -7,6 +7,7 @@ import { Observable, combineLatest, of, switchMap } from 'rxjs';
 import { Lokasi, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { PhotoComponent } from '../photo/photo.component';
 import { RouterLink } from '@angular/router';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -31,16 +32,9 @@ interface ProfileDetails {
     selector: 'app-user-profile',
     standalone: true,
     imports: [CommonModule, FormsModule, MatRadioModule, PhotoComponent, RouterLink,
-    MatIconModule, MatButtonModule],
+      MatExpansionModule, MatIconModule, MatButtonModule],
     templateUrl: './profile.component.html',
-    styles: `
-        .profile {
-            padding: 1.5rem 2rem;
-        }
-        li {
-            margin-left: -15px;
-        }
-    `
+    styleUrl: './profile.component.css'
 })
 export class UserProfileComponent implements OnInit {
     @Input() uid = '';
