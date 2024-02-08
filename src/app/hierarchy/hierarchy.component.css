@@ -69,6 +69,10 @@ tbody.data tr:nth-child(odd) {
     background-color: #f2f2f2;
 }
 
+tbody.data tr:hover {
+  background-color: #e0e0e0;
+}
+
 tbody.data td.numbers {
     text-align: center;
 }
