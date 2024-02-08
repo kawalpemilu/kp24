@@ -40,7 +40,7 @@ a.app-home-link h1.app-home-title {
 
 a.app-home-link h1.app-home-title .kp {
   color: #6C6D73; /* KawalPemilu 2024 Dim Gray */
-  margin-right: 0.5rem;
+  margin-right: 0.25rem;
 }
 
 a.app-home-link h1.app-home-title .kp24 {
@@ -130,6 +130,7 @@ a.app-home-link h1.app-home-title:hover {
 
 .toolbar .mat-mdc-button > .mat-icon,
 .toolbar .about-logo {
+  margin-right: 0px;
   font-size: 2rem;
   width: 2rem;
   height: 2rem;
