@@ -34,6 +34,16 @@ a.app-home-link h1.app-home-title {
   text-decoration: none;
   color: white;
   line-height: 60px;
+  font-weight: bold;
+}
+
+a.app-home-link h1.app-home-title .kp {
+  color: #6C6D73; /* KawalPemilu 2024 Dim Gray */
+  margin-right: 0.5rem;
+}
+
+a.app-home-link h1.app-home-title .kp24 {
+  color: #EE161F; /* KawalPemilu 2024 Red */
 }
 
 a.app-home-link h1.app-home-title:hover {
@@ -61,9 +71,10 @@ a.app-home-link h1.app-home-title:hover {
 }
 
 .profile-image {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 1rem;
+  top: -0.25rem;
   vertical-align: middle;
   cursor: pointer;
 }
@@ -90,9 +101,19 @@ a.app-home-link h1.app-home-title:hover {
   }
 }
 
-footer.toolbar {
+.toolbar {
   height: 4rem;
-  background-color: #91468922; /* KawalPemilu 2024 Plum with transparency */
+  background-color: #91468933; /* KawalPemilu 2024 Plum with transparency */
+  padding: 0 2rem;
+}
+
+.toolbar .top-nav-container {
+  max-width: 48rem;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
 }
 
 .toolbar .bottom-nav-container {
