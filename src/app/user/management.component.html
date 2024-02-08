@@ -1,3 +1,4 @@
+<main class="management">
 @if (service.profile$ | async; as p) {
 @if (p.role >= USER_ROLE.ADMIN) {
 <mat-form-field style="width: 225px">
@@ -6,7 +7,7 @@
 </mat-form-field>
 
 <br>
-Filter Role: 
+Filter Role:
 <select (change)="changeRoleFilter($event)">
     <option [value]="-1">ANY_ROLE</option><br>
     <option [value]="USER_ROLE.BANNED">BANNED</option><br>
@@ -23,7 +24,7 @@ Filter Role:
 @for (u of users$ | async; track u.uid) {
     <table class="collapsed_border">
     <tr>
-        <td rowspan="3"><img [src]="u.pic" /></td>
+        <td class="profile-picture" rowspan="3"><img [src]="u.pic" /></td>
         <td>{{ u.name }} ({{ u.email }})</td>
     </tr>
     <tr>
@@ -46,3 +47,4 @@ Filter Role:
 
 }
 }
+</main>

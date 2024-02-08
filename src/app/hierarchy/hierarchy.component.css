@@ -38,12 +38,12 @@ span.total.error:hover {
 }
 
 th.lokasi {
-    width: 150px;
+    width: 16rem;
 }
 
 th.paslon,
 th.cov {
-    width: 50px;
+    width: 4rem;
 }
 
 th.paslon::before {
@@ -82,6 +82,7 @@ table.sticky_table {
     top: 45px;
     border-bottom: 2px solid #ccc;
     background: lightgray;
+    max-width: 48rem;
 }
 
 .sticky_table tfoot {

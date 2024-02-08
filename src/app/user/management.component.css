@@ -1,0 +1,12 @@
+.management {
+  max-width: 48rem;
+  margin: auto;
+}
+
+table {
+  width: 100%;
+}
+
+table td.profile-picture {
+  width: 4rem;
+}
