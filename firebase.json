@@ -1,6 +1,17 @@
 {
   "hosting": {
     "public": "dist/kp24/browser",
+    "headers": [
+      {
+        "source": "**/*.@(js|css|jpg|jpeg|gif|png|svg|webp|json)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
+      }
+    ],
     "site": "kp24",
     "ignore": [
       "firebase.json",
