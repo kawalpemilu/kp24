@@ -89,7 +89,12 @@ a.app-home-link h1.app-home-title:hover {
   line-height: 0.9rem;
 }
 
-@media (min-width: 600px) {
+.banner-text {
+  margin: auto;
+  max-width: 48rem;
+}
+
+@media (min-width: 36rem) {
   .banner {
     font-size: 0.85rem;
     padding: 0.75rem 2rem;
@@ -102,7 +107,7 @@ a.app-home-link h1.app-home-title:hover {
   margin-right: 0px;
 }
 
-@media (min-width: 780px) {
+@media (min-width: 48rem) {
   .toolbar .mat-mdc-button>.mat-icon,
   .toolbar .about-logo {
     margin-right: 8px;
