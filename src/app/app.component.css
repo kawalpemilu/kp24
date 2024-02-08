@@ -90,15 +90,42 @@ a.app-home-link h1.app-home-title:hover {
   }
 }
 
+footer.toolbar {
+  height: 4rem;
+  background-color: #91468922; /* KawalPemilu 2024 Plum with transparency */
+}
+
+.toolbar .bottom-nav-container {
+  max-width: 48rem;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.toolbar .bottom-nav-container .mat-mdc-button {
+  padding: 0.5rem 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
 .toolbar .mat-mdc-button > .mat-icon,
 .toolbar .about-logo {
-  margin-right: 0px;
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
 }
 
 @media (min-width: 48rem) {
   .toolbar .mat-mdc-button>.mat-icon,
   .toolbar .about-logo {
-    margin-right: 8px;
+    font-size: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
   }
 
   a.home::after {
