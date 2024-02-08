@@ -14,13 +14,14 @@ button.app-menu {
   padding: 0 1rem;
 }
 
-button.app-menu:hover {
-  background-color: #91468933;/* KawalPemilu 2024 Plum */
-}
-
 button.app-menu img.app-logo {
   height: 40px;
   width: auto;
+  transition: transform 0.3s ease;
+}
+
+button.app-menu img.app-logo:hover {
+  transform: scale(1.2);
 }
 
 .sr-only {
