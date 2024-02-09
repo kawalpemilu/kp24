@@ -35,6 +35,10 @@ export interface UserProfile {
   reviews: Record<string, number>;
   reviewCount: number; // The number of images reviewed.
 
+  // Which tps this person plans to upload foto.
+  jagaTps: Record<string, boolean>;
+  jagaTpsCount: number;
+
   // reports: ProblemRequest[];
   // reportCount: number; // Number of reported photos.
   // reportMaxCount: number; // Whitelist this person to go beyond.
@@ -233,6 +237,7 @@ export class PrestineLokasi {
       totalCompletedTps: 0,
       totalPendingTps: 0,
       totalErrorTps: 0,
+      totalJagaTps: 0,
       updateTs: 0,
       dpt,
     };
@@ -297,6 +302,9 @@ export declare interface AggregateVotes extends Votes {
 
   // Total TPS has at least one photo.
   totalCompletedTps: number;
+
+  // Total TPS has at least one volunter that plans to take photo.
+  totalJagaTps: number;
 
   // Only available at Desa level.
   uploadedPhoto?: UploadedPhoto;

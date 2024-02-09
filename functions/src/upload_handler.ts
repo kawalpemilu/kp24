@@ -21,6 +21,7 @@ function isIdentical(a: AggregateVotes, b: AggregateVotes): boolean {
     a.totalCompletedTps === b.totalCompletedTps &&
     a.totalPendingTps === b.totalPendingTps &&
     a.totalErrorTps === b.totalErrorTps &&
+    a.totalJagaTps === b.totalJagaTps &&
     Object.keys(a.pendingUploads ?? {}).length ===
     Object.keys(b.pendingUploads ?? {}).length;
 }
@@ -135,6 +136,73 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
   logger.log(data.votes.length > 1 ? "Reviewed" : "Uploaded",
     data.idLokasi, data.status, data);
 
+  await firestore
+    .collection("p")
+    .add(aggregate(lokasi))
+    .catch(logger.error);
+  return true;
+}
+
+/**
+ * Mark the user is guarding the TPS.
+ * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
+ * @param {string} tpsId the tps to be guarded.
+ * @param {string} uid the user who is guarding.
+ * @return {string} true if the TPS is successfully guarded.
+ */
+export async function jagaTpsHandler(firestore: admin.firestore.Firestore,
+  tpsId: string, uid: string): Promise<boolean> {
+  logger.log(`Jaga TPS t/${tpsId}/u/${uid}`);
+
+  const now = Date.now();
+  const idDesa = getParentId(tpsId);
+  const hRef = firestore.doc(`h/i${idDesa}`);
+  const uRef = firestore.doc(`u/${uid}`);
+  const lokasi = await firestore
+    .runTransaction(async (t) => {
+      let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
+      if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
+
+      const c = lokasi.aggregated[tpsId.substring(10)];
+      if (!c) {
+        logger.error("Invalid jaga TPS ID", tpsId, uid);
+        return null;
+      }
+
+      const p = (await t.get(uRef)).data() as UserProfile | undefined;
+      if (!p) {
+        logger.error("User not registered", uid);
+        return false;
+      }
+      if (p.role < USER_ROLE.RELAWAN) {
+        logger.error("User cannot jagaTps", uid);
+        return false;
+      }
+
+      if (!p.jagaTps) p.jagaTps = {};
+      p.jagaTps[tpsId] = true;
+      p.jagaTpsCount = Object.keys(p.jagaTps).length;
+      if (p.jagaTpsCount > 100) {
+        logger.error("User has too many jagaTps", uid, p.jagaTpsCount);
+        return false;
+      }
+
+      t.set(uRef, p);
+
+      if (c[0].totalJagaTps) {
+        logger.log("Sudah terjaga", tpsId);
+        return null;
+      }
+      c[0].totalJagaTps = 1;
+      c[0].updateTs = now;
+      t.set(hRef, lokasi);
+      return lokasi;
+    });
+
+  if (!lokasi) {
+    logger.log("Fail to jagaTps", tpsId);
+    return false; // Fail to update.
+  }
   await firestore
     .collection("p")
     .add(aggregate(lokasi))
@@ -271,6 +339,10 @@ async function updateTps(firestore: admin.firestore.Firestore,
       if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
 
       const c = lokasi.aggregated[data.idLokasi.substring(10)];
+      if (!c) {
+        logger.error("Invalid tps", JSON.stringify(data));
+        return null;
+      }
       const agg = JSON.parse(JSON.stringify(c[0])) as AggregateVotes;
       const uploadRef = firestore.doc(`t/${data.idLokasi}/p/${data.imageId}`);
       const upload =
@@ -308,7 +380,8 @@ async function updateTps(firestore: admin.firestore.Firestore,
         if (!agg.pendingUploads) agg.pendingUploads = {};
         delete agg.pendingUploads[data.imageId];
 
-        const existingAggIdx = c.findIndex(a => a.uploadedPhoto?.imageId === data.imageId);
+        const existingAggIdx = c.findIndex(
+          (a) => a.uploadedPhoto?.imageId === data.imageId);
         if (data.votes[0].status == APPROVAL_STATUS.APPROVED) {
           agg.pas1 = data.votes[0].pas1;
           agg.pas2 = data.votes[0].pas2;
@@ -401,6 +474,7 @@ function aggregate(lokasi: Lokasi) {
     totalCompletedTps: 0,
     totalPendingTps: 0,
     totalErrorTps: 0,
+    totalJagaTps: 0,
   };
   for (const [cagg] of Object.values(lokasi.aggregated)) {
     nextAgg.pas1 += cagg.pas1 ?? 0;
@@ -410,6 +484,7 @@ function aggregate(lokasi: Lokasi) {
     nextAgg.totalCompletedTps += cagg.totalCompletedTps ?? 0;
     nextAgg.totalPendingTps += cagg.totalPendingTps ?? 0;
     nextAgg.totalErrorTps += cagg.totalErrorTps ?? 0;
+    nextAgg.totalJagaTps += cagg.totalJagaTps ?? 0;
     nextAgg.updateTs = Math.max(nextAgg.updateTs, cagg.updateTs);
     if (cagg.anyPendingTps) nextAgg.anyPendingTps = cagg.anyPendingTps;
     if (cagg.anyErrorTps) nextAgg.anyErrorTps = cagg.anyErrorTps;

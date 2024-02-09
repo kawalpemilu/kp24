@@ -120,6 +120,15 @@ export class AppService {
     return callable(request);
   }
 
+  async jagaTps(tpsId: string) {
+    this.rpcIsRunning = true;
+    console.log('RPC jagaTps', tpsId);
+    const callable = httpsCallable(this.functions, 'jagaTps');
+    const result = callable({ tpsId });
+    this.rpcIsRunning = false;
+    return result;
+  }
+
   async login() {
     console.log('Try logging in');
     // Sign in with redirect is problematic for Safari browser.

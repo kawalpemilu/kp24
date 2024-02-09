@@ -188,6 +188,7 @@ export class HierarchyComponent implements OnInit {
       totalCompletedTps: 0,
       totalPendingTps: 0,
       totalErrorTps: 0,
+      totalJagaTps: 0,
       totalTps: 0
     } as AggregateVotes;
     for (const { agg } of lokasi.children) {
@@ -197,6 +198,7 @@ export class HierarchyComponent implements OnInit {
       lokasi.total.totalCompletedTps += agg[0].totalCompletedTps ?? 0;
       lokasi.total.totalPendingTps += agg[0].totalPendingTps ?? 0;
       lokasi.total.totalErrorTps += agg[0].totalErrorTps ?? 0;
+      lokasi.total.totalJagaTps += agg[0].totalJagaTps ?? 0;
       lokasi.total.totalTps += agg[0].totalTps ?? 0;
     }
     return lokasi;

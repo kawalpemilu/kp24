@@ -144,6 +144,7 @@ export class UploadComponent {
         totalPendingTps: 0,
         totalErrorTps: 0,
         totalCompletedTps: 0,
+        totalJagaTps: 0,
         pas1: votes.pas1,
         pas2: votes.pas2,
         pas3: votes.pas3,

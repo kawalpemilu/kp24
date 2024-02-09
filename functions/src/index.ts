@@ -6,7 +6,8 @@ import {
   isValidVoteNumbers, shouldRateLimit,
 } from "./interfaces";
 import {LOKASI} from "./lokasi";
-import {RUN_ID, processPendingUploads, uploadHandler} from "./upload_handler";
+import {RUN_ID, jagaTpsHandler, processPendingUploads,
+  uploadHandler} from "./upload_handler";
 import {getServingUrl} from "./serving_url";
 
 import * as admin from "firebase-admin";
@@ -114,6 +115,8 @@ export const register = onCall(
       reviews: {},
       uploadCount: 0,
       uploadMaxCount: DEFAULT_MAX_UPLOADS,
+      jagaTps: {},
+      jagaTpsCount: 0,
       nTps: 0,
       nKel: 0,
       reviewCount: 0,
@@ -152,6 +155,27 @@ export const changeRole = onCall(
     user.role = request.data.role;
     await userRef.set(user);
     return "bravo";
+  });
+
+export const jagaTps = onCall(
+  {cors: true},
+  async (request: CallableRequest<{ tpsId: string }>)
+      : Promise<boolean> => {
+    if (!request.auth?.uid) return false;
+
+    const now = Date.now();
+    if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
+      logger.error("jaga-tps-rate-limited", request.auth.uid);
+      return false;
+    }
+
+    return jagaTpsHandler(firestore, request.data.tpsId, request.auth.uid)
+      .then((success) => {
+        if (success) {
+          delete lokasiCache[request.data.tpsId.substring(0, 10)];
+        }
+        return success;
+      });
   });
 
 export const review = onCall(
@@ -202,7 +226,6 @@ export const review = onCall(
       return success;
     });
   });
-
 
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
 export const upload = onCall(
