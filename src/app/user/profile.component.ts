@@ -22,10 +22,16 @@ interface UserReview {
     numReviews: number;
 }
 
+interface UserJagaTps {
+    tpsId: string;
+    lokasi: Lokasi;
+}
+
 interface ProfileDetails {
     profile: UserProfile;
     uploads: UserUpload[];
     reviews: UserReview[];
+    jagaTps: UserJagaTps[];
 }
 
 @Component({
@@ -54,6 +60,7 @@ export class UserProfileComponent implements OnInit {
                 profile,
                 uploads: [],
                 reviews: [],
+                jagaTps: [],
             };
             for (const images of Object.values(profile.uploads ?? {})) {
                 for (const uploadRequest of Object.values(images)) {
@@ -71,6 +78,12 @@ export class UserProfileComponent implements OnInit {
                     idLokasi,
                     lokasi: P.getPrestineLokasi(idLokasi.substring(0, 10)),
                     numReviews
+                });
+            }
+            for (const tpsId of Object.keys(profile.jagaTps ?? {})) {
+                profileDetails.jagaTps.push({
+                    tpsId,
+                    lokasi: P.getPrestineLokasi(tpsId.substring(0, 10)),
                 });
             }
             return of(profileDetails);

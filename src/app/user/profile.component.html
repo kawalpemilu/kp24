@@ -2,6 +2,32 @@
 @if (profile$ | async; as profileDetails) {
 <h1>Halo, {{ getFirstName(profileDetails.profile.name) }}</h1>
 
+@if (profileDetails.profile.jagaTpsCount) {
+<p>
+    Berikut adalah daftar TPS yang anda jaga untuk upload
+    hasil foto suara paslon pada tanggal <b>14 Feb 2024</b>.
+</p>
+
+<p>Klik nomor TPS untuk mengupload foto di TPS tersebut:</p>
+
+<table class="collapsed_border">
+@for (t of profileDetails.jagaTps; track t.tpsId; let i = $index) {
+    <tr>
+        <td>
+            <a class="hierarchy" [routerLink]="['/h', t.tpsId]">
+                TPS #{{ t.tpsId.substring(10) }}
+            </a>
+        </td>
+        <td>
+            {{ t.lokasi.names.join(' / ') }}
+        </td>
+    </tr>
+}
+</table>
+<br>
+<hr>
+}
+
 @if (!profileDetails.uploads.length) {
     <p>Untuk mengunggah foto, ikuti langkah berikut:</p>
     <ol class="instructions">
@@ -53,7 +79,7 @@
         </td>
         <td *ngIf="u.uploadRequest.votes[0] as v">
             {{ i + 1 }}. {{ v.updateTs | date }} [{{ STATUS[u.uploadRequest.status] }}]
-            <a [routerLink]="['/h', u.uploadRequest.idLokasi]" target="_blank">
+            <a class="hierarchy" [routerLink]="['/h', u.uploadRequest.idLokasi]" target="_blank">
                 TPS #{{ u.uploadRequest.idLokasi.substring(10) }}
             </a>
             <br>
@@ -74,7 +100,7 @@
 @for (r of profileDetails.reviews; track r.lokasi.id; let i = $index) {
     <li>
         Num Reviews: {{ r.numReviews }} at
-        <a [routerLink]="['/h', r.idLokasi]" target="_blank">
+        <a class="hierarchy" [routerLink]="['/h', r.idLokasi]" target="_blank">
             TPS #{{ r.idLokasi.substring(10) }}
         </a>
     </li>
