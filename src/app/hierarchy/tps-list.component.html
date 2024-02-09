@@ -23,7 +23,9 @@
         @defer (on viewport) {
             <div class="tps-item" *ngIf="c.agg[0] as a">
                 <td class="tps" align="center" nowrap valign="top"
-                    [style.background-color]="a.totalPendingTps ? '#FFD54F' : ''">
+                    [style.background-color]="
+                        a.totalPendingTps ? '#FFD54F' :
+                        a.totalJagaTps ? 'lightgreen' : ''">
                     <br>
                     <b style="font-size: large">TPS #{{ a.name }}</b>
                     <br>
