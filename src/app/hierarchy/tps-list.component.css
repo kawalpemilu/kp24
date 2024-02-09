@@ -21,6 +21,7 @@
 
 .tps-item > .foto {
   flex: 1 1 auto;
+  overflow-x: scroll;
 }
 
 section.table-header {
