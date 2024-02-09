@@ -1,3 +1,8 @@
+.upload {
+  width: 225px;
+  padding: 1rem;
+}
+
 ul.instructions {
   padding-inline-start: 10px;
   font-size: 0.75rem;

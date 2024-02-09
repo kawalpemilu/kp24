@@ -1,6 +1,29 @@
-section.table-header {
-  margin: auto;
+.tps-list {
   max-width: 48rem;
+  margin: auto;
+}
+
+.tps-item {
+  display: flex;
+  justify-content: flex-start;
+  border: 1px solid #000000DE;
+  border-top: none;
+}
+
+.tps-item:first-child {
+  border-top: #000000DE 1px solid;
+}
+
+.tps-item > .tps {
+  min-width: 8rem;
+  border-right: #000000DE 1px solid;
+}
+
+.tps-item > .foto {
+  flex: 1 1 auto;
+}
+
+section.table-header {
   display: flex;
   width: 100%;
   justify-content: space-between;
@@ -13,7 +36,7 @@ section.table-header > .table-search {
 }
 
 section.table-header > .table-search > .mat-mdc-form-field {
-  min-width: 100px;
+  min-width: 6rem;
 }
 
 section.table-header > .table-search > .mat-mdc-form-field .mat-icon {

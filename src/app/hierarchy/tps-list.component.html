@@ -1,3 +1,4 @@
+<main class="tps-list">
 <section class="table-header">
     <div class="table-search">
         <mat-form-field style="width: 100px" subscriptSizing="dynamic">
@@ -17,11 +18,11 @@
     </div>
 </section>
 
-<table class="collapsed_border">
+<section class="tps-result">
     @for (c of tpsList; track c.id) {
         @defer (on viewport) {
-            <tr *ngIf="c.agg[0] as a">
-                <td class="tps" width="145" align="center" nowrap valign="top"
+            <div class="tps-item" *ngIf="c.agg[0] as a">
+                <td class="tps" align="center" nowrap valign="top"
                     [style.background-color]="a.totalPendingTps ? '#FFD54F' : ''">
                     <br>
                     <b style="font-size: large">TPS #{{ a.name }}</b>
@@ -38,13 +39,13 @@
                         <br>
                     }
                 </td>
-                <td width="*" align="left">
+                <td class="foto" align="left">
                     <app-tps-row [c]="c"
                         [tpsId]="lokasi.id + c.id"
                         [userProfile]="userProfile">
                     </app-tps-row>
                 </td>
-            </tr>
+            </div>
         } @placeholder {
             <br>
         }
@@ -65,4 +66,5 @@
             }
         </ul>
     }
-</table>
+</section>
+</main>

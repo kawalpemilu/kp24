@@ -1,4 +1,4 @@
-<div style="width: 225px; padding-right: 8px;">
+<div class="upload">
 @if (!service.auth.currentUser) {
     <br><br>
     <button mat-raised-button color="warn" (click)="service.login()">
@@ -51,7 +51,7 @@
 
     <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
     <br>
-    <button mat-raised-button color="primary" (click)="u.click()" style="margin-left: 10px">
+    <button mat-raised-button color="primary" (click)="u.click()">
         Unggah Foto
     </button>
 }
