@@ -123,13 +123,19 @@
                             <p [style.background-color]="userProfile?.jagaTps?.[tpsId] ? 'lightgreen' : ''">
                                 <b>Terima Kasih atas partisipasi anda untuk menjaga TPS ini!</b>
                             </p>
-                        } @else {
+                        } @else if (userProfile) {
                             <p>Jika anda berencana mengupload foto tanggal <b>14 Feb 2024</b> di TPS ini,
                                 mohon klik tombol dibawah untuk menandai kalau <b>anda bersedia menjaga TPS ini</b>:</p>
                                 <button mat-raised-button color="primary"
                             (click)="service.jagaTps(tpsId)" [disabled]="service.rpcIsRunning">
                                 <!-- <mat-icon>where_to_vote</mat-icon> -->
                                 Saya Jaga TPS ini
+                            </button>
+                        } @else {
+                            <button mat-raised-button color="warn"
+                                style="height: 70px"
+                                (click)="service.login()">
+                                Masuk untuk<br>Jaga TPS ini
                             </button>
                         }
                     </div>
