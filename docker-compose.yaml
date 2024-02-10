@@ -1,0 +1,21 @@
+version: '3.4'
+services:
+  firebase-emulator:
+    build: 
+      dockerfile: ./dockerfiles/firebase.dockerfile
+      context: .
+    volumes:
+      - .:/home/node
+    command:
+      - firebase
+      - emulators:start
+    ports:
+      - "5002:5002"
+      - "5001:5001"
+      - "8080:8080"
+      - "8084:8084"
+      - "8085:8085"
+      - "9000:9000"
+      - "9005:9005"
+      - "9099:9099"
+      - "9199:9199"
