@@ -448,19 +448,20 @@ export class LruCache<K, V> {
  * for keeping track the last timestamp of user access.
  * @param {number} now the current datetime in ms.
  * @param {string} uid the accessing user.
+ * @param {number} maxQps the maximum qps for this user.
  * @return {boolean} true if the user should be rate-limited.
  */
 export function shouldRateLimit(
   rateLimiter: LruCache<string, [number, number]>,
-  now: number, uid?: string) {
+  now: number, uid?: string, maxQps = 1) {
   if (!uid) return true; // Always rate-limit anonymous users.
   const [startTs, numCalls] = rateLimiter.get(uid) ?? [now, 0];
   rateLimiter.set(uid, [startTs, numCalls + 1]);
   if (numCalls > 5) {
     const elapsedSecs = (now - startTs + 1.0) / 1000;
     if (elapsedSecs > 60) rateLimiter.set(uid, [now, 1]);
-    if (numCalls > 100) console.error('DoS attack', uid);
-    if (numCalls / elapsedSecs > 1) return true;
+    if (numCalls > 100) console.error("DoS attack", uid);
+    if (numCalls / elapsedSecs > maxQps) return true;
   }
   return false;
 }

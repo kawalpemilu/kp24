@@ -56,21 +56,36 @@ function getCacheTimeoutMs(id: string) {
   if (id.length <= 6) return 30 * 60 * 1000; // 30 minutes, about 5 QPS.
   return 60 * 60 * 1000; // 1 hour, about 24 QPS.
 }
+type HierarchyRequest = CallableRequest<{ id: string, uid?: string }>;
 const hierarchyRateLimiter = new LruCache<string, [number, number]>(1000);
+/**
+ * @param {number} now the current timestamp.
+ * @param {HierarchyRequest} request
+ * @return {boolean} true if the request should be rate limited.
+ */
+function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
+  if (request.data.uid === "kawalc1") {
+    if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 5)) {
+      logger.error("hierarchy-rate-limited", request.data.uid);
+      return true;
+    }
+    return false;
+  }
+  if (!request.auth?.uid) return true;
+  if (shouldRateLimit(hierarchyRateLimiter, now, request.auth?.uid)) {
+    logger.error("hierarchy-rate-limited", request.auth.uid,
+      request.auth.token?.name, request.auth.token?.email, request.data.uid);
+    return true;
+  }
+  return false;
+}
 export const hierarchy = onCall(
   {cors: true},
-  async (request: CallableRequest<{ id: string }>): Promise<Lokasi> => {
-    if (!request.auth?.uid) return {} as Lokasi;
+  async (request: HierarchyRequest): Promise<Lokasi> => {
+    const now = Date.now();
+    if (shouldRateLimitHierarchy(now, request)) return {} as Lokasi;
 
     let id = request.data.id;
-
-    const now = Date.now();
-    if (shouldRateLimit(hierarchyRateLimiter, now, request.auth.uid)) {
-      logger.error("hierarchy-rate-limited", id, request.auth.uid, 
-        request.auth.token?.name, request.auth.token?.email);
-      return {} as Lokasi; // To save download bandwidth.
-    }
-
     if (!(/^\d{0,13}$/.test(id))) id = "";
 
     const prestineLokasi = LOKASI.getPrestineLokasi(id);
