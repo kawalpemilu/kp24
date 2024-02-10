@@ -72,9 +72,15 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
     return false;
   }
   if (!request.auth?.uid) return true;
-  if (shouldRateLimit(hierarchyRateLimiter, now, request.auth?.uid)) {
-    logger.error("hierarchy-rate-limited", request.auth.uid,
-      request.auth.token?.name, request.auth.token?.email, request.data.uid);
+  const loggedIn = !!request.auth.token;
+  if (shouldRateLimit(
+    hierarchyRateLimiter, now, request.auth?.uid, loggedIn ? 3 : 1)) {
+    if (loggedIn) {
+      logger.error("hierarchy-rate-limited", request.auth.uid,
+        request.auth.token.name, request.auth.token.email, request.data.uid);
+    } else {
+      logger.info("hierarchy-rate-limited-public", request.auth.uid);
+    }
     return true;
   }
   return false;
@@ -113,6 +119,8 @@ const userRateLimiter = new LruCache<string, [number, number]>(1000);
 export const register = onCall(
   {cors: true},
   async (request: CallableRequest<void>): Promise<boolean> => {
+    logger.log('register', request.auth, request.data);
+
     if (!request.auth) return false;
 
     const now = Date.now();
@@ -154,6 +162,7 @@ export const changeRole = onCall(
   {cors: true},
   async (request: CallableRequest<{ uid: string, role: USER_ROLE }>)
     : Promise<string> => {
+    logger.log('changeRole', request.auth, request.data);
     if (!request.auth?.uid) return "Not logged in";
 
     const now = Date.now();
@@ -181,6 +190,7 @@ export const jagaTps = onCall(
   {cors: true},
   async (request: CallableRequest<{ tpsId: string }>)
       : Promise<boolean> => {
+    logger.log('jagaTps', request.auth, request.data);
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
@@ -204,6 +214,8 @@ export const review = onCall(
     tpsId: string, imageId: string, votes: Votes
   }>)
     : Promise<boolean> => {
+    logger.log('review', request.auth, request.data);
+
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
@@ -251,6 +263,8 @@ export const review = onCall(
 export const upload = onCall(
   {cors: true},
   async (request: CallableRequest<UploadRequest>) => {
+    logger.log('upload', request.auth, request.data);
+
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
