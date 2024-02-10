@@ -152,7 +152,7 @@ export class HierarchyComponent implements OnInit {
   getLokasiDataWithVotes(id: string): Observable<LokasiData> {
     return this.service.user$.pipe(
       switchMap(user =>
-        (user && id.length < 10)
+        (user)
           ? this.getLokasiDataFromFirestore$(id)
           : this.getLokasiDataFromRpc$(id)),
       switchMap(async (lokasi) => {

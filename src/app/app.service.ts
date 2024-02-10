@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, combineLatest, firstValueFrom, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
 import { Auth, signInAnonymously, signInWithPopup, signOut, user } from '@angular/fire/auth';
-import { Firestore, QueryConstraint, QueryFieldFilterConstraint, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
+import { Firestore, QueryConstraint, QueryFieldFilterConstraint, collection, collectionSnapshots, doc, docSnapshots, getDoc, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { APPROVAL_STATUS, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';
@@ -64,6 +64,16 @@ export class AppService {
 
   getLokasiDataFromFirestore$(id: string): Observable<Lokasi> {
     const hRef = doc(this.firestore, `/h/i${id}`);
+    if (id.length === 10) {
+      // Single fetch.
+      return from(getDoc(hRef)).pipe(
+        switchMap(snapshot => {
+          const h = snapshot.data() as Lokasi;
+          console.log('Firestore TPS Lokasi', id, h);
+          return h ? of(h) : of();
+        }));
+    }
+    // Continuous listening.
     return docSnapshots(hRef).pipe(
       switchMap(snapshot => {
         const h = snapshot.data() as Lokasi;
