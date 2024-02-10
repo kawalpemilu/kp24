@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, firstValueFrom, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
-import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
+import { Auth, signInAnonymously, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
@@ -23,7 +23,16 @@ export class AppService {
   public isErrorTps = false;
   public isCompleteTps = false;
 
-  user$ = user(this.auth).pipe(shareReplay(1));
+  user$ = user(this.auth).pipe(switchMap(async user => {
+    if (user) return user.email ? user : null;
+    try {
+      // Required for calling the Hierarchy API.
+      await signInAnonymously(this.auth);
+    } catch (e) {
+      console.error('Auth error', e);
+    }
+    return null;
+  }), shareReplay(1));
 
   profile$: Observable<UserProfile | null> = this.user$.pipe(
     switchMap(user => !user ? of(null) :

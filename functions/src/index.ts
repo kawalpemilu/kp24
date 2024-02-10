@@ -56,11 +56,21 @@ function getCacheTimeoutMs(id: string) {
   if (id.length <= 6) return 30 * 60 * 1000; // 30 minutes, about 5 QPS.
   return 60 * 60 * 1000; // 1 hour, about 24 QPS.
 }
-const hierarchyRateLimiter = new LruCache<string, number>(1000);
+const hierarchyRateLimiter = new LruCache<string, [number, number]>(1000);
 export const hierarchy = onCall(
   {cors: true},
   async (request: CallableRequest<{ id: string }>): Promise<Lokasi> => {
+    if (!request.auth?.uid) return {} as Lokasi;
+
     let id = request.data.id;
+
+    const now = Date.now();
+    if (shouldRateLimit(hierarchyRateLimiter, now, request.auth.uid)) {
+      logger.error("hierarchy-rate-limited", id, request.auth.uid, 
+        request.auth.token?.name, request.auth.token?.email);
+      return {} as Lokasi; // To save download bandwidth.
+    }
+
     if (!(/^\d{0,13}$/.test(id))) id = "";
 
     const prestineLokasi = LOKASI.getPrestineLokasi(id);
@@ -68,13 +78,8 @@ export const hierarchy = onCall(
       return {} as Lokasi; // Invalid lokasi id.
     }
 
-    const now = Date.now();
     const cachedLokasi = lokasiCache[id];
-    if (cachedLokasi?.lastCachedTs && shouldRateLimit(
-      hierarchyRateLimiter, now, request.auth?.uid)) {
-      if (request.auth?.uid) {
-        logger.info("hierarchy-rate-limited", request.auth?.uid, id);
-      }
+    if (cachedLokasi?.lastCachedTs) {
       const elapsed = now - cachedLokasi.lastCachedTs;
       if (elapsed < getCacheTimeoutMs(id)) return cachedLokasi;
     }
@@ -89,7 +94,7 @@ export const hierarchy = onCall(
     return lokasi;
   });
 
-const userRateLimiter = new LruCache<string, number>(1000);
+const userRateLimiter = new LruCache<string, [number, number]>(1000);
 export const register = onCall(
   {cors: true},
   async (request: CallableRequest<void>): Promise<boolean> => {

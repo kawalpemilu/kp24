@@ -444,23 +444,24 @@ export class LruCache<K, V> {
 }
 
 /**
- * @param {LruCache<string, number>} rateLimiter the cache
+ * @param {LruCache<string, [number, number]>} rateLimiter the cache
  * for keeping track the last timestamp of user access.
  * @param {number} now the current datetime in ms.
- * @param {string} uid the accessing user if exists.
+ * @param {string} uid the accessing user.
  * @return {boolean} true if the user should be rate-limited.
  */
-export function shouldRateLimit(rateLimiter: LruCache<string, number>,
+export function shouldRateLimit(
+  rateLimiter: LruCache<string, [number, number]>,
   now: number, uid?: string) {
   if (!uid) return true; // Always rate-limit anonymous users.
-  const lastCallTs = rateLimiter.get(uid);
-  if (lastCallTs === undefined) {
-    rateLimiter.set(uid, now);
-    return false; // Don't rate-limit logged in users.
+  const [startTs, numCalls] = rateLimiter.get(uid) ?? [now, 0];
+  rateLimiter.set(uid, [startTs, numCalls + 1]);
+  if (numCalls > 5) {
+    const elapsedSecs = (now - startTs + 1.0) / 1000;
+    if (elapsedSecs > 60) rateLimiter.set(uid, [now, 1]);
+    if (numCalls > 100) console.error('DoS attack', uid);
+    if (numCalls / elapsedSecs > 1) return true;
   }
-  const elapsed = now - lastCallTs;
-  if (elapsed < 1000) return true; // Unless they are hammering!
-  rateLimiter.set(uid, now);
   return false;
 }
 
