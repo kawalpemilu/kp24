@@ -16,7 +16,6 @@ const MAX_RESULTS = 20;
 interface Result {
     names: string[];
     ids: string[];
-    gaps: number;
 }
 
 function getPermutations<T>(array: T[]): T[][] {
@@ -86,7 +85,6 @@ export class SearchComponent implements OnInit {
                 const r: Result = {
                     names: lokasi.names,
                     ids: [],
-                    gaps: 1000
                 };
                 for (let i = 0; i < idLengths.length; i++) {
                     r.ids[i] = lokasi.id.substring(0, idLengths[i]);
@@ -94,9 +92,16 @@ export class SearchComponent implements OnInit {
                 permutationResults[p].push(r);
             }
         }
-        let res: Result[] = permutationResults[0];
-        for (let i = 1; i < permutationTokens.length; i++) {
-            res = res.concat(permutationResults[i]);
+        let res: Result[] = [];
+        const uniqueIds: Record<string, boolean> = {};
+        for (let i = 0; i < permutationTokens.length; i++) {
+            for (const r of permutationResults[i]) {
+                if (!r.ids.length) continue;
+                const lastId = r.ids[r.ids.length - 1];
+                if (uniqueIds[lastId]) continue;
+                uniqueIds[lastId] = true;
+                res.push(r);
+            }
             if (res.length >= MAX_RESULTS) break;
         }
         return res;
