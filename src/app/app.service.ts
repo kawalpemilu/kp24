@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, firstValueFrom, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
+import { Observable, catchError, combineLatest, firstValueFrom, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
 import { Auth, signInAnonymously, signInWithPopup, signOut, user } from '@angular/fire/auth';
-import { Firestore, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
+import { Firestore, QueryConstraint, QueryFieldFilterConstraint, collection, collectionSnapshots, doc, docSnapshots, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { APPROVAL_STATUS, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';
@@ -91,13 +91,50 @@ export class AppService {
 
   searchUsers$(prefix: string, filterRole: number): Observable<UserProfile[]> {
     console.log('Firestore Search', prefix, filterRole);
-    const uRef = collection(this.firestore, `/u`);
     const constraints = [];
     if (filterRole >= 0) constraints.push(where('role', '==', filterRole));
+    const nameSearch$ = this.searchUsersByName$(prefix, [...constraints]);
+    const uidSearch$ = this.searchUsersByUid$(prefix, [...constraints]);
+    const emailSearch$ = this.searchUsersByEmail$(prefix, [...constraints]);
+    return combineLatest([nameSearch$, uidSearch$, emailSearch$]).pipe(
+      map(([names, uids, emails]) => {
+        const results: UserProfile[] = [];
+        const uniqueUids: Record<string, boolean> = {};
+        for (const u of names.concat(uids).concat(emails)) {
+          if (uniqueUids[u.uid]) continue;
+          uniqueUids[u.uid] = true;
+          results.push(u);
+        }
+        return results;
+      }));
+  }
+
+  searchUsersByName$(prefix: string, constraints: QueryConstraint[]) {
     constraints.push(
       where('lowerCaseName', '>=', prefix.toLowerCase()),
       where('lowerCaseName', '<=', prefix.toLowerCase() + '{'),
       limit(5));
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(map(ss => ss.map(s => s.data() as UserProfile)));
+  }
+
+  searchUsersByUid$(prefix: string, constraints: QueryConstraint[]) {
+    constraints.push(
+      where('uid', '>=', prefix),
+      where('uid', '<=', prefix + '{'),
+      limit(5));
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(map(ss => ss.map(s => s.data() as UserProfile)));
+  }
+
+  searchUsersByEmail$(prefix: string, constraints: QueryConstraint[]) {
+    constraints.push(
+      where('email', '>=', prefix),
+      where('email', '<=', prefix + '{'),
+      limit(5));
+    const uRef = collection(this.firestore, `/u`);
     const qRef = query(uRef, ...constraints);
     return collectionSnapshots(qRef).pipe(map(ss => ss.map(s => s.data() as UserProfile)));
   }

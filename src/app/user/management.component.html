@@ -28,6 +28,9 @@ Filter Role:
         <td>{{ u.name }} ({{ u.email }})</td>
     </tr>
     <tr>
+        <td>UID: {{ u.uid }}</td>
+    </tr>
+    <tr>
         <td>Created: {{ u.createdTs | date }}; {{ u.uploadCount }} uploads, {{ u.reviewCount }} reviews</td>
     </tr>
     <tr>
