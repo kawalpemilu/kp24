@@ -1,34 +1,33 @@
 <article class="profile">
-@if (profile$ | async; as profileDetails) {
-<h1>Halo, {{ getFirstName(profileDetails.profile.name) }}</h1>
+    @if (profile$ | async; as profileDetails) {
+    <h1>Halo, {{ getFirstName(profileDetails.profile.name) }}</h1>
 
-@if (profileDetails.profile.jagaTpsCount) {
-<p>
-    Berikut adalah daftar TPS yang anda jaga untuk upload
-    hasil foto suara paslon pada tanggal <b>14 Feb 2024</b>.
-</p>
+    @if (profileDetails.profile.jagaTpsCount) {
+    <p>
+        Berikut adalah daftar TPS yang anda jaga untuk upload
+        hasil foto suara paslon pada tanggal <b>14 Feb 2024</b>.
+    </p>
 
-<p>Klik nomor TPS untuk mengupload foto di TPS tersebut:</p>
+    <p>Klik nomor TPS untuk mengunggah foto di TPS tersebut:</p>
+    <table class="collapsed_border">
+        @for (t of profileDetails.jagaTps; track t.tpsId; let i = $index) {
+        <tr>
+            <td>
+                <a class="hierarchy" [routerLink]="['/h', t.tpsId]">
+                    TPS #{{ t.tpsId.substring(10) }}
+                </a>
+            </td>
+            <td>
+                {{ t.lokasi.names.join(' / ') }}
+            </td>
+        </tr>
+        }
+    </table>
+    <br>
+    <hr>
+    }
 
-<table class="collapsed_border">
-@for (t of profileDetails.jagaTps; track t.tpsId; let i = $index) {
-    <tr>
-        <td>
-            <a class="hierarchy" [routerLink]="['/h', t.tpsId]">
-                TPS #{{ t.tpsId.substring(10) }}
-            </a>
-        </td>
-        <td>
-            {{ t.lokasi.names.join(' / ') }}
-        </td>
-    </tr>
-}
-</table>
-<br>
-<hr>
-}
-
-@if (!profileDetails.uploads.length) {
+    @if (!profileDetails.uploads.length) {
     <p>Untuk mengunggah foto, ikuti langkah berikut:</p>
     <ol class="instructions">
         <li>
@@ -46,71 +45,71 @@
         <mat-icon>search</mat-icon>
         Cari Lokasi TPS
     </button>
-}
+    }
 
-<!-- <table class="collapsed_border" *ngIf="profileDetails.profile as p">
-    <tr>
-        <td rowspan="4">
-            <img [src]="p.pic" />
-        </td>
-    </tr>
-    <tr>
-        <td>Name:</td>
-        <td>{{ p.name }}</td>
-    </tr>
-    <tr>
-        <td>Email:</td>
-        <td>{{ p.email }}</td>
-    </tr>
-    <tr>
-        <td>Contributions:</td>
-        <td>{{ p.uploadCount }} uploads, {{ p.reviewCount }} reviews</td>
-    </tr>
-</table> -->
+    <table class="collapsed_border" *ngIf="profileDetails.profile as p">
+        <tr>
+            <td rowspan="4">
+                <img [src]="p.pic" />
+            </td>
+        </tr>
+        <tr>
+            <td>Nama:</td>
+            <td>{{ p.name }}</td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td>{{ p.email }}</td>
+        </tr>
+        <tr>
+            <td>Kontribusi:</td>
+            <td>{{ p.uploadCount }} uploads, {{ p.reviewCount }} reviews</td>
+        </tr>
+    </table>
 
-@if (profileDetails.uploads.length) {
-<h2>Uploaded Photos:</h2>
-<table class="collapsed_border">
-@for (u of profileDetails.uploads; track u.uploadRequest.imageId; let i = $index) {
-    <tr>
-        <td>
-            <app-photo [photoUrl]="u.uploadRequest.servingUrl">
-            </app-photo>
-        </td>
-        <td *ngIf="u.uploadRequest.votes[0] as v">
-            {{ i + 1 }}. {{ v.updateTs | date }} [{{ STATUS[u.uploadRequest.status] }}]
-            <a class="hierarchy" [routerLink]="['/h', u.uploadRequest.idLokasi]" target="_blank">
-                TPS #{{ u.uploadRequest.idLokasi.substring(10) }}
+    @if (profileDetails.uploads.length) {
+    <h2>Foto yang berhasil diunggah:</h2>
+    <table class="collapsed_border">
+        @for (u of profileDetails.uploads; track u.uploadRequest.imageId; let i = $index) {
+        <tr>
+            <td>
+                <app-photo [photoUrl]="u.uploadRequest.servingUrl">
+                </app-photo>
+            </td>
+            <td *ngIf="u.uploadRequest.votes[0] as v">
+                {{ i + 1 }}. {{ v.updateTs | date }} [{{ STATUS[u.uploadRequest.status] }}]
+                <a class="hierarchy" [routerLink]="['/h', u.uploadRequest.idLokasi]" target="_blank">
+                    TPS #{{ u.uploadRequest.idLokasi.substring(10) }}
+                </a>
+                <br>
+                {{ u.lokasi.names | json }}<br>
+                <span title="Anies Baswedan dan Cak Imin">PasLon01</span>: {{ v.pas1 }}<br>
+                <span title="Prabowo Subianto dan Gibran Rakabuming"></span>PasLon02: {{ v.pas2 }}<br>
+                <span title="Ganjar Pranowo dan Mahfud MD"></span>PasLon03: {{ v.pas3 }}<br>
+            </td>
+        </tr>
+        }
+    </table>
+    }
+
+    @if (profileDetails.reviews.length) {
+    <br>
+    <h2>Foto yang sudah ditinjau:</h2>
+    <ol>
+        @for (r of profileDetails.reviews; track r.lokasi.id; let i = $index) {
+        <li>
+            Jumlah Tinjauan: {{ r.numReviews }} at
+            <a class="hierarchy" [routerLink]="['/h', r.idLokasi]" target="_blank">
+                TPS #{{ r.idLokasi.substring(10) }}
             </a>
-            <br>
-            {{ u.lokasi.names | json }}<br>
-            pas1: {{ v.pas1 }}<br>
-            pas2: {{ v.pas2 }}<br>
-            pas3: {{ v.pas3 }}<br>
-        </td>
-    </tr>
-}
-</table>
-}
+        </li>
+        }
+    </ol>
+    }
 
-@if (profileDetails.reviews.length) {
-<br>
-<h2>Reviewed Photos:</h2>
-<ol>
-@for (r of profileDetails.reviews; track r.lokasi.id; let i = $index) {
-    <li>
-        Num Reviews: {{ r.numReviews }} at
-        <a class="hierarchy" [routerLink]="['/h', r.idLokasi]" target="_blank">
-            TPS #{{ r.idLokasi.substring(10) }}
-        </a>
-    </li>
-}
-</ol>
-}
-
-} @else {
+    } @else {
     <button mat-raised-button color="warn" (click)="service.login()">
         Masuk untuk Unggah Foto
     </button>
-}
+    }
 </article>
