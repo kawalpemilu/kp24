@@ -72,7 +72,7 @@ export class TpsRowComponent {
 
   roiUrl(photoUrl: string | undefined) {
     return !photoUrl ? '' :
-        `https://storage.googleapis.com/kawalc1/static/2024/transformed/${
+        `https://argocd.kawalc1.org/roi/${
         this.tpsId.substring(0,10)}/${
         this.tpsId.substring(10)}/extracted/${
         photoUrl.replace('http://lh3.googleusercontent.com/', '')

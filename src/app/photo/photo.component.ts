@@ -15,20 +15,17 @@ interface TippyInstanceWithLoading extends NgxTippyInstance {
     imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule, NgxTippyModule],
     template: `
         <!-- enabling this caused a lot of error messages to be printed in the console. -->
-        <!-- <div #tippyTemplateRef>
+        <div #tippyTemplateRef>
           <img alt="ROI paslon" style="min-height:120px;width:150px" loading="lazy"/>
-        </div> -->
-        <!-- [ngxTippy]="tippyTemplateRef"
-        [tippyProps]="{
-                placement: 'right',
-                delay: [200, 200],
-                animation: 'shift-toward',
-                onCreate: loadTooltipImage,
-                onShow: onShowTippy,
-             }" -->
-        <div [style.width]="maxWidth + 'px'"
-             [style.height]="maxHeight + 'px'"
-             [title]="tooltipUrl">
+        </div>
+        <div [style.width]="maxWidth + 'px'" [style.height]="maxHeight + 'px'" [ngxTippy]="tippyTemplateRef"
+        [title]="tooltipUrl" [tippyProps]="{
+          placement: 'right',
+          delay: [200, 200],
+          animation: 'shift-toward',
+          onCreate: loadTooltipImage,
+          onShow: onShowTippy,
+        }">
             <a [href]="largePhoto" target="_blank">
                 <img [style.max-width]="maxWidth + 'px'"
                     [style.max-height]="maxHeight + 'px'"
@@ -66,10 +63,11 @@ export class PhotoComponent {
       }
       fetch(tooltipPicture)
         .then((response) => {
-          if (!response.ok) {
-            throw new Error(`${response.status} ${response.statusText}`);
+          if (response.ok && response.status == 200) {
+            return response.blob()
           }
-          return response.blob()
+          instance._isFetching = true;
+          throw new Error(`${response.status} ${response.statusText}`);
         })
         .then((blob) => {
           const src = URL.createObjectURL(blob);
@@ -79,12 +77,12 @@ export class PhotoComponent {
           image.src = src;
           instance.setContent(image);
           instance.props['maxWidth'] = '170px';
-          instance._failedToLoad = false
+          instance._failedToLoad = false;
         })
         .catch(() => {
+          instance.disable();
           instance.setContent('');
           instance._failedToLoad = true;
-          instance.disable();
         })
         .finally(() => {
           instance._isFetching = false;
