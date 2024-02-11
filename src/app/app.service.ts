@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, combineLatest, firstValueFrom, from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
+import { Observable, catchError, combineLatest, firstValueFrom, 
+  from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
 import { Auth, signInAnonymously, signInWithPopup, signOut, user } from '@angular/fire/auth';
-import { Firestore, QueryConstraint, QueryFieldFilterConstraint, collection, collectionSnapshots, doc, docSnapshots, getDoc, limit, query, where } from '@angular/fire/firestore';
+import { Firestore, QueryConstraint, collection, collectionSnapshots,
+  doc, docSnapshots, getDoc, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { APPROVAL_STATUS, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';

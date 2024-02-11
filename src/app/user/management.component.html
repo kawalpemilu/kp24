@@ -6,7 +6,7 @@
         (input)="cari$.next(nama.value)" />
 </mat-form-field>
 
-<br>
+&nbsp;
 Filter Role:
 <select (change)="changeRoleFilter($event)">
     <option [value]="-1">ANY_ROLE</option><br>
@@ -17,8 +17,6 @@ Filter Role:
     <option [value]="USER_ROLE.ROOT">ROOT</option>
 </select>
 
-<br>
-<br>
 <p>Search Results:</p>
 
 @for (u of users$ | async; track u.uid) {
@@ -31,7 +29,11 @@ Filter Role:
         <td>UID: {{ u.uid }}</td>
     </tr>
     <tr>
-        <td>Created: {{ u.createdTs | date }}; {{ u.uploadCount }} uploads, {{ u.reviewCount }} reviews</td>
+        <td>
+            Created: {{ u.createdTs | date }};
+            {{ u.uploadCount }} uploads,
+            {{ u.reviewCount }} reviews
+        </td>
     </tr>
     <tr>
         <td colspan="2">
