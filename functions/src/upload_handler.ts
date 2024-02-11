@@ -382,7 +382,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
         data.status = data.votes[0].status = APPROVAL_STATUS.NEW;
         t.set(uploadRef, data);
         if (!agg.pendingUploads) agg.pendingUploads = {};
-        agg.pendingUploads[data.imageId] = true;
+        agg.pendingUploads[data.imageId] = data.servingUrl;
       } else {
         // Reviewer or editor for existing upload, must have status.
         if (!data.votes[0].status) {
