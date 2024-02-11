@@ -89,6 +89,20 @@ export class HierarchyComponent implements OnInit {
         const lokasi2$ = this.getLokasiDataWithVotes(id);
         // Both observable have initial value of null so that
         // the combineLatest kicks in immediately.
+
+        lokasi1$.subscribe(lokasi => {
+          const locationId = lokasi?.id;
+          const currentLocation = lokasi?.parents.filter((item) => item[0] === locationId).flat();
+          if (currentLocation?.length != 2) {
+            return;
+          }
+
+          const locationName = this.capitalizeFirstLetter(currentLocation[1]);
+
+          this.meta.updateTag({ property: 'og:title', content: `KawalPemilu 2024 | ${locationName}` });
+          this.meta.updateTag({ property: 'twitter:title', content: `KawalPemilu 2024 | ${locationName}` });
+        })
+
         return combineLatest([
           lokasi1$.pipe(startWith(null)),
           lokasi2$.pipe(startWith(null))
@@ -106,26 +120,15 @@ export class HierarchyComponent implements OnInit {
             return of(lokasi);
           }), shareReplay(1));
       }));
-
-      this.lokasi$.forEach(lokasi => {
-        const lastIndex = lokasi.parents.length - 1;
-        if (lastIndex < 0) return;
-
-        const lastLocation = lokasi.parents[lastIndex];
-        if (lastLocation.length < 2) return;
-
-        const location = this.capitalizeFirstLetter(lastLocation[1])
-
-        this.meta.updateTag({ property: 'og:title', content: `KawalPemilu 2024 | ${location}` });
-        this.meta.updateTag({ property: 'twitter:title', content: `KawalPemilu 2024 | ${location}` });
-      });
   }
+
+  
 
   capitalizeFirstLetter(str: string) {
     return str.toLowerCase()
-              .split(' ')
-              .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
-              .join(' ');
+      .split(' ')
+      .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+      .join(' ');
   }
 
   populateUserUploads(lokasi: LokasiData, profile: UserProfile | null) {
