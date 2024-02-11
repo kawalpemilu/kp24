@@ -1,6 +1,13 @@
-<div class="review">
-    <app-photo [photoUrl]="servingUrl" [roiToolTip]="[servingUrl || '', this.id]" [hiResThumb]="true"
-                [maxWidth]="250" [maxHeight]="250">
+<table>
+<tr>
+    <td align="center">
+    <app-photo [photoUrl]="servingUrl"
+               [roiToolTip]="[servingUrl || '', this.id]"
+               [hiResThumb]="true"
+               [maxWidth]="225"
+               [maxHeight]="250"
+               [showRoiTooltip]="false"
+               (roiImageUrl)="roiImageUrl=$event">
     </app-photo>
     @if (ubahLokasi) { @if (service.lokasi$ | async; as P) {
         <br>
@@ -75,7 +82,7 @@
     } @else {
         <div class="ubah-lokasi-trigger">
             <button mat-raised-button color="accent" (click)="startUbahLokasi()">
-                Ubah LOKATI TPS
+                Ubah LOKASI TPS
             </button>
         </div>
         <app-digitize
@@ -85,4 +92,11 @@
             (onSubmit)="approve($event)">
         </app-digitize>
     }
-</div>
+    </td>
+    <td *ngIf="roiImageUrl">
+        <img [src]="roiImageUrl"
+             style="max-width: 150px; max-height: 490px;"
+             onerror="this.style.display='none'">
+    </td>
+</tr>
+</table>

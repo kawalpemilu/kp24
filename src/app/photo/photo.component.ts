@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -14,24 +14,34 @@ interface TippyInstanceWithLoading extends NgxTippyInstance {
     standalone: true,
     imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule, NgxTippyModule],
     template: `
-        <!-- enabling this caused a lot of error messages to be printed in the console. -->
+      @if (showRoiTooltip) {
         <div #tippyTemplateRef>
           <img alt="ROI paslon" style="min-height:120px;width:150px" loading="lazy"/>
         </div>
-        <div [style.width]="maxWidth + 'px'" [style.height]="maxHeight + 'px'" [ngxTippy]="tippyTemplateRef"
-        [title]="tooltipUrl" [tippyProps]="{
-          placement: 'right',
-          delay: [200, 200],
-          animation: 'shift-toward',
-          onCreate: loadTooltipImage,
-          onShow: onShowTippy,
-        }">
+        <div [style.width]="maxWidth + 'px'"
+             [style.height]="maxHeight + 'px'"
+             [ngxTippy]="tippyTemplateRef"
+             [title]="tooltipUrl"
+             [tippyProps]="{
+                placement: 'right',
+                delay: [200, 200],
+                animation: 'shift-toward',
+                onCreate: loadTooltipImage,
+                onShow: onShowTippy,
+             }">
             <a [href]="largePhoto" target="_blank">
                 <img [style.max-width]="maxWidth + 'px'"
-                    [style.max-height]="maxHeight + 'px'"
-                    [src]="hiResThumb ? largePhoto : thumbnail" /><br>
+                     [style.max-height]="maxHeight + 'px'"
+                     [src]="hiResThumb ? largePhoto : thumbnail" /><br>
             </a>
         </div>
+      } @else {
+        <a [href]="largePhoto" target="_blank">
+            <img [style.max-width]="maxWidth + 'px'"
+                 [style.max-height]="maxHeight + 'px'"
+                 [src]="hiResThumb ? largePhoto : thumbnail" /><br>
+        </a>
+      }
         <!-- @if (imageMetadata; as m) { -->
             <!-- Size: {{ (m.z || m.s) / 1024 | number: '1.0-0'}}KB<br> -->
             <!-- <pre style="text-align: left; width: 200px">{{ m | json }}</pre> -->
@@ -41,6 +51,8 @@ export class PhotoComponent {
     @Input() maxWidth = 125;
     @Input() maxHeight = 125;
     @Input() hiResThumb = false;
+    @Input() showRoiTooltip = true;
+    @Output() roiImageUrl = new EventEmitter<string>();
 
     largePhoto = '';
     thumbnail = '';
@@ -48,7 +60,8 @@ export class PhotoComponent {
 
     @Input({ required: false })
     set roiToolTip(value: string[]) {
-      this.tooltipUrl = this.roiUrl(value[0], value[1])
+      this.tooltipUrl = this.roiUrl(value[0], value[1]);
+      this.roiImageUrl.emit(this.tooltipUrl);
     }
 
     roiUrl(photoUrl: string | undefined, tpsId: string) {

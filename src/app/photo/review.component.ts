@@ -35,6 +35,7 @@ export class ReviewComponent {
     newKecId = '';
     newKelId = '';
     newTpsNo = '';
+    roiImageUrl = '';
 
     constructor(public service: AppService) { }
 
