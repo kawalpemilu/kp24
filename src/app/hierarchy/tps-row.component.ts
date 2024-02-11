@@ -71,6 +71,10 @@ export class TpsRowComponent {
   }
 
   roiUrl(photoUrl: string | undefined) {
+    if (photoUrl == undefined || photoUrl.includes('data:image')) {
+      return ''
+    }
+
     return !photoUrl ? '' :
         `https://argocd.kawalc1.org/roi/${
         this.tpsId.substring(0,10)}/${
