@@ -47,28 +47,8 @@
     </button>
     }
 
-    <table class="collapsed_border" *ngIf="profileDetails.profile as p">
-        <tr>
-            <td rowspan="4">
-                <img [src]="p.pic" />
-            </td>
-        </tr>
-        <tr>
-            <td>Nama:</td>
-            <td>{{ p.name }}</td>
-        </tr>
-        <tr>
-            <td>Email:</td>
-            <td>{{ p.email }}</td>
-        </tr>
-        <tr>
-            <td>Kontribusi:</td>
-            <td>{{ p.uploadCount }} uploads, {{ p.reviewCount }} reviews</td>
-        </tr>
-    </table>
-
     @if (profileDetails.uploads.length) {
-    <h2>Foto yang berhasil diunggah:</h2>
+    <h2>Foto yang berhasil diunggah ({{profileDetails.profile.uploadCount}}):</h2>
     <table class="collapsed_border">
         @for (u of profileDetails.uploads; track u.uploadRequest.imageId; let i = $index) {
         <tr>
@@ -94,7 +74,7 @@
 
     @if (profileDetails.reviews.length) {
     <br>
-    <h2>Foto yang sudah ditinjau:</h2>
+    <h2>Foto yang sudah ditinjau ({{profileDetails.profile.reviewCount}}):</h2>
     <ol>
         @for (r of profileDetails.reviews; track r.lokasi.id; let i = $index) {
         <li>
