@@ -99,7 +99,20 @@ export class PrestineLokasi {
       aggregated: {},
       numWrites: 0,
     };
-    if (id.length === 10) {
+    if (id.length === 10 && id.startsWith('99')) {
+      // TPS luar negeri.
+      const [tpsNo] = this.H.tps[lokasi.id];
+      if (tpsNo < 0) {
+        lokasi.aggregated[1] = [this.newAggregateVotes(
+          `${id}${-tpsNo}`, `${-tpsNo}`, 1, -1)];
+      } else {
+        for (let i = 1; i <= tpsNo; i++) {
+          lokasi.aggregated[i] = [this.newAggregateVotes(
+            `${id}${i}`, `${i}`, 1, -1)];
+        }
+      }
+    } else if (id.length === 10) {
+      // TPS dalam negeri.
       const [maxTpsNo, extBegin, extEnd] = this.H.tps[lokasi.id];
       const d = this.dpt ? this.dpt[id] : [];
       let j = 0;
@@ -114,6 +127,7 @@ export class PrestineLokasi {
         }
       }
     } else {
+      // Prov, Kab, Kec, Kel.
       for (const suffixId of this.C[lokasi.id]) {
         const cid = lokasi.id + suffixId;
         lokasi.aggregated[cid] = [this.newAggregateVotes(
@@ -181,7 +195,10 @@ export class PrestineLokasi {
      */
     const rec = (id: string) => {
       let numTps = 0;
-      if (id.length == 10) {
+      if (id.length == 10 && id.startsWith('99')) {
+        const [tpsNo] = this.H.tps[id];
+        numTps += tpsNo > 0 ? tpsNo : 1;
+      } else if (id.length == 10) {
         const [maxTpsNo, extBegin, extEnd] = this.H.tps[id];
         numTps += maxTpsNo;
         if (extBegin) numTps += (extEnd - extBegin) + 1;

@@ -67,7 +67,8 @@ const hierarchyRateLimiter = new LruCache<string, [number, number]>(1000);
 function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
   if (request.data.uid === "kawalc1") {
     if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 5)) {
-      logger.error("hierarchy-rate-limited", request.data.uid);
+      logger.error("hierarchy-rate-limited",
+        request.data.id, request.data.uid);
       return true;
     }
     return false;
@@ -77,10 +78,11 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
   if (shouldRateLimit(
     hierarchyRateLimiter, now, request.auth?.uid, loggedIn ? 3 : 1)) {
     if (loggedIn) {
-      logger.error("hierarchy-rate-limited", request.auth.uid,
+      logger.error("hierarchy-rate-limited", request.data.id, request.auth.uid,
         request.auth.token.name, request.auth.token.email, request.data.uid);
     } else {
-      logger.info("hierarchy-rate-limited-public", request.auth.uid);
+      logger.info("hierarchy-rate-limited-public",
+        request.data.id, request.auth.uid);
     }
     return true;
   }

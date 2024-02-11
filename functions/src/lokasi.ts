@@ -6,7 +6,7 @@ import {Hierarchy, PrestineLokasi} from "./interfaces";
  * It should only be initialized once per process.
  */
 const H = JSON.parse(
-  fs.readFileSync("./lib/tps.json", "utf-8")) as Hierarchy;
+  fs.readFileSync("./lib/tps2.json", "utf-8")) as Hierarchy;
 const dpt = JSON.parse(
   fs.readFileSync("./lib/dpt.json", "utf-8")) as Record<string, number[]>;
 

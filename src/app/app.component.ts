@@ -27,7 +27,7 @@ export class AppComponent {
     private http: HttpClient) {
 
     service.lokasi$ =
-      this.http.get('assets/tps.json?v=2').pipe(
+      this.http.get('assets/tps2.json').pipe(
         map(json => new PrestineLokasi(json as Hierarchy)),
         shareReplay(1)
       );

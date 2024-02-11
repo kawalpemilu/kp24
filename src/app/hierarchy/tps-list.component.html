@@ -34,8 +34,10 @@
                     Pas2: <b>{{ a.pas2 }}</b><br>
                     Pas3: <b>{{ a.pas3 }}</b><br>
                     <br>
-                    DPT: <b>{{ a.dpt }}</b><br>
-                    <br>
+                    @if (a.dpt && a.dpt > 0) {
+                        DPT: <b>{{ a.dpt }}</b><br>
+                        <br>
+                    }
                     @if (a.totalErrorTps) {
                         <span class="error">Error!</span><br>
                         <br>

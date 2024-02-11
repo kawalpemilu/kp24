@@ -426,7 +426,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
       agg.totalCompletedTps = c.length > 1 ? 1 : 0;
 
       // If there is a mismatch in votes, it's an error.
-      agg.totalErrorTps = agg.dpt ?
+      agg.totalErrorTps = (agg.dpt && agg.dpt > 0) ?
         +(agg.pas1 + agg.pas2 + agg.pas3 > agg.dpt * 1.02) : 0;
       for (let i = 1; i < c.length; i++) {
         if (agg.pas1 !== c[i].pas1 ||

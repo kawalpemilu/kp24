@@ -179,6 +179,8 @@ export class HierarchyComponent implements OnInit {
     lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated)
       .map(a => ({ id: a[0], agg: a[1], userUploads: [] }));
     lokasi.children.sort((a, b) => {
+      if (a.agg[0].name === 'LUAR NEGERI') return 1;
+      if (b.agg[0].name === 'LUAR NEGERI') return -1;
       const aName = a.agg[0].name, bName = b.agg[0].name;
       if (lokasi.id.length === 10) return +aName - +bName;
       return aName.localeCompare(bName);
