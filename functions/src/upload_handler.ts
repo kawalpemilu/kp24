@@ -1,8 +1,6 @@
 import {
-  APPROVAL_STATUS, AggregateVotes,
-  DEFAULT_MAX_REPORTS,
-  DEFAULT_MAX_UPLOADS,
-  Lokasi, TESTER_UID, USER_ROLE, UploadRequest, UserProfile, UserStats, autoId,
+  APPROVAL_STATUS, AggregateVotes, Lokasi, TESTER_UID, USER_ROLE, autoId,
+  UploadRequest, UserProfile, UserStats, aggregate, getParentId, getUserStats,
 } from "./interfaces";
 
 import * as admin from "firebase-admin";
@@ -24,32 +22,9 @@ function isIdentical(a: AggregateVotes, b: AggregateVotes): boolean {
     a.totalPendingTps === b.totalPendingTps &&
     a.totalErrorTps === b.totalErrorTps &&
     a.totalJagaTps === b.totalJagaTps &&
+    a.totalLaporTps === b.totalLaporTps &&
     Object.keys(a.pendingUploads ?? {}).length ===
     Object.keys(b.pendingUploads ?? {}).length;
-}
-
-/**
- * Returns the parent id of a lokasi id.
- * @param {string} id the id to be queried.
- * @return {string} The id's parent.
- */
-function getParentId(id: string) {
-  if (id.length > 10) return id.substring(0, 10);
-  if (id.length > 6) return id.substring(0, 6);
-  if (id.length > 4) return id.substring(0, 4);
-  if (id.length > 2) return id.substring(0, 2);
-  return "";
-}
-
-function getUserStats(s: UserStats | undefined, p : UserProfile) {
-  return s ?? {
-    uploadCount: p.uploadCount ?? 0,
-    reviewCount: p.reviewCount ?? 0,
-    jagaTpsCount: p.jagaTpsCount ?? 0,
-    reportCount: p.reportCount ?? 0,
-    uploadMaxCount: DEFAULT_MAX_UPLOADS,
-    reportMaxCount: DEFAULT_MAX_REPORTS,
-  } as UserStats;
 }
 
 /**
@@ -155,78 +130,6 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
   logger.log(data.votes.length > 1 ? "Reviewed" : "Uploaded",
     data.idLokasi, data.status, data);
 
-  await firestore
-    .collection("p")
-    .add(aggregate(lokasi))
-    .catch(logger.error);
-  return true;
-}
-
-/**
- * Mark the user is guarding the TPS.
- * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
- * @param {string} tpsId the tps to be guarded.
- * @param {string} uid the user who is guarding.
- * @return {string} true if the TPS is successfully guarded.
- */
-export async function jagaTpsHandler(firestore: admin.firestore.Firestore,
-  tpsId: string, uid: string): Promise<boolean> {
-  logger.log(`Jaga TPS t/${tpsId}/u/${uid}`);
-
-  const now = Date.now();
-  const idDesa = getParentId(tpsId);
-  const hRef = firestore.doc(`h/i${idDesa}`);
-  const uRef = firestore.doc(`u/${uid}`);
-  const sRef = firestore.doc(`s/${uid}`);
-  const lokasi = await firestore
-    .runTransaction(async (t) => {
-      let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
-      if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
-
-      const c = lokasi.aggregated[tpsId.substring(10)];
-      if (!c) {
-        logger.error("Invalid jaga TPS ID", tpsId, uid);
-        return null;
-      }
-
-      const p = (await t.get(uRef)).data() as UserProfile | undefined;
-      if (!p) {
-        logger.error("User not registered", uid);
-        return false;
-      }
-      if (p.role < USER_ROLE.RELAWAN) {
-        logger.error("User cannot jagaTps", uid);
-        return false;
-      }
-      const s = getUserStats(
-        (await t.get(sRef)).data() as UserStats | undefined, p);
-
-      if (!p.jagaTps) p.jagaTps = {};
-      p.jagaTps[tpsId] = true;
-      p.jagaTpsCount = Object.keys(p.jagaTps).length;
-      s.jagaTpsCount++;
-      if (s.jagaTpsCount > 100) {
-        logger.error("User has too many jagaTps", uid, s.jagaTpsCount);
-        return false;
-      }
-
-      t.set(uRef, p);
-      t.set(sRef, s);
-
-      if (c[0].totalJagaTps) {
-        logger.log("Sudah terjaga", tpsId);
-        return null;
-      }
-      c[0].totalJagaTps = 1;
-      c[0].updateTs = now;
-      t.set(hRef, lokasi);
-      return lokasi;
-    });
-
-  if (!lokasi) {
-    logger.log("Fail to jagaTps", tpsId);
-    return false; // Fail to update.
-  }
   await firestore
     .collection("p")
     .add(aggregate(lokasi))
@@ -480,40 +383,6 @@ async function updateTps(firestore: admin.firestore.Firestore,
       t.set(hRef, lokasi);
       return lokasi;
     });
-}
-
-/**
- * @param {Lokasi} lokasi
- * @return {AggregateVotes} the aggregated votes of the children.
- */
-function aggregate(lokasi: Lokasi) {
-  const nextAgg: AggregateVotes = {
-    idLokasi: lokasi.id,
-    name: "",
-    pas1: 0,
-    pas2: 0,
-    pas3: 0,
-    updateTs: 0,
-    totalTps: 0,
-    totalCompletedTps: 0,
-    totalPendingTps: 0,
-    totalErrorTps: 0,
-    totalJagaTps: 0,
-  };
-  for (const [cagg] of Object.values(lokasi.aggregated)) {
-    nextAgg.pas1 += cagg.pas1 ?? 0;
-    nextAgg.pas2 += cagg.pas2 ?? 0;
-    nextAgg.pas3 += cagg.pas3 ?? 0;
-    nextAgg.totalTps += cagg.totalTps ?? 0;
-    nextAgg.totalCompletedTps += cagg.totalCompletedTps ?? 0;
-    nextAgg.totalPendingTps += cagg.totalPendingTps ?? 0;
-    nextAgg.totalErrorTps += cagg.totalErrorTps ?? 0;
-    nextAgg.totalJagaTps += cagg.totalJagaTps ?? 0;
-    nextAgg.updateTs = Math.max(nextAgg.updateTs, cagg.updateTs);
-    if (cagg.anyPendingTps) nextAgg.anyPendingTps = cagg.anyPendingTps;
-    if (cagg.anyErrorTps) nextAgg.anyErrorTps = cagg.anyErrorTps;
-  }
-  return nextAgg;
 }
 
 /**

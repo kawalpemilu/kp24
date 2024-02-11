@@ -1,0 +1,28 @@
+<table>
+    <tr>
+        <td align="center">
+            <app-photo [photoUrl]="request.servingUrl"
+                       [hiResThumb]="true"
+                       [maxWidth]="225"
+                       [maxHeight]="250">
+            </app-photo>
+            Pas1: {{ request.votes.pas1 }},
+            Pas2: {{ request.votes.pas2 }},
+            Pas3: {{ request.votes.pas3 }}
+            <div style="margin-top: 5px;">
+            Laporkan kesalahan (max 300 chars):
+            </div>
+            <textarea rows="6" cols="30" [(ngModel)]="request.reason"></textarea>
+            <br>
+            <button mat-raised-button color="warn" (click)="laporkan(false)">
+                Laporkan!
+            </button>
+            @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
+                &nbsp; &nbsp;
+                <button mat-raised-button color="primary" (click)="laporkan(true)">
+                    Resolve
+                </button>
+            }
+        </td>
+    </tr>
+</table>

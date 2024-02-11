@@ -1,14 +1,13 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {
-  ALLOW_ORIGINS,
-  APPROVAL_STATUS, DEFAULT_MAX_REPORTS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
+  ALLOW_ORIGINS, APPROVAL_STATUS, DEFAULT_MAX_LAPORS, DEFAULT_MAX_UPLOADS,
+  ImageMetadata, LaporRequest, Lokasi,
   LruCache, USER_ROLE, UploadRequest, UserProfile, Votes,
   isValidVoteNumbers, shouldRateLimit,
 } from "./interfaces";
 import {LOKASI} from "./lokasi";
-import {RUN_ID, jagaTpsHandler, processPendingUploads,
-  uploadHandler} from "./upload_handler";
+import {RUN_ID, processPendingUploads, uploadHandler} from "./upload_handler";
 import {getServingUrl} from "./serving_url";
 
 import * as admin from "firebase-admin";
@@ -16,6 +15,8 @@ admin.initializeApp();
 const firestore = admin.firestore();
 
 import * as logger from "firebase-functions/logger";
+import {jagaTpsHandler} from "./jaga_tps_handler";
+import {laporHandler} from "./lapor_handler";
 
 /**
  * The pending method is run in a single thread.
@@ -65,9 +66,9 @@ const hierarchyRateLimiter = new LruCache<string, [number, number]>(1000);
  * @return {boolean} true if the request should be rate limited.
  */
 function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
-  const req = request.rawRequest;
-  const ip = `${req.headers['x-forwarded-for'] || req.connection.remoteAddress}`;
-  logger.log('IP Address:', ip, request);
+  const r = request.rawRequest;
+  const ip = `${r.headers["x-forwarded-for"] || r.connection.remoteAddress}`;
+  logger.log("IP Address:", ip, request);
 
   if (request.data.uid === "kawalc1") {
     if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 5)) {
@@ -77,7 +78,7 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
     }
     return false;
   }
-  if (!!request.auth?.token?.email) {
+  if (request.auth?.token?.email) {
     logger.error("hierarchy-rate-limited-user", request.data.id,
       request.auth.uid, request.auth.token.name, request.auth.token.email);
   }
@@ -121,10 +122,10 @@ const userRateLimiter = new LruCache<string, [number, number]>(1000);
 export const register = onCall(
   {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<void>): Promise<boolean> => {
-    logger.log('register', request.auth, request.data);
+    logger.log("register", request.auth, request.data);
 
     if (!request.auth) return false;
-    if (request.auth.token?.firebase?.sign_in_provider == 'anonymous') {
+    if (request.auth.token?.firebase?.sign_in_provider == "anonymous") {
       return false;
     }
 
@@ -158,8 +159,9 @@ export const register = onCall(
       reviews: {},
       uploadCount: 0,
       uploadMaxCount: DEFAULT_MAX_UPLOADS,
-      reportCount: 0,
-      reportMaxCount: DEFAULT_MAX_REPORTS,
+      lapor: {},
+      laporCount: 0,
+      laporMaxCount: DEFAULT_MAX_LAPORS,
       jagaTps: {},
       jagaTpsCount: 0,
       nTps: 0,
@@ -179,7 +181,7 @@ export const changeRole = onCall(
   {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<{ uid: string, role: USER_ROLE }>)
     : Promise<string> => {
-    logger.log('changeRole', request.auth, request.data);
+    logger.log("changeRole", request.auth, request.data);
     if (!request.auth?.uid) return "Not logged in";
 
     const now = Date.now();
@@ -207,7 +209,7 @@ export const jagaTps = onCall(
   {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<{ tpsId: string }>)
       : Promise<boolean> => {
-    logger.log('jagaTps', request.auth, request.data);
+    logger.log("jagaTps", request.auth, request.data);
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
@@ -231,7 +233,7 @@ export const review = onCall(
     tpsId: string, imageId: string, votes: Votes
   }>)
     : Promise<boolean> => {
-    logger.log('review', request.auth, request.data);
+    logger.log("review", request.auth, request.data);
 
     if (!request.auth?.uid) return false;
 
@@ -280,7 +282,7 @@ export const review = onCall(
 export const upload = onCall(
   {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<UploadRequest>) => {
-    logger.log('upload', request.auth, request.data);
+    logger.log("upload", request.auth, request.data);
 
     if (!request.auth?.uid) return false;
 
@@ -338,6 +340,62 @@ export const upload = onCall(
       status,
     };
     return uploadHandler(firestore, sanitized).then((success) => {
+      if (success) {
+        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
+      }
+      return success;
+    });
+  });
+
+export const lapor = onCall(
+  {cors: ALLOW_ORIGINS},
+  async (request: CallableRequest<LaporRequest>) : Promise<boolean> => {
+    logger.log("lapor", request.auth, request.data);
+
+    if (!request.auth?.uid) return false;
+
+    const now = Date.now();
+    if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
+      logger.error("lapor-rate-limited", request.auth.uid);
+      return false;
+    }
+
+    const idLokasi = request.data.idLokasi;
+    if (!(/^\d{11,13}$/.test(idLokasi))) return false;
+
+    const imageId = request.data.imageId;
+    if (!(/^[A-Za-z0-9]{20}$/.test(imageId))) return false;
+
+    const reason = request.data.reason;
+    if (reason.length > 300) return false;
+
+    const vs = request.data.votes;
+    const pas1 = Number(vs.pas1);
+    if (!isValidVoteNumbers(pas1)) return false;
+
+    const pas2 = Number(vs.pas2);
+    if (!isValidVoteNumbers(pas2)) return false;
+
+    const pas3 = Number(vs.pas3);
+    if (!isValidVoteNumbers(pas3)) return false;
+
+    const status = vs.status;
+    if (status !== APPROVAL_STATUS.NEW &&
+        status !== APPROVAL_STATUS.APPROVED &&
+        status !== APPROVAL_STATUS.REJECTED &&
+        status !== APPROVAL_STATUS.LAPOR &&
+        status !== APPROVAL_STATUS.MOVED) return false;
+
+    const sanitized: LaporRequest = {
+      idLokasi,
+      imageId,
+      servingUrl: "",
+      uid: request.auth.uid,
+      reason,
+      isResolved: !!request.data.isResolved,
+      votes: {pas1, pas2, pas3, status, updateTs: 0},
+    };
+    return laporHandler(firestore, sanitized).then((success) => {
       if (success) {
         delete lokasiCache[request.data.idLokasi.substring(0, 10)];
       }

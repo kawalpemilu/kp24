@@ -156,7 +156,10 @@ function getDistilledTps(
   return [{id2name, tps}, dpt];
 }
 
-async function processTps() {
+/**
+ * @return {Promise<Hierarchy>} the national Hierarchy.
+ */
+async function processTps(): Promise<Hierarchy> {
   const csv = fs.readFileSync("../data/tps_recon.csv", "utf-8");
   const records = keyedRecords(await parseCsv(csv));
 
@@ -202,6 +205,9 @@ async function processTps() {
   return H;
 }
 
+/**
+ * @return {any} the luar negeri Hierarchy.
+ */
 async function processTpsLuarNegeri() {
   const csv = fs.readFileSync("../data/tps_ln.csv", "utf-8");
   const records = await parseCsv(csv);
@@ -214,7 +220,7 @@ async function processTpsLuarNegeri() {
   const kpu2kp: Record<string, string> = {};
   for (let i = 1; i < records.length; i++) {
     const [idLn, nama, idNegara, negara, idKpuKota, idKota, kota,
-           idKpuTps, idTps, mode, noTps] = records[i];
+      idKpuTps, idTps, mode, noTps] = records[i];
 
     if (idLn.length != 2) throw new Error();
     if (idNegara.length != 4) throw new Error();
@@ -254,7 +260,7 @@ async function processTpsLuarNegeri() {
     tpsNos.sort((a, b) => +a - +b);
     for (let i = 0; i < tpsNos.length; i++) {
       if (tpsNos[i] != i + 1) {
-        console.log('Weird tpsNos', idDesa, JSON.stringify(tpsNos));
+        console.log("Weird tpsNos", idDesa, JSON.stringify(tpsNos));
       }
     }
     if (tpsNos[tpsNos.length - 1] === tpsNos.length) {
@@ -267,15 +273,7 @@ async function processTpsLuarNegeri() {
   }
   if (records.length != numTps + 1) throw new Error();
   console.log("total Tps", numTps);
-  return {id2name,    tps};
-}
-
-async function processTpsLuarNegeriOri() {
-  const csv = fs.readFileSync("../data/tps_ln_ori.csv", "utf-8");
-  const records = await parseCsv(csv);
-
-  // There are 3,316 TPS Luar negeri.
-  console.log("Total TPS: ", records.length);
+  return {id2name, tps};
 }
 
 (async () => {
@@ -290,6 +288,4 @@ async function processTpsLuarNegeriOri() {
     H.tps[id] = [tpsNo];
   }
   fs.writeFileSync("../data/tps2.json", JSON.stringify(H));
-  
-  if (false) await processTpsLuarNegeriOri();
 })();

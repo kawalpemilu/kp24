@@ -6,7 +6,7 @@ import { Firestore, QueryConstraint, collection, collectionSnapshots,
   doc, docSnapshots, getDoc, limit, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
-import { APPROVAL_STATUS, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';
+import { APPROVAL_STATUS, LaporRequest, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -90,6 +90,12 @@ export class AppService {
     console.log('RPC review', tpsId, imageId, JSON.stringify(votes, null, 2));
     const callable = httpsCallable(this.functions, 'review');
     return callable({ tpsId, imageId, votes });
+  }
+
+  lapor(request: LaporRequest) {
+    console.log('RPC lapor', JSON.stringify(request, null, 2));
+    const callable = httpsCallable(this.functions, 'lapor');
+    return callable(request);
   }
 
   searchUsers$(prefix: string, filterRole: number): Observable<UserProfile[]> {

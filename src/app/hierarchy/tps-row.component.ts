@@ -5,16 +5,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ChildLokasi } from './hierarchy.component';
 import { AppService } from '../app.service';
-import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes, UserProfile, UploadRequest, ImageMetadata } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes, UserProfile,
+  UploadRequest, ImageMetadata, LaporRequest } from '../../../functions/src/interfaces';
 import { UploadComponent } from '../upload/upload.component';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
+import { LaporComponent } from '../lapor/lapor.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-tps-row',
   standalone: true,
-  imports: [CommonModule, MatSidenavModule, MatIconModule, MatButtonModule,
+  imports: [CommonModule, MatSidenavModule, MatIconModule, MatButtonModule, LaporComponent,
     UploadComponent, ReviewComponent, PhotoComponent, MatProgressSpinnerModule],
   templateUrl: './tps-row.component.html',
   styleUrl: './tps-list.component.css'
@@ -22,10 +24,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export class TpsRowComponent {
   @Input({required: true}) tpsId!: string;
   @Input({required: true}) c!: ChildLokasi;
-  @Input({required: true}) userProfile!: UserProfile | null;
+  @Input({required: true}) userProfile: UserProfile | null = null;
 
   reviewUploadRequest: UploadRequest | null = null;
+  laporRequest: LaporRequest | null = null;
   isUploadDrawer = true;
+  isLaporDrawer = false;
   isDrawerOpen = false;
   isProcessing = 0;
 
@@ -34,14 +38,14 @@ export class TpsRowComponent {
 
   constructor(public service: AppService) { }
 
-  onUploadOrReview(agg: PendingAggregateVotes) {
+  updateAggregate(agg: PendingAggregateVotes) {
     this.isProcessing++;
     this.c.agg.splice(1, 0, agg);
     agg.onSubmitted.then(() => {
-      console.log('On upload/review success');
+      console.log('On update aggregate success');
       this.isProcessing--;
     }).catch(e => {
-      console.error('On upload/review error', e);
+      console.error('On update aggregate error', e);
       this.isProcessing--;
     });
   }
@@ -67,6 +71,18 @@ export class TpsRowComponent {
             updateTs: 0
         }],
         status: APPROVAL_STATUS.NEW
+    };
+  }
+
+  lapor(a: AggregateVotes) {
+    this.laporRequest = {
+        idLokasi: a.idLokasi,
+        imageId: a.uploadedPhoto?.imageId ?? '',
+        servingUrl: a.uploadedPhoto?.photoUrl ?? '',
+        reason: a.uploadedPhoto?.lapor ?? '',
+        uid : '',
+        isResolved: a.uploadedPhoto?.laporResolved ?? false,
+        votes: a,
     };
   }
 }

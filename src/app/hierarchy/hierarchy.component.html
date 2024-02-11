@@ -54,6 +54,9 @@
                 <a class="hierarchy error" *ngIf="a.totalErrorTps as e" [routerLink]="['/h', a.anyErrorTps]">
                     {{ e }}
                 </a>
+                <a class="hierarchy lapor" *ngIf="a.totalLaporTps as l" [routerLink]="['/h', a.anyLaporTps]">
+                    {{ l }}
+                </a>
             </div></td>
             @if (a.pas1 + a.pas2 + a.pas3; as totalVotes) {
                 <td class="numbers">

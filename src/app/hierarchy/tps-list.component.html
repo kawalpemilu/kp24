@@ -52,6 +52,9 @@
                     @if (a.totalJagaTps) {
                         <b style="color: green;">Terjaga</b><br>
                     }
+                    @if (a.totalLaporTps) {
+                        <b style="color: magenta;">Lapor ({{a.totalLaporTps}})</b><br>
+                    }
                 </td>
                 <td class="foto" align="left">
                     <app-tps-row [c]="c"

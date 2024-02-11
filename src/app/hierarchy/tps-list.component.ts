@@ -21,7 +21,7 @@ import { TpsRowComponent } from './tps-row.component';
 })
 export class TpsListComponent implements OnChanges {
   @Input() tpsNo = '';
-  @Input({ required: true }) userProfile!: UserProfile | null;
+  @Input({ required: true }) userProfile: UserProfile | null = null;
   @Input({ required: true }) lokasi!: LokasiData;
 
   tpsList: ChildLokasi[] = [];

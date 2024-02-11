@@ -2,14 +2,14 @@
 // the frontend (Angular).
 
 export const DEFAULT_MAX_UPLOADS = 100;
-export const DEFAULT_MAX_REPORTS = 100;
+export const DEFAULT_MAX_LAPORS = 100;
 
 export const TESTER_UID = "tester_uid";
 
 export const ALLOW_ORIGINS = [
-  'https://kawalpemilu.org',
-  'http://localhost:4200',
-  'http://10.0.0.57:4200'
+  "https://kawalpemilu.org",
+  "http://localhost:4200",
+  "http://10.0.0.57:4200",
 ];
 
 export enum USER_ROLE {
@@ -46,23 +46,20 @@ export interface UserProfile {
   jagaTps: Record<string, boolean>;
   jagaTpsCount: number;
 
-  // reports: ProblemRequest[];
-  reportCount: number; // Number of reported photos.
-  reportMaxCount: number; // Whitelist this person to go beyond.
-
-  // laporKpus: LaporKpuRequest[];
-  // laporKpuCount: number; // The number of janggal photos lapored ke KPU.
-  // laporKpuMaxCount: number; // The max janggal photos lapored ke KPU.
+  // Which tpsId+imageId this person lapored.
+  lapor: Record<string, LaporRequest>;
+  laporCount: number;
+  laporMaxCount: number;
 }
 
 export interface UserStats {
   uploadCount: number;
   reviewCount: number;
   jagaTpsCount: number;
-  reportCount: number;
+  laporCount: number;
 
   uploadMaxCount: number;
-  reportMaxCount: number;
+  laporMaxCount: number;
 }
 
 export declare interface Hierarchy {
@@ -110,7 +107,7 @@ export class PrestineLokasi {
       aggregated: {},
       numWrites: 0,
     };
-    if (id.length === 10 && id.startsWith('99')) {
+    if (id.length === 10 && id.startsWith("99")) {
       // TPS luar negeri.
       const [tpsNo] = this.H.tps[lokasi.id];
       if (tpsNo < 0) {
@@ -206,7 +203,7 @@ export class PrestineLokasi {
      */
     const rec = (id: string) => {
       let numTps = 0;
-      if (id.length == 10 && id.startsWith('99')) {
+      if (id.length == 10 && id.startsWith("99")) {
         const [tpsNo] = this.H.tps[id];
         numTps += tpsNo > 0 ? tpsNo : 1;
       } else if (id.length == 10) {
@@ -272,6 +269,7 @@ export class PrestineLokasi {
       totalPendingTps: 0,
       totalErrorTps: 0,
       totalJagaTps: 0,
+      totalLaporTps: 0,
       updateTs: 0,
       dpt,
     };
@@ -296,7 +294,8 @@ export enum APPROVAL_STATUS {
   NEW = 0,
   APPROVED = 1,
   REJECTED = 2,
-  MOVED = 3
+  MOVED = 3,
+  LAPOR = 4,
 }
 
 export declare interface Votes {
@@ -334,6 +333,9 @@ export declare interface AggregateVotes extends Votes {
   // Total TPS needs to be reviewed for errors.
   totalErrorTps: number;
 
+  // Total TPS that are lapored by public.
+  totalLaporTps: number;
+
   // Total TPS has at least one photo.
   totalCompletedTps: number;
 
@@ -355,6 +357,9 @@ export declare interface AggregateVotes extends Votes {
 
   // Shortcut to the any error TPS.
   anyErrorTps?:string;
+
+  // Shortcut to the any lapor TPS.
+  anyLaporTps?:string;
 }
 
 // Extension to signify that the AggregateVotes is being submitted.
@@ -369,6 +374,12 @@ export declare interface UploadedPhoto {
   // The serving url of the imageId.
   // Only available at Desa level.
   photoUrl: string;
+
+  // Whether there are laporan for this photo.
+  lapor?: string;
+
+  // Whether the laporan is resolved.
+  laporResolved?: boolean;
 }
 
 // Lokasi detail for Provinsi, Kabupaten, and Kecamatan level.
@@ -430,6 +441,29 @@ export interface ImageMetadata {
   o?: number; // Orientation.
   y?: number; // Latitude.
   x?: number; // Longitude.
+}
+
+export declare interface LaporRequest {
+  // The idDesa + tpsNo
+  idLokasi: string;
+
+  // The blobId in the cloud storage.
+  imageId: string;
+
+  // The seving URL for the imageId.
+  servingUrl: string;
+
+  // The votes of the photo.
+  votes: Votes;
+
+  // The user who issued the lapor.
+  uid: string;
+
+  // The reason why the TPS is reported or resolved.
+  reason: string;
+
+  // Is the lapor request resolved.
+  isResolved: boolean;
 }
 
 /**
@@ -530,4 +564,70 @@ export function autoId(n = 20): string {
  */
 export function delayTime(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Returns the parent id of a lokasi id.
+ * @param {string} id the id to be queried.
+ * @return {string} The id's parent.
+ */
+export function getParentId(id: string) {
+  if (id.length > 10) return id.substring(0, 10);
+  if (id.length > 6) return id.substring(0, 6);
+  if (id.length > 4) return id.substring(0, 4);
+  if (id.length > 2) return id.substring(0, 2);
+  return "";
+}
+
+/**
+ * @param {UserStats} s existing user statistics if any.
+ * @param {UserProfile} p the user profile.
+ * @return {UserStats} s or the new one from p.
+ */
+export function getUserStats(s: UserStats | undefined, p : UserProfile) {
+  return s ?? {
+    uploadCount: p.uploadCount ?? 0,
+    reviewCount: p.reviewCount ?? 0,
+    jagaTpsCount: p.jagaTpsCount ?? 0,
+    laporCount: p.laporCount ?? 0,
+    uploadMaxCount: DEFAULT_MAX_UPLOADS,
+    laporMaxCount: DEFAULT_MAX_LAPORS,
+  } as UserStats;
+}
+
+/**
+ * @param {Lokasi} lokasi
+ * @return {AggregateVotes} the aggregated votes of the children.
+ */
+export function aggregate(lokasi: Lokasi) {
+  const nextAgg: AggregateVotes = {
+    idLokasi: lokasi.id,
+    name: "",
+    pas1: 0,
+    pas2: 0,
+    pas3: 0,
+    updateTs: 0,
+    totalTps: 0,
+    totalCompletedTps: 0,
+    totalPendingTps: 0,
+    totalErrorTps: 0,
+    totalJagaTps: 0,
+    totalLaporTps: 0,
+  };
+  for (const [cagg] of Object.values(lokasi.aggregated)) {
+    nextAgg.pas1 += cagg.pas1 ?? 0;
+    nextAgg.pas2 += cagg.pas2 ?? 0;
+    nextAgg.pas3 += cagg.pas3 ?? 0;
+    nextAgg.totalTps += cagg.totalTps ?? 0;
+    nextAgg.totalCompletedTps += cagg.totalCompletedTps ?? 0;
+    nextAgg.totalPendingTps += cagg.totalPendingTps ?? 0;
+    nextAgg.totalErrorTps += cagg.totalErrorTps ?? 0;
+    nextAgg.totalJagaTps += cagg.totalJagaTps ?? 0;
+    nextAgg.totalLaporTps += cagg.totalLaporTps ?? 0;
+    nextAgg.updateTs = Math.max(nextAgg.updateTs, cagg.updateTs);
+    if (cagg.anyPendingTps) nextAgg.anyPendingTps = cagg.anyPendingTps;
+    if (cagg.anyErrorTps) nextAgg.anyErrorTps = cagg.anyErrorTps;
+    if (cagg.anyLaporTps) nextAgg.anyLaporTps = cagg.anyLaporTps;
+  }
+  return nextAgg;
 }

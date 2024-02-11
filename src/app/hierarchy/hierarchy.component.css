@@ -37,6 +37,16 @@ span.total.error:hover {
     background-color: #EF5350; /* Red 400 */
 }
 
+a.hierarchy.lapor,
+span.total.lapor {
+    background-color: magenta;
+}
+
+a.hierarchy.lapor:hover,
+span.total.lapor:hover {
+    background-color: magenta;
+}
+
 th.lokasi {
     width: 16rem;
 }

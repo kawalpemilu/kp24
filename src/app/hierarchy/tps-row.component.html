@@ -3,10 +3,19 @@
     @defer (on viewport) {
         @if (isUploadDrawer) {
             <app-upload [id]="tpsId" [votes]="a" [userProfile]="userProfile"
-                (onUpload)="onUploadOrReview($event);
+                (onUpload)="updateAggregate($event);
                             isDrawerOpen = false;
                             drawer.close()">
             </app-upload>
+        } @else if (isLaporDrawer) {
+            @if (laporRequest) {
+                <app-lapor [userProfile]="userProfile"
+                           [request]="laporRequest"
+                           (onLapor)="updateAggregate($event);
+                                      isDrawerOpen = false;
+                                      drawer.close()">
+                </app-lapor>
+            }
         } @else if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
             @if (reviewUploadRequest) {
                 <app-review
@@ -14,7 +23,7 @@
                     [imageId]="reviewUploadRequest.imageId"
                     [servingUrl]="reviewUploadRequest.servingUrl"
                     [votes]="reviewUploadRequest.votes[0]"
-                    (onReview)="onUploadOrReview($event);
+                    (onReview)="updateAggregate($event);
                                 isDrawerOpen = false;
                                 drawer.close()">
                 </app-review>
@@ -43,6 +52,7 @@
                     <button *ngIf="a.totalPendingTps" [disabled]="isProcessing > 0"
                         (click)="reviewNextPendingUpload();
                                  isUploadDrawer = false;
+                                 isLaporDrawer = false;
                                  isDrawerOpen = !drawer.opened;
                                  drawer.toggle()"
                         mat-raised-button color="accent">
@@ -55,7 +65,7 @@
             </td>
     @if (c.agg.length > 1) {
         @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
-        <td valign="top">
+        <td valign="top" [style.background-color]="tps.totalLaporTps ? 'magenta' : ''">
             <div style="height: 125px; padding-bottom: 5px">
             <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"
                         [roiToolTip]="[tps.uploadedPhoto?.photoUrl || '', tpsId]">
@@ -66,6 +76,7 @@
                 <button mat-mini-fab color="basic" (click)="
                     reReview(tps);
                     isUploadDrawer = false;
+                    isLaporDrawer = false;
                     isDrawerOpen = !drawer.opened;
                     drawer.toggle()">
                     <mat-icon>edit</mat-icon>
@@ -86,7 +97,19 @@
                     Rejecting ...
                 } @else if (tps.status === APPROVAL_STATUS.MOVED) {
                     Moving ...
+                } @else if (tps.status === APPROVAL_STATUS.LAPOR) {
+                    Laporing ...
                 }
+            } @else {
+                <button mat-raised-button color="basic" (click)="
+                    lapor(tps);
+                    isUploadDrawer = false;
+                    isLaporDrawer = true;
+                    isDrawerOpen = !drawer.opened;
+                    drawer.toggle()">
+                    <mat-icon>error</mat-icon>
+                    Lapor
+                </button>
             }
         </td>
         }

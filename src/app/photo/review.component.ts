@@ -61,6 +61,7 @@ export class ReviewComponent {
             totalErrorTps: 0,
             totalCompletedTps: 0,
             totalJagaTps: 0,
+            totalLaporTps: 0,
             pas1: votes.pas1,
             pas2: votes.pas2,
             pas3: votes.pas3,
