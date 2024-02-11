@@ -2,7 +2,7 @@ import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {
   ALLOW_ORIGINS,
-  APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
+  APPROVAL_STATUS, DEFAULT_MAX_REPORTS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
   LruCache, USER_ROLE, UploadRequest, UserProfile, Votes,
   isValidVoteNumbers, shouldRateLimit,
 } from "./interfaces";
@@ -67,7 +67,7 @@ const hierarchyRateLimiter = new LruCache<string, [number, number]>(1000);
 function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
   if (request.data.uid === "kawalc1") {
     if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 5)) {
-      logger.error("hierarchy-rate-limited",
+      logger.error("hierarchy-rate-limited-kawalc1",
         request.data.id, request.data.uid);
       return true;
     }
@@ -78,8 +78,8 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
   if (shouldRateLimit(
     hierarchyRateLimiter, now, request.auth?.uid, loggedIn ? 3 : 1)) {
     if (loggedIn) {
-      logger.error("hierarchy-rate-limited", request.data.id, request.auth.uid,
-        request.auth.token.name, request.auth.token.email, request.data.uid);
+      logger.error("hierarchy-rate-limited-user", request.data.id,
+        request.auth.uid, request.auth.token.name, request.auth.token.email);
     } else {
       logger.info("hierarchy-rate-limited-public",
         request.data.id, request.auth.uid);
@@ -133,6 +133,16 @@ export const register = onCall(
     }
 
     const uRef = firestore.doc(`/u/${request.auth.uid}`);
+    try {
+      const u = await uRef.get();
+      if (u.data()) {
+        logger.error("register-user-exists", request.auth.uid);
+        return false;
+      }
+    } catch (e) {
+      logger.error("register", e, request.auth.uid);
+      return false;
+    }
     const user: UserProfile = {
       uid: request.auth.uid,
       name: request.auth.token.name,
@@ -146,6 +156,8 @@ export const register = onCall(
       reviews: {},
       uploadCount: 0,
       uploadMaxCount: DEFAULT_MAX_UPLOADS,
+      reportCount: 0,
+      reportMaxCount: DEFAULT_MAX_REPORTS,
       jagaTps: {},
       jagaTpsCount: 0,
       nTps: 0,

@@ -1,6 +1,8 @@
 import {
   APPROVAL_STATUS, AggregateVotes,
-  Lokasi, TESTER_UID, USER_ROLE, UploadRequest, UserProfile, autoId,
+  DEFAULT_MAX_REPORTS,
+  DEFAULT_MAX_UPLOADS,
+  Lokasi, TESTER_UID, USER_ROLE, UploadRequest, UserProfile, UserStats, autoId,
 } from "./interfaces";
 
 import * as admin from "firebase-admin";
@@ -39,6 +41,17 @@ function getParentId(id: string) {
   return "";
 }
 
+function getUserStats(s: UserStats | undefined, p : UserProfile) {
+  return s ?? {
+    uploadCount: p.uploadCount ?? 0,
+    reviewCount: p.reviewCount ?? 0,
+    jagaTpsCount: p.jagaTpsCount ?? 0,
+    reportCount: p.reportCount ?? 0,
+    uploadMaxCount: DEFAULT_MAX_UPLOADS,
+    reportMaxCount: DEFAULT_MAX_REPORTS,
+  } as UserStats;
+}
+
 /**
  * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
  * @param {admin.firestore.Transaction} t the running transaction.
@@ -64,6 +77,9 @@ async function addDataToUserProfile(
     logger.error("User not registered", uid);
     return false;
   }
+  const sRef = firestore.doc(`s/${uid}`);
+  const s = getUserStats(
+    (await t.get(sRef)).data() as UserStats | undefined, p);
 
   let oldP: UserProfile | undefined;
   const updateStatus = (userProfile: UserProfile | undefined) => {
@@ -90,6 +106,7 @@ async function addDataToUserProfile(
     if (!p.reviews[data.idLokasi]) p.reviews[data.idLokasi] = 0;
     p.reviews[data.idLokasi]++;
     p.reviewCount++;
+    s.reviewCount++;
   } else {
     // Uploader.
     if (p.role < USER_ROLE.RELAWAN) {
@@ -109,12 +126,14 @@ async function addDataToUserProfile(
     }
     p.uploads[data.idLokasi][data.imageId] = data;
     p.uploadCount++;
-    if (p.uploadCount > p.uploadMaxCount) {
+    s.uploadCount++;
+    if (s.uploadCount > s.uploadMaxCount) {
       logger.error("Uploads exceeded", uid);
       return false;
     }
   }
   t.set(uRef, p);
+  t.set(sRef, s);
   if (oldP) t.set(firestore.doc(`u/${oldUid}`), oldP);
   return true;
 }
@@ -158,6 +177,7 @@ export async function jagaTpsHandler(firestore: admin.firestore.Firestore,
   const idDesa = getParentId(tpsId);
   const hRef = firestore.doc(`h/i${idDesa}`);
   const uRef = firestore.doc(`u/${uid}`);
+  const sRef = firestore.doc(`s/${uid}`);
   const lokasi = await firestore
     .runTransaction(async (t) => {
       let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
@@ -178,16 +198,20 @@ export async function jagaTpsHandler(firestore: admin.firestore.Firestore,
         logger.error("User cannot jagaTps", uid);
         return false;
       }
+      const s = getUserStats(
+        (await t.get(sRef)).data() as UserStats | undefined, p);
 
       if (!p.jagaTps) p.jagaTps = {};
       p.jagaTps[tpsId] = true;
       p.jagaTpsCount = Object.keys(p.jagaTps).length;
-      if (p.jagaTpsCount > 100) {
-        logger.error("User has too many jagaTps", uid, p.jagaTpsCount);
+      s.jagaTpsCount++;
+      if (s.jagaTpsCount > 100) {
+        logger.error("User has too many jagaTps", uid, s.jagaTpsCount);
         return false;
       }
 
       t.set(uRef, p);
+      t.set(sRef, s);
 
       if (c[0].totalJagaTps) {
         logger.log("Sudah terjaga", tpsId);

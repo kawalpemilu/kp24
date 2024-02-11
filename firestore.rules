@@ -30,26 +30,5 @@ service cloud.firestore {
       // Anyone can read the cached sum.
       allow get: if request.auth.uid != null;
     }
-
-    // Relawan database.
-    match /r/{userId} {
-      // Moderator can read user profile if know the uid.
-      allow get: if request.auth.uid == userId || getUserRole() >= 1;
-
-      // Only Admin can perform search for user profile.
-      allow list: if request.query.limit <= 100 && getUserRole() >= 2;
-    }
-  
-    // TPS change log.
-    match /t2/{tpsId} {
-      // Only Moderator and above can see the TPS history.
-      allow get: if getUserRole() >= 1;
-    }
-
-    // Scoreboard
-    match /s/s {
-      // Only Moderator and above can see scoreboard.
-      allow get: if getUserRole() >= 1;
-    }
   }
 }

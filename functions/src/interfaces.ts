@@ -2,6 +2,7 @@
 // the frontend (Angular).
 
 export const DEFAULT_MAX_UPLOADS = 100;
+export const DEFAULT_MAX_REPORTS = 100;
 
 export const TESTER_UID = "tester_uid";
 
@@ -46,12 +47,22 @@ export interface UserProfile {
   jagaTpsCount: number;
 
   // reports: ProblemRequest[];
-  // reportCount: number; // Number of reported photos.
-  // reportMaxCount: number; // Whitelist this person to go beyond.
+  reportCount: number; // Number of reported photos.
+  reportMaxCount: number; // Whitelist this person to go beyond.
 
   // laporKpus: LaporKpuRequest[];
   // laporKpuCount: number; // The number of janggal photos lapored ke KPU.
   // laporKpuMaxCount: number; // The max janggal photos lapored ke KPU.
+}
+
+export interface UserStats {
+  uploadCount: number;
+  reviewCount: number;
+  jagaTpsCount: number;
+  reportCount: number;
+
+  uploadMaxCount: number;
+  reportMaxCount: number;
 }
 
 export declare interface Hierarchy {
