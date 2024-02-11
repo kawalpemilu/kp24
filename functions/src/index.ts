@@ -65,6 +65,10 @@ const hierarchyRateLimiter = new LruCache<string, [number, number]>(1000);
  * @return {boolean} true if the request should be rate limited.
  */
 function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
+  const req = request.rawRequest;
+  const ip = `${req.headers['x-forwarded-for'] || req.connection.remoteAddress}`;
+  logger.log('IP Address:', ip, request);
+
   if (request.data.uid === "kawalc1") {
     if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 5)) {
       logger.error("hierarchy-rate-limited-kawalc1",
@@ -73,17 +77,12 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
     }
     return false;
   }
-  if (!request.auth?.uid) return true;
-  const loggedIn = !!request.auth.token?.email;
-  if (shouldRateLimit(
-    hierarchyRateLimiter, now, request.auth?.uid, loggedIn ? 3 : 1)) {
-    if (loggedIn) {
-      logger.error("hierarchy-rate-limited-user", request.data.id,
-        request.auth.uid, request.auth.token.name, request.auth.token.email);
-    } else {
-      logger.info("hierarchy-rate-limited-public",
-        request.data.id, request.auth.uid);
-    }
+  if (!!request.auth?.token?.email) {
+    logger.error("hierarchy-rate-limited-user", request.data.id,
+      request.auth.uid, request.auth.token.name, request.auth.token.email);
+  }
+  if (shouldRateLimit(hierarchyRateLimiter, now, ip, 20)) {
+    logger.info("hierarchy-rate-limited-public", request.data.id, ip);
     return true;
   }
   return false;
@@ -125,6 +124,9 @@ export const register = onCall(
     logger.log('register', request.auth, request.data);
 
     if (!request.auth) return false;
+    if (request.auth.token?.firebase?.sign_in_provider == 'anonymous') {
+      return false;
+    }
 
     const now = Date.now();
     if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
