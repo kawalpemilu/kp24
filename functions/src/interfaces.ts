@@ -5,6 +5,12 @@ export const DEFAULT_MAX_UPLOADS = 100;
 
 export const TESTER_UID = "tester_uid";
 
+export const ALLOW_ORIGINS = [
+  'https://kawalpemilu.org',
+  'http://localhost:4200',
+  'http://10.0.0.57:4200'
+];
+
 export enum USER_ROLE {
   BANNED = 0,
   RELAWAN = 1,

@@ -1,6 +1,7 @@
 import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {
+  ALLOW_ORIGINS,
   APPROVAL_STATUS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
   LruCache, USER_ROLE, UploadRequest, UserProfile, Votes,
   isValidVoteNumbers, shouldRateLimit,
@@ -72,7 +73,7 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
     return false;
   }
   if (!request.auth?.uid) return true;
-  const loggedIn = !!request.auth.token;
+  const loggedIn = !!request.auth.token?.email;
   if (shouldRateLimit(
     hierarchyRateLimiter, now, request.auth?.uid, loggedIn ? 3 : 1)) {
     if (loggedIn) {
@@ -86,7 +87,7 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
   return false;
 }
 export const hierarchy = onCall(
-  {cors: true},
+  {cors: ALLOW_ORIGINS},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
     if (shouldRateLimitHierarchy(now, request)) return {} as Lokasi;
@@ -117,7 +118,7 @@ export const hierarchy = onCall(
 
 const userRateLimiter = new LruCache<string, [number, number]>(1000);
 export const register = onCall(
-  {cors: true},
+  {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<void>): Promise<boolean> => {
     logger.log('register', request.auth, request.data);
 
@@ -159,7 +160,7 @@ export const register = onCall(
   });
 
 export const changeRole = onCall(
-  {cors: true},
+  {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<{ uid: string, role: USER_ROLE }>)
     : Promise<string> => {
     logger.log('changeRole', request.auth, request.data);
@@ -187,7 +188,7 @@ export const changeRole = onCall(
   });
 
 export const jagaTps = onCall(
-  {cors: true},
+  {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<{ tpsId: string }>)
       : Promise<boolean> => {
     logger.log('jagaTps', request.auth, request.data);
@@ -209,7 +210,7 @@ export const jagaTps = onCall(
   });
 
 export const review = onCall(
-  {cors: true},
+  {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<{
     tpsId: string, imageId: string, votes: Votes
   }>)
@@ -261,7 +262,7 @@ export const review = onCall(
 
 /** https://firebase.google.com/docs/functions/callable?gen=2nd */
 export const upload = onCall(
-  {cors: true},
+  {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<UploadRequest>) => {
     logger.log('upload', request.auth, request.data);
 
