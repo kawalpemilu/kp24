@@ -4,7 +4,7 @@ import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AppService } from '../app.service';
-import { Observable, map, startWith, switchMap } from 'rxjs';
+import { Observable, debounceTime, map, startWith, switchMap } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -61,6 +61,7 @@ export class SearchComponent implements OnInit {
             }
             return this.myControl.valueChanges.pipe(
                 startWith(this.service.cariTpsQuery),
+                debounceTime(500),
                 map(query => this.getFilteredLokasi(P, lokasiStr, query || '')),
             );
         }));
