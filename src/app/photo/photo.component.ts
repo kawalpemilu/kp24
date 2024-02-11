@@ -47,8 +47,21 @@ export class PhotoComponent {
     tooltipUrl?: string = undefined;
 
     @Input({ required: false })
-    set roiToolTip(value: string) {
-      this.tooltipUrl = value
+    set roiToolTip(value: string[]) {
+      this.tooltipUrl = this.roiUrl(value[0], value[1])
+    }
+
+    roiUrl(photoUrl: string | undefined, tpsId: string) {
+      if (photoUrl == undefined || photoUrl.includes('data:image')) {
+        return ''
+      }
+
+      return !photoUrl ? '' :
+        `https://argocd.kawalc1.org/roi/${
+          tpsId.substring(0,10)}/${
+          tpsId.substring(10)}/extracted/${
+          photoUrl.replace('http://lh3.googleusercontent.com/', '')
+        }%3Ds1280~paslon.webp`
     }
 
     loadTooltipImage(ngxTippyInstance: NgxTippyInstance) {

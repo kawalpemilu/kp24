@@ -58,7 +58,7 @@
         <td valign="top">
             <div style="height: 125px; padding-bottom: 5px">
             <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"
-                        [roiToolTip]="roiUrl(tps.uploadedPhoto?.photoUrl)">
+                        [roiToolTip]="[tps.uploadedPhoto?.photoUrl || '', tpsId]">
             </app-photo>
             </div>
             @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
@@ -97,7 +97,7 @@
                 <td valign="top">
                     <div style="height: 125px; padding-bottom: 5px">
                         <app-photo [photoUrl]="u.servingUrl"
-                                [roiToolTip]="roiUrl(u.servingUrl)">
+                                [roiToolTip]="[u.servingUrl, tpsId]">
                         </app-photo>
                     </div>
                     @if (u.votes[0]; as v) {
