@@ -345,7 +345,7 @@ export declare interface AggregateVotes extends Votes {
 
   // List of uid-imageIds to be reviewed.
   // Only available at Desa level.
-  pendingUploads?: Record<string, true>;
+  pendingUploads?: Record<string, string>;
 
   // Number of registered voters (daftar pemilih tetap).
   dpt?: number;
