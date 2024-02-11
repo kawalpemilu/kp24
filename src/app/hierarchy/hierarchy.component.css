@@ -42,7 +42,8 @@ th.lokasi {
 }
 
 th.paslon,
-th.cov {
+th.cov,
+th.jaga {
     width: 4rem;
 }
 
@@ -52,6 +53,10 @@ th.paslon::before {
 
 th.cov::after {
   content: "%";
+}
+
+th.jaga::before {
+  content: "% ";
 }
 
 /* Default styles - all columns visible */
@@ -156,7 +161,8 @@ header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item > 
     }
 
     th.paslon,
-    th.cov {
+    th.cov,
+    th.jaga {
         width: 75px;
     }
 
@@ -166,6 +172,10 @@ header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item > 
 
     th.cov::after {
         content: "Cakupan";
+    }
+
+    th.jaga::before {
+        content: "Cakupan ";
     }
 
     tbody.data,
