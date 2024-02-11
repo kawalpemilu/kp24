@@ -27,7 +27,14 @@
                         a.totalPendingTps ? '#FFD54F' :
                         a.totalJagaTps ? 'lightgreen' : ''">
                     <br>
-                    <b style="font-size: large">TPS #{{ a.name }}</b>
+                    <b style="font-size: large">
+                        @if (lokasi.id.startsWith('99')) {
+                            {{ lokasi.parents[lokasi.parents.length - 1][1] }}
+                        } @else {
+                            TPS
+                        }
+                        #{{ a.name }}
+                    </b>
                     <br>
                     <br>
                     Pas1: <b>{{ a.pas1 }}</b><br>
