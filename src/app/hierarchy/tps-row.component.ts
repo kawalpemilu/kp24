@@ -69,17 +69,4 @@ export class TpsRowComponent {
         status: APPROVAL_STATUS.NEW
     };
   }
-
-  roiUrl(photoUrl: string | undefined) {
-    if (photoUrl == undefined || photoUrl.includes('data:image')) {
-      return ''
-    }
-
-    return !photoUrl ? '' :
-        `https://argocd.kawalc1.org/roi/${
-        this.tpsId.substring(0,10)}/${
-        this.tpsId.substring(10)}/extracted/${
-        photoUrl.replace('http://lh3.googleusercontent.com/', '')
-        }%3Ds1280~paslon.webp`
-  }
 }
