@@ -165,7 +165,7 @@ export class AppService {
 
   async getHierarchy(id: string) {
     this.rpcIsRunning = true;
-    const callable = httpsCallable(this.functions, 'hierarchy');
+    const callable = httpsCallable(this.functions, 'hierarchy2');
     const result = await callable({ id })
     console.log('RPC hierarchy: ', id, result);
     this.rpcIsRunning = false;
