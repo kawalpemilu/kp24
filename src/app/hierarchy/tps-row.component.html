@@ -101,7 +101,7 @@
                     Laporing ...
                 }
             } @else {
-                <button mat-raised-button color="basic" (click)="
+                <button class="lapor" mat-raised-button color="basic" (click)="
                     lapor(tps);
                     isUploadDrawer = false;
                     isLaporDrawer = true;
@@ -117,16 +117,16 @@
     @if (userProfile?.uploads; as uploads) {
         @if (uploads[tpsId]; as u) {
             @for (u of c.userUploads; track u.imageId) {
-                <td valign="top">
+                <td class="foto" valign="top">
                     <div style="height: 125px; padding-bottom: 5px">
                         <app-photo [photoUrl]="u.servingUrl"
                                 [roiToolTip]="[u.servingUrl, tpsId]">
                         </app-photo>
                     </div>
                     @if (u.votes[0]; as v) {
-                        Pas1: {{ v.pas1 }}<br>
-                        Pas2: {{ v.pas2 }}<br>
-                        Pas3: {{ v.pas3 }}<br>
+                        <span>Pas1: {{ v.pas1 }}</span><br>
+                        <span>Pas2: {{ v.pas2 }}</span><br>
+                        <span>Pas3: {{ v.pas3 }}</span><br>
                     }
                     @if (u.status === APPROVAL_STATUS.NEW) {
                         Pending Review

@@ -81,6 +81,15 @@ span.lapor {
   color: white;
 }
 
+td.foto {
+  text-align: center;
+}
+
 td.foto-terlapor {
   background-color: #CE93D8; /* Purple 200 */
+  text-align: center;
+}
+
+button.lapor {
+  margin-top: 1rem;
 }
