@@ -1,6 +1,11 @@
 .review {
-  width: 225px;
-  padding: 1rem;
+  max-width: 225px;
+  padding: 0.1rem;
+}
+
+.roi-image {
+  max-width: 60px;
+  max-height: 490px;
 }
 
 .lokasi {

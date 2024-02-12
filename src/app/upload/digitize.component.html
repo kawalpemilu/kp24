@@ -1,20 +1,21 @@
 <form #form="ngForm" (ngSubmit)="onDigitized()">
-<table class="collapsed_border">
+<table class="collapsed_border digitize">
+  <tbody>
     <tr>
         <td>Paslon #1</td>
-        <td><input type="number" name="pas1" style="width: 50px;"
+        <td><input type="number" name="pas1" style="width: 2.5rem;"
             [(ngModel)]="votes.pas1" required #firstInput>
         </td>
     </tr>
     <tr>
         <td>Paslon #2</td>
-        <td><input type="number" name="pas2" style="width: 50px;"
+        <td><input type="number" name="pas2" style="width: 2.5rem;"
             [(ngModel)]="votes.pas2" required>
         </td>
     </tr>
     <tr>
         <td>Paslon #3</td>
-        <td><input type="number" name="pas3" style="width: 50px;"
+        <td><input type="number" name="pas3" style="width: 2.5rem;"
             [(ngModel)]="votes.pas3" required>
         </td>
     </tr>
@@ -33,5 +34,6 @@
             </div>
       </td>
     </tr>
+  </tbody>
 </table>
 </form>

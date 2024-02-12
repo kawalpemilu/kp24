@@ -4,3 +4,7 @@
   flex-direction: row-reverse;
   gap: 0.5rem;
 }
+
+.digitize td {
+  width: 3rem;
+}

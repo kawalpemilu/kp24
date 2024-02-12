@@ -1,10 +1,10 @@
-<table>
+<table class="review">
 <tr>
     <td align="center">
     <app-photo [photoUrl]="servingUrl"
                [roiToolTip]="[servingUrl || '', this.id]"
                [hiResThumb]="true"
-               [maxWidth]="225"
+               [maxWidth]="200"
                [maxHeight]="250"
                [showRoiTooltip]="false"
                (roiImageUrl)="roiImageUrl=$event">
@@ -95,7 +95,8 @@
     </td>
     <td *ngIf="roiImageUrl">
         <img [src]="roiImageUrl"
-             style="max-width: 150px; max-height: 490px;"
+             alt="Region of interest"
+             class="roi-image"
              onerror="this.style.display='none'">
     </td>
 </tr>
