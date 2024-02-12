@@ -131,8 +131,6 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
     logger.log("Fail to upload tps", data.idLokasi, data.status, data);
     return false; // Fail to update.
   }
-  logger.log(data.votes.length > 1 ? "Reviewed" : "Uploaded",
-    data.idLokasi, data.status, data);
 
   await firestore
     .collection("p")
@@ -243,7 +241,7 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
  */
 async function updateTps(firestore: admin.firestore.Firestore,
   data: UploadRequest): Promise<Lokasi | null> {
-  logger.log(`Update TPS t/${data.idLokasi}/p/${data.imageId}:${data.status}`);
+  logger.log(`Update TPS t/${data.idLokasi}/p/${data.imageId}:${data.status}`, data);
 
   if (!data.votes || data.votes.length !== 1) {
     logger.error("Invalid votes", JSON.stringify(data, null, 2));
@@ -364,13 +362,14 @@ async function updateTps(firestore: admin.firestore.Firestore,
       // If there is a mismatch in votes, it's an error.
       agg.totalErrorTps = (agg.dpt && agg.dpt > 0) ?
         +(agg.pas1 + agg.pas2 + agg.pas3 > agg.dpt * 1.02) : 0;
+      agg.totalLaporTps = 0;
       for (let i = 1; i < c.length; i++) {
         if (agg.pas1 !== c[i].pas1 ||
             agg.pas2 !== c[i].pas2 ||
             agg.pas3 !== c[i].pas3) {
           agg.totalErrorTps = 1;
-          break;
         }
+        if (c[i].totalLaporTps) c[0].totalLaporTps++;
       }
 
       if (agg.totalPendingTps > 0) {
@@ -382,6 +381,11 @@ async function updateTps(firestore: admin.firestore.Firestore,
         agg.anyErrorTps = data.idLokasi;
       } else {
         delete agg.anyErrorTps;
+      }
+      if (c[0].totalLaporTps > 0) {
+        c[0].anyLaporTps = data.idLokasi;
+      } else {
+        delete c[0].anyLaporTps;
       }
 
       if (!isEdit && isIdentical(c[0], agg)) {
