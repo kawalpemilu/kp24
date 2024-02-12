@@ -95,6 +95,15 @@ a.app-home-link h1.app-home-title:hover {
   max-width: 48rem;
 }
 
+.banner-text span.button {
+  height: fit-content;
+  width: fit-content;
+  border-radius: 1rem;
+  padding: 0.1rem 0.3rem;
+  background-color: #914689; /* KawalPemilu 2024 Plum */
+  color: white;
+}
+
 @media (min-width: 36rem) {
   .banner {
     font-size: 0.85rem;
