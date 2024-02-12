@@ -80,3 +80,7 @@ span.lapor {
   background-color: #9C27B0; /* Purple 500 */
   color: white;
 }
+
+td.foto-terlapor {
+  background-color: #BA68C8; /* Purple 300 */
+}
