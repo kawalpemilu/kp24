@@ -77,6 +77,7 @@ export async function laporHandler(firestore: admin.firestore.Firestore,
         logger.log("Lapor sudah masuk", request);
         return null;
       }
+      p.size = JSON.stringify(p).length;
 
       t.set(uRef, p);
       t.set(sRef, s);

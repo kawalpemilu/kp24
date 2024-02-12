@@ -53,6 +53,9 @@ export interface UserProfile {
   laporCount: number;
   laporMaxCount: number;
   laporRemaining: number;
+
+  // The payload size of this object.
+  size: number;
 }
 
 export interface UserStats {

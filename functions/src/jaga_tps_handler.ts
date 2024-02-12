@@ -59,6 +59,7 @@ export async function jagaTpsHandler(firestore: admin.firestore.Firestore,
         return false;
       }
 
+      p.size = JSON.stringify(p).length;
       t.set(uRef, p);
       t.set(sRef, s);
 

@@ -169,6 +169,7 @@ export const register = onCall(
       nTps: 0,
       nKel: 0,
       reviewCount: 0,
+      size: 0,
     };
     try {
       await uRef.set(user);

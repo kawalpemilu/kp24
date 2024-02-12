@@ -110,6 +110,7 @@ async function addDataToUserProfile(
 
   p.uploadRemaining = (p.uploadMaxCount || 0) - (p.uploadCount || 0);
   p.laporRemaining = (p.laporMaxCount || 0) - (p.laporCount || 0);
+  p.size = JSON.stringify(p).length;
 
   t.set(uRef, p);
   t.set(sRef, s);
