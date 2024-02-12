@@ -1,5 +1,4 @@
 import * as admin from "firebase-admin";
-import {LOKASI} from "./lokasi";
 import { APPROVAL_STATUS, ImageMetadata, Lokasi, TESTER_UID, UploadRequest } from "./interfaces";
 import { uploadHandler } from "./upload_handler";
 
@@ -93,25 +92,37 @@ async function clearKab(idKab: string) {
   }
 }
 
+async function clearProp(idProp: string) {
+  const snap = await firestore.doc(`h/i${idProp}`).get();
+  const lokasi = snap.data() as Lokasi | null;
+  if (!lokasi) throw new Error();
+
+  const promises = [];
+  for (const [idKab, agg] of Object.entries(lokasi?.aggregated)) {
+    if (agg[0].totalCompletedTps || agg[0].totalPendingTps || agg[0].totalLaporTps) {
+      promises.push(clearKab(idKab));
+    }
+  }
+  console.log('Processing prop', idProp, 'parallelism', promises.length);
+  await Promise.all(promises);
+}
+
 /**
  * Run administrative function.
  */
 async function run() {
-  const propIds = Object.keys(LOKASI.H.id2name).sort((a, b) => +a - +b);;
-  for (const idProp of propIds) {
-    if (idProp.length !== 2) continue;
-
-    console.log('Processing prop', idProp);
-    const snap = await firestore.doc(`h/i${idProp}`).get();
-    const lokasi = snap.data() as Lokasi | null;
-    if (!lokasi) continue;
+  const snap = await firestore.doc(`h/i`).get();
+  const lokasi = snap.data() as Lokasi | null;
+  if (!lokasi) throw new Error();
   
-    for (const [idKab, agg] of Object.entries(lokasi?.aggregated)) {
-      if (agg[0].totalCompletedTps || agg[0].totalPendingTps || agg[0].totalLaporTps) {
-        await clearKab(idKab);
-      }
+  const promises = [];
+  for (const [idProp, agg] of Object.entries(lokasi?.aggregated)) {
+    if (agg[0].totalCompletedTps || agg[0].totalPendingTps || agg[0].totalLaporTps) {
+      promises.push(clearProp(idProp));
     }
   }
+  console.log('Parallel', promises.length);
+  await Promise.all(promises);
 }
 
 run();
