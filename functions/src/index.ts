@@ -71,7 +71,7 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
   logger.log("IP Address:", ip, request);
 
   if (request.data.uid === "kawalc1") {
-    if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 5)) {
+    if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 25)) {
       logger.error("hierarchy-rate-limited-kawalc1",
         request.data.id, request.data.uid);
       return true;
