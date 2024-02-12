@@ -96,7 +96,7 @@ export class SearchComponent implements OnInit {
         let res: Result[] = [];
         const uniqueIds: Record<string, boolean> = {};
         for (let i = 0; i < permutationTokens.length; i++) {
-            for (const r of permutationResults[i]) {
+            for (const r of permutationResults[i] ?? []) {
                 if (!r.ids.length) continue;
                 const lastId = r.ids[r.ids.length - 1];
                 if (uniqueIds[lastId]) continue;
