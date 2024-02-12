@@ -89,11 +89,11 @@
     </ol>
     }
 
-    } @else if (loading == 'others') {
-        <mat-spinner></mat-spinner>
+    } @else if ((service.user$ | async) === null) {
+        <button mat-raised-button color="warn" (click)="service.login()">
+            Masuk untuk Unggah Foto
+        </button>
     } @else {
-    <button mat-raised-button color="warn" (click)="service.login()">
-        Masuk untuk Unggah Foto
-    </button>
+        <mat-spinner></mat-spinner>
     }
 </article>

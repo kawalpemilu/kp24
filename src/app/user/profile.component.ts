@@ -46,7 +46,6 @@ interface ProfileDetails {
 export class UserProfileComponent implements OnInit {
     profile$?: Observable<ProfileDetails>;
     STATUS = ['NEW', 'APPROVED', 'REJECTED', 'MOVED'];
-    loading = 'new';
 
     constructor(public service: AppService, private route: ActivatedRoute) { }
 
@@ -54,7 +53,6 @@ export class UserProfileComponent implements OnInit {
         const userProfile$ =
             this.route.paramMap.pipe(switchMap(params => {
                 const uid = params.get('uid') || '';
-                this.loading = (uid.length > 0) ? 'others' : 'self';
                 return (uid.length > 0) ?
                     this.service.getUserProfile$(uid) :
                     this.service.profile$;
@@ -62,7 +60,6 @@ export class UserProfileComponent implements OnInit {
 
         this.profile$ = combineLatest([userProfile$, this.service.lokasi$]).pipe(switchMap(([profile, P]) => {
             if (!profile) return of();
-            this.loading = 'done';
             const profileDetails: ProfileDetails = {
                 profile,
                 uploads: [],
