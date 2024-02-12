@@ -4,6 +4,7 @@ a.hierarchy {
 
 a.hierarchy.pending,
 a.hierarchy.error,
+a.hierarchy.lapor,
 span.total {
     height: fit-content;
     width: fit-content;
