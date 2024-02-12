@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { AppService } from '../app.service';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { MatRadioModule } from '@angular/material/radio';
 import { USER_ROLE, UserProfile } from '../../../functions/src/interfaces';
 import {
     BehaviorSubject, Observable, combineLatest,
@@ -13,7 +12,7 @@ import {
 @Component({
     selector: 'app-user-management',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatRadioModule, MatInputModule],
+    imports: [CommonModule, FormsModule, MatInputModule],
     templateUrl: './management.component.html',
     styleUrl: './management.component.css'
 })
