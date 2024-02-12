@@ -40,12 +40,12 @@ span.total.error:hover {
 
 a.hierarchy.lapor,
 span.total.lapor {
-    background-color: magenta;
+    background-color: #9C27B0; /* Purple 500 */
 }
 
 a.hierarchy.lapor:hover,
 span.total.lapor:hover {
-    background-color: magenta;
+    background-color: #BA68C8; /* Purple 300 */
 }
 
 th.lokasi {
