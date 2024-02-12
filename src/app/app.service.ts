@@ -134,6 +134,15 @@ export class AppService {
       map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
   }
 
+  topUserProfileSize$() {
+    console.log('Firestore TopUserProfileSize');
+    const constraints = [ orderBy('size', 'desc'), limit(10)];
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(
+      map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
+  }
+
   searchUsers$(prefix: string, filterRole: number): Observable<UserProfile[]> {
     console.log('Firestore Search', prefix, filterRole);
     const constraints = [];

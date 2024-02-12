@@ -31,7 +31,7 @@
         </tr>
         } @empty {
             <br>
-            No uploader found.
+            No user found.
         }
     </table>
 </mat-tab>
@@ -60,7 +60,7 @@
         </tr>
         } @empty {
             <br>
-            No reviewer found.
+            No user found.
         }
     </table>
 </mat-tab>
@@ -89,7 +89,7 @@
         </tr>
         } @empty {
             <br>
-            No uploader found.
+            No user found.
         }
     </table>
 </mat-tab>
@@ -118,7 +118,36 @@
         </tr>
         } @empty {
             <br>
-            No uploader found.
+            No user found.
+        }
+    </table>
+</mat-tab>
+
+<mat-tab label="Size">
+    <table class="collapsed_border">
+        <tr>
+            <th>Size</th>
+            <th width="300">Name, Email, UID, Role</th>
+        </tr>
+        @for (u of topUserProfileSize$ | async; track u.uid) {
+        <tr>
+            <th>
+                {{ u.size | number }}
+            </th>
+            <td>
+                <img [src]="u.pic" width="40"
+                        onerror="this.style.display='none'"
+                        style="float: left; padding: 0 5px 0 0" />
+                {{ u.name }}<br>
+                ({{ u.email }})<br>
+                <app-profile-link [uid]="u.uid"></app-profile-link><br>
+                Created: {{ u.createdTs | date }}<br>
+                Role: {{ USER_ROLE[u.role] }}
+            </td>
+        </tr>
+        } @empty {
+            <br>
+            No user found.
         }
     </table>
 </mat-tab>

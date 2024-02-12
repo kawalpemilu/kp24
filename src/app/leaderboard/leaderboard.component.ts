@@ -17,6 +17,7 @@ export class LeaderboardComponent {
     topReviewers$ = this.service.topReviewers$();
     topLaporers$ = this.service.topLaporers$();
     topJagaTps$ = this.service.topJagaTps$();
+    topUserProfileSize$ = this.service.topUserProfileSize$();
 
     USER_ROLE = USER_ROLE;
 
