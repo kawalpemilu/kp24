@@ -141,14 +141,14 @@
     }
                 <td valign="top">
                     <div style="width: 170px">
-                        <p><b>Komitmen berpartisipasi</b></p>
+                        <h4><b>Komitmen Partisipasi</b></h4>
                         @if (userProfile?.jagaTps?.[tpsId]) {
                             <p [style.background-color]="userProfile?.jagaTps?.[tpsId] ? 'lightgreen' : ''">
                                 <b>Terima Kasih atas partisipasi anda untuk menjaga TPS ini!</b>
                             </p>
                         } @else if (userProfile) {
-                            <p>Jika anda berencana mengupload foto tanggal <b>14 Feb 2024</b> di TPS ini,
-                                mohon klik tombol dibawah untuk menandai kalau <b>anda bersedia menjaga TPS ini</b>:</p>
+                            <p>Jika Anda berencana mengunggah foto pada tanggal <strong>14 Februari 2024</strong> di TPS ini,
+                                mohon klik tombol di bawah ini untuk menandai bahwa <b>Anda bersedia menjaga TPS ini</b>:</p>
                                 <button mat-raised-button color="primary"
                             (click)="service.jagaTps(tpsId)" [disabled]="service.rpcIsRunning">
                                 <!-- <mat-icon>where_to_vote</mat-icon> -->
