@@ -12,7 +12,7 @@
             </a>
             <span class="spacer"></span>
             @if (service.profile$ | async; as p) {
-                <a routerLink="/u">
+                <a routerLink="/profile">
                     <img [src]="p.pic" alt="Profile picture" class="profile-image">
                     <span class="sr-only">Profil Saya</span>
                 </a>
@@ -32,20 +32,24 @@
           <mat-icon>home</mat-icon>
           Beranda
         </a>
-        <a mat-list-item (click)="router.navigate(['/s']); snav.close()">
+        <a mat-list-item (click)="router.navigate(['/search']); snav.close()">
           <mat-icon>search</mat-icon>
           Cari Lokasi TPS
         </a>
         @if (service.auth.currentUser; as u) {
-          <a mat-list-item (click)="router.navigate(['/u']); snav.close()">
+          <a mat-list-item (click)="router.navigate(['/profile']); snav.close()">
             <mat-icon>person</mat-icon>
             Profil Saya
           </a>
           @if (service.profile$ | async; as p) {
             @if (p.role >= USER_ROLE.ADMIN) {
-              <a mat-list-item (click)="router.navigate(['/m']); snav.close()">
+              <a mat-list-item (click)="router.navigate(['/manage']); snav.close()">
                 <mat-icon>manage_accounts</mat-icon>
                 User Management
+              </a>
+              <a mat-list-item (click)="router.navigate(['/leaderboard']); snav.close()">
+                <mat-icon>leaderboard</mat-icon>
+                Leaderboard
               </a>
             }
           }
@@ -75,7 +79,7 @@
   <!-- TODO: Remove this card once we conclude the testing phase. -->
   <div class="banner">
       <div class="banner-text">
-          Masa uji coba berlaku hingga <strong>12 Februari 2024</strong>.
+          Masa uji coba berlaku hingga <strong>13 Februari 2024</strong>.
           Setelah itu semua data & foto akan dihapus untuk penghitungan yang sebenarnya.
       </div>
   </div>
@@ -86,23 +90,15 @@
               <mat-icon>home</mat-icon>
               <span class="sr-only">Beranda</span>
           </a>
-          <a class="search" mat-button routerLink="/s" routerLinkActive="active" ariaCurrentWhenActive="page">
+          <a class="search" mat-button routerLink="/search" routerLinkActive="active" ariaCurrentWhenActive="page">
               <mat-icon>search</mat-icon>
               <span class="sr-only">Cari Lokasi TPS</span>
           </a>
           @if (service.auth.currentUser; as u) {
-            <a class="profile" mat-button routerLink="/u" routerLinkActive="active" ariaCurrentWhenActive="page">
+            <a class="profile" mat-button routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">
               <mat-icon>person</mat-icon>
               <span class="sr-only">Profil Saya</span>
             </a>
-            @if (service.profile$ | async; as p) {
-              @if (p.role >= USER_ROLE.ADMIN) {
-                <a class="manage" mat-button routerLink="/m" routerLinkActive="active" ariaCurrentWhenActive="page">
-                  <mat-icon>manage_accounts</mat-icon>
-                  <span class="sr-only">User Management</span>
-                </a>
-              }
-            }
           } @else {
             <a class="login" mat-button (click)="service.login()">
                 <mat-icon>login</mat-icon>

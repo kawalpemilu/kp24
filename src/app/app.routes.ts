@@ -4,12 +4,14 @@ import { UserProfileComponent } from './user/profile.component';
 import { UserManagementComponent } from './user/management.component';
 import { SearchComponent } from './search/search.component';
 import { AboutComponent } from './about/about.component';
+import { LeaderboardComponent } from './leaderboard/leaderboard.component';
 
 export const routes: Routes = [
-    { path: 'u', component: UserProfileComponent },
-    { path: 'm', component: UserManagementComponent },
+    { path: 'profile', component: UserProfileComponent },
+    { path: 'manage', component: UserManagementComponent },
     { path: 'h/:id', component: HierarchyComponent },
-    { path: 's', component: SearchComponent },
+    { path: 'search', component: SearchComponent },
+    { path: 'leaderboard', component: LeaderboardComponent },
     { path: 'about', component: AboutComponent },
     { path: '**', component: HierarchyComponent },
 ];

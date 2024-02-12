@@ -1,0 +1,101 @@
+<main class="leaderboard">
+@if (service.profile$ | async; as p) {
+@if (p.role >= USER_ROLE.ADMIN) {
+
+<h2 style="margin-top: 10px;">Leaderboard</h2>
+
+<mat-tab-group>
+<mat-tab label="Uploaders">
+    <table class="collapsed_border">
+        <tr>
+            <th>#Uploads</th>
+            <th width="300">Name, Email, UID, Role</th>
+        </tr>
+        @for (u of topUploaders$ | async; track u.uid) {
+        <tr>
+            <th [style.background-color]="(u.uploadMaxCount - u.uploadCount < 5) ? 'magenta' : ''">
+                {{ u.uploadCount | number }}
+                / 
+                {{ u.uploadMaxCount | number }}
+            </th>
+            <td>
+                <img [src]="u.pic" width="40"
+                        onerror="this.style.display='none'"
+                        style="float: left; padding: 0 5px 0 0" />
+                {{ u.name }}<br>
+                ({{ u.email }})<br>
+                {{ u.uid }}<br>
+                Created: {{ u.createdTs | date }}<br>
+                Role: {{ USER_ROLE[u.role] }}
+            </td>
+        </tr>
+        } @empty {
+            <br>
+            No uploader found.
+        }
+    </table>
+</mat-tab>
+
+<mat-tab label="Reviewers">
+    <table class="collapsed_border">
+        <tr>
+            <th>#Reviews</th>
+            <th width="300">Name, Email, UID, Role</th>
+        </tr>
+        @for (u of topReviewers$ | async; track u.uid) {
+        <tr>
+            <th>
+                {{ u.reviewCount | number }}
+            </th>
+            <td>
+                <img [src]="u.pic" width="40"
+                        onerror="this.style.display='none'"
+                        style="float: left; padding: 0 5px 0 0" />
+                {{ u.name }}<br>
+                ({{ u.email }})<br>
+                {{ u.uid }}<br>
+                Created: {{ u.createdTs | date }}<br>
+                Role: {{ USER_ROLE[u.role] }}
+            </td>
+        </tr>
+        } @empty {
+            <br>
+            No reviewer found.
+        }
+    </table>
+</mat-tab>
+
+<mat-tab label="Laporers">
+    <table class="collapsed_border">
+        <tr>
+            <th>#Lapors</th>
+            <th width="300">Name, Email, UID, Role</th>
+        </tr>
+        @for (u of topLaporers$ | async; track u.uid) {
+        <tr>
+            <th>
+                {{ u.laporCount | number }}
+            </th>
+            <td>
+                <img [src]="u.pic" width="40"
+                        onerror="this.style.display='none'"
+                        style="float: left; padding: 0 5px 0 0" />
+                {{ u.name }}<br>
+                ({{ u.email }})<br>
+                {{ u.uid }}<br>
+                Created: {{ u.createdTs | date }}<br>
+                Role: {{ USER_ROLE[u.role] }}
+            </td>
+        </tr>
+        } @empty {
+            <br>
+            No uploader found.
+        }
+    </table>
+</mat-tab>
+
+</mat-tab-group>
+
+}
+}
+</main>

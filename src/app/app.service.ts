@@ -3,7 +3,7 @@ import { Observable, catchError, combineLatest, firstValueFrom,
   from, map, of, shareReplay, startWith, switchMap } from 'rxjs';
 import { Auth, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { Firestore, QueryConstraint, collection, collectionSnapshots,
-  doc, docSnapshots, getDoc, limit, query, where } from '@angular/fire/firestore';
+  doc, docSnapshots, getDoc, limit, orderBy, query, where } from '@angular/fire/firestore';
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { APPROVAL_STATUS, LaporRequest, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';
@@ -96,6 +96,33 @@ export class AppService {
     console.log('RPC lapor', JSON.stringify(request, null, 2));
     const callable = httpsCallable(this.functions, 'lapor');
     return callable(request);
+  }
+
+  topUploaders$() {
+    console.log('Firestore TopUploaders');
+    const constraints = [ orderBy('uploadCount', 'desc'), limit(10)];
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(
+      map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
+  }
+
+  topReviewers$() {
+    console.log('Firestore TopReviewers');
+    const constraints = [ orderBy('reviewCount', 'desc'), limit(10)];
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(
+      map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
+  }
+
+  topLaporers$() {
+    console.log('Firestore TopLaporers');
+    const constraints = [ orderBy('laporCount', 'desc'), limit(10)];
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(
+      map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
   }
 
   searchUsers$(prefix: string, filterRole: number): Observable<UserProfile[]> {

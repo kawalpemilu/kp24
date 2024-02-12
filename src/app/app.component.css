@@ -156,10 +156,6 @@ a.app-home-link h1.app-home-title:hover {
     content: 'Profil Saya';
   }
 
-  a.manage::after {
-    content: 'User Management';
-  }
-
   a.login::after {
     content: 'Masuk';
   }
