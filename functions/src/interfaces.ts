@@ -101,9 +101,9 @@ export class PrestineLokasi {
    * Constructs Lokasi object from hard-coded data.
    * The data has empty votes for this Lokasi.
    * @param {string} id The id of a location.
-   * @return {Lokasi} The Lokasi object from hard-coded data.
+   * @return {Lokasi | null} The Lokasi object from hard-coded data.
    */
-  getPrestineLokasi(id: string) {
+  getPrestineLokasi(id: string): Lokasi | null {
     const lokasi: Lokasi = {
       id,
       names: this.getParentNames(id),
@@ -112,7 +112,9 @@ export class PrestineLokasi {
     };
     if (id.length === 10 && id.startsWith("99")) {
       // TPS luar negeri.
-      const [tpsNo] = this.H.tps[lokasi.id];
+      const tps = this.H.tps[lokasi.id];
+      if (!tps) return null;
+      const [tpsNo] = tps;
       if (tpsNo < 0) {
         lokasi.aggregated[1] = [this.newAggregateVotes(
           `${id}${-tpsNo}`, `${-tpsNo}`, 1, -1)];
@@ -124,7 +126,9 @@ export class PrestineLokasi {
       }
     } else if (id.length === 10) {
       // TPS dalam negeri.
-      const [maxTpsNo, extBegin, extEnd] = this.H.tps[lokasi.id];
+      const tps = this.H.tps[lokasi.id];
+      if (!tps) return null;
+      const [maxTpsNo, extBegin, extEnd] = tps;
       const d = this.dpt ? this.dpt[id] : [];
       let j = 0;
       for (let i = 1; i <= maxTpsNo; i++) {
@@ -138,8 +142,10 @@ export class PrestineLokasi {
         }
       }
     } else {
+      const children = this.C[lokasi.id];
+      if (!children) return null;
       // Prov, Kab, Kec, Kel.
-      for (const suffixId of this.C[lokasi.id]) {
+      for (const suffixId of children) {
         const cid = lokasi.id + suffixId;
         lokasi.aggregated[cid] = [this.newAggregateVotes(
           cid, this.H.id2name[cid], this.T[cid], this.D[cid])];

@@ -169,8 +169,9 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       const hRefs = lokasiIds.map((id) => firestore.doc(`h/i${id}`));
       await t.getAll(...hRefs).then((docs) => {
         for (let i = 0; i < hRefs.length; i++) {
-          let lokasi = docs[i].data() as Lokasi;
+          let lokasi = docs[i].data() as Lokasi | null;
           if (!lokasi) lokasi = LOKASI.getPrestineLokasi(lokasiIds[i]);
+          if (!lokasi) continue;
           lokasiMap[lokasiIds[i]] = lokasi;
         }
       });
@@ -266,8 +267,12 @@ async function updateTps(firestore: admin.firestore.Firestore,
   const hRef = firestore.doc(`h/i${idDesa}`);
   return firestore
     .runTransaction(async (t) => {
-      let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
+      let lokasi = (await t.get(hRef)).data() as Lokasi | null;
       if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
+      if (!lokasi) {
+        logger.error("Invalid lokasi", idDesa, JSON.stringify(data));
+        return null;
+      }
 
       const c = lokasi.aggregated[data.idLokasi.substring(10)];
       if (!c) {

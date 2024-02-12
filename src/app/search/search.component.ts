@@ -57,6 +57,7 @@ export class SearchComponent implements OnInit {
             const lokasiStr: { [id: string]: string } = {};
             for (const idDesa of P.getDesaIds()) {
                 const lokasi = P.getPrestineLokasi(idDesa);
+                if (!lokasi) continue;
                 lokasiStr[idDesa] = lokasi.names.join('').replace(/\s+/g, '').toUpperCase();
             }
             return this.myControl.valueChanges.pipe(
@@ -78,6 +79,7 @@ export class SearchComponent implements OnInit {
         const permutationResults: Result[][] = [];
         for (const idDesa of P.getDesaIds()) {
             const lokasi = P.getPrestineLokasi(idDesa);
+            if (!lokasi) continue;
             for (let p = 0; p < permutationTokens.length && p < 10; p++) {
                 if (!permutationResults[p]) permutationResults[p] = [];
                 if (permutationResults[p].length >= MAX_RESULTS) continue;

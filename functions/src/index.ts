@@ -98,7 +98,7 @@ export const hierarchy2 = onCall(
     if (!(/^\d{0,13}$/.test(id))) id = "";
 
     const prestineLokasi = LOKASI.getPrestineLokasi(id);
-    if (!Object.keys(prestineLokasi.aggregated).length) {
+    if (!prestineLokasi || !Object.keys(prestineLokasi.aggregated).length) {
       return {} as Lokasi; // Invalid lokasi id.
     }
 

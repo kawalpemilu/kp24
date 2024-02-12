@@ -84,29 +84,29 @@ export class ReviewComponent {
         this.newTpsNo = this.id.substring(10);
     }
     getPropinsiList(P: PrestineLokasi): OptionLokasi[] {
-        const lokasi = P.getPrestineLokasi('');
-        return Object.values(lokasi.aggregated).map(a => {
+        const aggregated = P.getPrestineLokasi('')?.aggregated || {};
+        return Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
         });
     }
     getKabupatenList(P: PrestineLokasi): OptionLokasi[] | undefined {
         if (this.newPropId.length < 2) return undefined;
-        const lokasi = P.getPrestineLokasi(this.newPropId);
-        return Object.values(lokasi.aggregated).map(a => {
+        const aggregated = P.getPrestineLokasi(this.newPropId)?.aggregated || {};
+        return Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
         });
     }
     getKecamatanList(P: PrestineLokasi): OptionLokasi[] | undefined {
         if (this.newKabId.length < 4) return undefined;
-        const lokasi = P.getPrestineLokasi(this.newKabId);
-        return Object.values(lokasi.aggregated).map(a => {
+        const aggregated = P.getPrestineLokasi(this.newKabId)?.aggregated || {};
+        return Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
         });
     }
     getKelurahanList(P: PrestineLokasi): OptionLokasi[] | undefined {
         if (this.newKecId.length < 6) return undefined;
-        const lokasi = P.getPrestineLokasi(this.newKecId);
-        return Object.values(lokasi.aggregated).map(a => {
+        const aggregated = P.getPrestineLokasi(this.newKecId)?.aggregated || {};
+        return Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
         });
     }
@@ -120,7 +120,7 @@ export class ReviewComponent {
         if (this.newKelId.length !== 10) return false;
         if (this.newTpsNo?.length <= 0) return false;
         const lokasi = P.getPrestineLokasi(this.newKelId);
-        return !!lokasi.aggregated[this.newTpsNo];
+        return !!lokasi?.aggregated[this.newTpsNo];
     }
     updateLokasi() {
         this.service

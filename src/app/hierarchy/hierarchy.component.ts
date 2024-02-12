@@ -129,19 +129,27 @@ export class HierarchyComponent implements OnInit {
    */
   getLokasiDataWithoutVotes(id: string): Observable<LokasiData | null> {
     if (!this.service.lokasi$) return of();
-    return this.service.lokasi$.pipe(map(
-      LOKASI => this.toLokasiData(LOKASI.getPrestineLokasi(id))
+    return this.service.lokasi$.pipe(switchMap(
+      LOKASI => {
+        const lokasi = LOKASI.getPrestineLokasi(id);
+        return lokasi?.id ? of(this.toLokasiData(lokasi)) : of();
+      }
     ));
   }
 
   getLokasiDataFromFirestore$(id: string): Observable<LokasiData> {
     return this.service.getLokasiDataFromFirestore$(id)
-      .pipe(map(this.toLokasiData.bind(this)));
+      .pipe(switchMap(lokasi => {
+        return lokasi?.id ? of(this.toLokasiData(lokasi)) : of();
+      }));
   }
 
   getLokasiDataFromRpc$(id: string): Observable<LokasiData> {
     return from(this.service.getHierarchy(id))
-      .pipe(map(result => this.toLokasiData(result.data as Lokasi)));
+      .pipe(switchMap(result => {
+        const lokasi = result.data as Lokasi | null;
+        return lokasi?.id ? of(this.toLokasiData(lokasi)) : of();
+      }));
   }
 
   /**

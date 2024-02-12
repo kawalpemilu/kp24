@@ -71,27 +71,23 @@ export class UserProfileComponent implements OnInit {
             };
             for (const images of Object.values(profile.uploads ?? {})) {
                 for (const uploadRequest of Object.values(images)) {
-                    profileDetails.uploads.push({
-                        lokasi: P.getPrestineLokasi(uploadRequest.idLokasi.substring(0, 10)),
-                        uploadRequest
-                    });
+                    const lokasi = P.getPrestineLokasi(uploadRequest.idLokasi.substring(0, 10));
+                    if (!lokasi) continue;
+                    profileDetails.uploads.push({ lokasi, uploadRequest });
                 }
             }
             profileDetails.uploads.sort((a, b) => {
                 return b.uploadRequest.votes[0].updateTs - a.uploadRequest.votes[0].updateTs;
             });
             for (const [idLokasi, numReviews] of Object.entries(profile.reviews ?? {})) {
-                profileDetails.reviews.push({
-                    idLokasi,
-                    lokasi: P.getPrestineLokasi(idLokasi.substring(0, 10)),
-                    numReviews
-                });
+                const lokasi = P.getPrestineLokasi(idLokasi.substring(0, 10));
+                if (!lokasi) continue;
+                profileDetails.reviews.push({ idLokasi, lokasi, numReviews });
             }
             for (const tpsId of Object.keys(profile.jagaTps ?? {})) {
-                profileDetails.jagaTps.push({
-                    tpsId,
-                    lokasi: P.getPrestineLokasi(tpsId.substring(0, 10)),
-                });
+                const lokasi = P.getPrestineLokasi(tpsId.substring(0, 10));
+                if (!lokasi) continue;
+                profileDetails.jagaTps.push({ tpsId, lokasi });
             }
             return of(profileDetails);
         }));

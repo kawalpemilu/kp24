@@ -25,8 +25,12 @@ export async function jagaTpsHandler(firestore: admin.firestore.Firestore,
   const sRef = firestore.doc(`s/${uid}`);
   const lokasi = await firestore
     .runTransaction(async (t) => {
-      let lokasi = (await t.get(hRef)).data() as Lokasi | undefined;
+      let lokasi = (await t.get(hRef)).data() as Lokasi | null;
       if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
+      if (!lokasi) {
+        logger.error("Invalid jaga lokasi Desa ID", tpsId, uid);
+        return null;
+      }
 
       const c = lokasi.aggregated[tpsId.substring(10)];
       if (!c) {

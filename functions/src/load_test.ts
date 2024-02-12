@@ -56,6 +56,7 @@ async function run() {
   const tpsIds = [];
   for (const idDesa of LOKASI.getDesaIds()) {
     const lokasi = LOKASI.getPrestineLokasi(idDesa);
+    if (!lokasi) throw new Error();
     for (const [tpsId] of Object.entries(lokasi.aggregated)) {
       tpsIds.push(idDesa + tpsId);
     }
