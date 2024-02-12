@@ -369,7 +369,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
             agg.pas3 !== c[i].pas3) {
           agg.totalErrorTps = 1;
         }
-        if (c[i].totalLaporTps) c[0].totalLaporTps++;
+        if (c[i].totalLaporTps) agg.totalLaporTps++;
       }
 
       if (agg.totalPendingTps > 0) {
@@ -382,10 +382,10 @@ async function updateTps(firestore: admin.firestore.Firestore,
       } else {
         delete agg.anyErrorTps;
       }
-      if (c[0].totalLaporTps > 0) {
-        c[0].anyLaporTps = data.idLokasi;
+      if (agg.totalLaporTps > 0) {
+        agg.anyLaporTps = data.idLokasi;
       } else {
-        delete c[0].anyLaporTps;
+        delete agg.anyLaporTps;
       }
 
       if (!isEdit && isIdentical(c[0], agg)) {
