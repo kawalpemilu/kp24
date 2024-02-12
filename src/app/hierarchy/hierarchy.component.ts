@@ -132,7 +132,7 @@ export class HierarchyComponent implements OnInit {
     return this.service.lokasi$.pipe(switchMap(
       LOKASI => {
         const lokasi = LOKASI.getPrestineLokasi(id);
-        return lokasi?.id ? of(this.toLokasiData(lokasi)) : of();
+        return lokasi?.aggregated ? of(this.toLokasiData(lokasi)) : of();
       }
     ));
   }
@@ -140,7 +140,7 @@ export class HierarchyComponent implements OnInit {
   getLokasiDataFromFirestore$(id: string): Observable<LokasiData> {
     return this.service.getLokasiDataFromFirestore$(id)
       .pipe(switchMap(lokasi => {
-        return lokasi?.id ? of(this.toLokasiData(lokasi)) : of();
+        return lokasi?.aggregated ? of(this.toLokasiData(lokasi)) : of();
       }));
   }
 
@@ -148,7 +148,7 @@ export class HierarchyComponent implements OnInit {
     return from(this.service.getHierarchy(id))
       .pipe(switchMap(result => {
         const lokasi = result.data as Lokasi | null;
-        return lokasi?.id ? of(this.toLokasiData(lokasi)) : of();
+        return lokasi?.aggregated ? of(this.toLokasiData(lokasi)) : of();
       }));
   }
 
