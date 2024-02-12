@@ -57,11 +57,26 @@ section.table-header > .table-filter {
   }
 }
 
-td.tps span.error {
+td.tps span.error,
+td.tps span.jaga,
+td.tps span.lapor {
   height: fit-content;
   width: fit-content;
   border-radius: 1rem;
   padding: 0.5rem 0.8rem;
+}
+
+span.error {
   background-color: #D32F2F; /* Red 700 */
+  color: white;
+}
+
+span.jaga {
+  background-color: #33691E; /* Light Green 900 */
+  color: white;
+}
+
+span.lapor {
+  background-color: #9C27B0; /* Purple 500 */
   color: white;
 }

@@ -25,7 +25,7 @@
                 <td class="tps" align="center" nowrap valign="top"
                     [style.background-color]="
                         a.totalPendingTps ? '#FFD54F' :
-                        a.totalJagaTps ? 'lightgreen' : ''">
+                        a.totalJagaTps ? '#AED581' : ''">
                     <br>
                     <b style="font-size: large">
                         @if (lokasi.id.startsWith('99')) {
@@ -50,10 +50,11 @@
                         <br>
                     }
                     @if (a.totalJagaTps) {
-                        <b style="color: green;">Terjaga</b><br>
+                        <span class="jaga">Terjaga</span><br>
+                        <br>
                     }
                     @if (a.totalLaporTps) {
-                        <b style="color: magenta;">Lapor ({{a.totalLaporTps}})</b><br>
+                        <span class="lapor">Lapor ({{a.totalLaporTps}})</span><br>
                     }
                 </td>
                 <td class="foto" align="left">
