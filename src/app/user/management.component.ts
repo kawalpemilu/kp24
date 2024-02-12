@@ -38,10 +38,10 @@ export class UserManagementComponent implements OnInit {
         this.filterRole$.next(event.target.value);
     }
 
-    async changeRole(u: UserProfile, role: USER_ROLE) {
-        const res = await this.service.changeRole(u, role);
+    async changeRole(u: UserProfile) {
+        const res = await this.service.changeRole(u, u.role);
         if ((res.data) !== 'bravo') {
-            alert(`Change role from ${u.role} to ${role} failed`);
+            alert(`Change role from ${u.role} to ${u.role} failed`);
         }
     }
 }

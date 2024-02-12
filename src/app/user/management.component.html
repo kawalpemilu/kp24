@@ -1,29 +1,34 @@
 <main class="management">
 @if (service.profile$ | async; as p) {
 @if (p.role >= USER_ROLE.ADMIN) {
-<mat-form-field style="width: 225px">
-    <input #nama matInput placeholder="Cari Nama User" type="text" autocomplete="off"
-        (input)="cari$.next(nama.value)" />
-</mat-form-field>
+<table>
+<tr>
+    <td>
+        <mat-form-field style="width: 225px" subscriptSizing="dynamic">
+            <input #nama matInput placeholder="Cari Nama User" type="text" autocomplete="off"
+                (input)="cari$.next(nama.value)" />
+        </mat-form-field>
+    </td>
+    <td style="padding-left: 10px">
+        Filter Role:<br>
+        <select (change)="changeRoleFilter($event)">
+            <option [value]="-1">ANY_ROLE</option><br>
+            <option [value]="USER_ROLE.BANNED">BANNED</option><br>
+            <option [value]="USER_ROLE.RELAWAN">RELAWAN</option><br>
+            <option [value]="USER_ROLE.MODERATOR">MODERATOR</option><br>
+            <option [value]="USER_ROLE.ADMIN">ADMIN</option>
+            <option [value]="USER_ROLE.ROOT">ROOT</option>
+        </select>
+    </td>
+</tr>
+</table>
 
-&nbsp;
-Filter Role:
-<select (change)="changeRoleFilter($event)">
-    <option [value]="-1">ANY_ROLE</option><br>
-    <option [value]="USER_ROLE.BANNED">BANNED</option><br>
-    <option [value]="USER_ROLE.RELAWAN">RELAWAN</option><br>
-    <option [value]="USER_ROLE.MODERATOR">MODERATOR</option><br>
-    <option [value]="USER_ROLE.ADMIN">ADMIN</option>
-    <option [value]="USER_ROLE.ROOT">ROOT</option>
-</select>
-
-<p>Search Results:</p>
+<br>
 
 <table class="collapsed_border">
 <tr>
     <th>Pic</th>
-    <th>Name, Email, UID, Stats</th>
-    <th>Change Role</th>
+    <th>Name, Email, UID, Stats, Role</th>
 </tr>
 @for (u of users$ | async; track u.uid) {
 <tr>
@@ -33,22 +38,30 @@ Filter Role:
         ({{ u.email }})<br>
         {{ u.uid }}<br>
         Created: {{ u.createdTs | date }}<br>
-        @if (u.uploadCount) { {{ u.uploadCount }} uploads, }
-        @if (u.reviewCount) { {{ u.reviewCount }} reviews, }
-        @if (u.laporCount) { {{ u.laporCount || 0 }} lapors }
-    </td>
-    <td>
-        <mat-radio-group [value]="u.role" (change)="changeRole(u, $event.value)">
+        @if (u.uploadCount || u.reviewCount || u.laporCount) {
+            @if (u.uploadCount) { {{ u.uploadCount }} uploads, }
+            @if (u.reviewCount) { {{ u.reviewCount }} reviews, }
+            @if (u.laporCount) { {{ u.laporCount || 0 }} lapors }
+            <br>
+        }
+        Role:
+        <select [(ngModel)]="u.role" (change)="changeRole(u)">
             @if (p.role >= USER_ROLE.MODERATOR) {
-                <mat-radio-button [value]="USER_ROLE.BANNED">BANNED</mat-radio-button><br>
-                <mat-radio-button [value]="USER_ROLE.RELAWAN">RELAWAN</mat-radio-button><br>
+                <option [value]="USER_ROLE.BANNED">BANNED</option>
+                <option [value]="USER_ROLE.RELAWAN">RELAWAN</option>
             }
             @if (p.role >= USER_ROLE.ADMIN) {
-                <mat-radio-button [value]="USER_ROLE.MODERATOR">MODERATOR</mat-radio-button><br>
+                <option [value]="USER_ROLE.MODERATOR">MODERATOR</option>
             }
-        </mat-radio-group>
+            @if (p.role >= USER_ROLE.ROOT) {
+                <option [value]="USER_ROLE.ADMIN">ADMIN</option>
+            }
+        </select>
     </td>
 </tr>
+} @empty {
+    <br>
+    No user found.
 }
 </table>
 

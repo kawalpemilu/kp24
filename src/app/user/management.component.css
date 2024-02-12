@@ -1,11 +1,6 @@
 .management {
   max-width: 48rem;
   margin: auto;
-  padding: 0 2rem;
-}
-
-table {
-  width: 100%;
 }
 
 table td.profile-picture {
