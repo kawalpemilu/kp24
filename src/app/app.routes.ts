@@ -8,6 +8,7 @@ import { LeaderboardComponent } from './leaderboard/leaderboard.component';
 
 export const routes: Routes = [
     { path: 'profile', component: UserProfileComponent },
+    { path: 'profile/:uid', component: UserProfileComponent },
     { path: 'manage', component: UserManagementComponent },
     { path: 'h/:id', component: HierarchyComponent },
     { path: 'search', component: SearchComponent },

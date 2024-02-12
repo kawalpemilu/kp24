@@ -107,6 +107,10 @@ async function addDataToUserProfile(
       return false;
     }
   }
+
+  p.uploadRemaining = (p.uploadMaxCount || 0) - (p.uploadCount || 0);
+  p.laporRemaining = (p.laporMaxCount || 0) - (p.laporCount || 0);
+
   t.set(uRef, p);
   t.set(sRef, s);
   if (oldP) t.set(firestore.doc(`u/${oldUid}`), oldP);

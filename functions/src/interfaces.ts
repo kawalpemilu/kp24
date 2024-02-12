@@ -35,6 +35,8 @@ export interface UserProfile {
   uploads: Record<string, Record<string, UploadRequest>>;
   uploadCount: number; // Number of uploaded photos.
   uploadMaxCount: number; // Whitelist this person to go beyond.
+  uploadRemaining: number;
+
   nTps: number; // Number of different TPS uploaded.
   nKel: number; // Number of different kelurahans uploaded.
 
@@ -50,6 +52,7 @@ export interface UserProfile {
   lapor: Record<string, LaporRequest>;
   laporCount: number;
   laporMaxCount: number;
+  laporRemaining: number;
 }
 
 export interface UserStats {

@@ -116,6 +116,15 @@ export class AppService {
       map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
   }
 
+  topJagaTps$() {
+    console.log('Firestore TopJagaTps');
+    const constraints = [ orderBy('jagaTpsCount', 'desc'), limit(10)];
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(
+      map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
+  }
+
   topLaporers$() {
     console.log('Firestore TopLaporers');
     const constraints = [ orderBy('laporCount', 'desc'), limit(10)];

@@ -89,6 +89,8 @@
     </ol>
     }
 
+    } @else if (loading == 'others') {
+        <mat-spinner></mat-spinner>
     } @else {
     <button mat-raised-button color="warn" (click)="service.login()">
         Masuk untuk Unggah Foto

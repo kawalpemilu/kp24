@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../app.service';
 import { FormsModule } from '@angular/forms';
@@ -6,10 +6,11 @@ import { MatRadioModule } from '@angular/material/radio';
 import { Observable, combineLatest, of, switchMap } from 'rxjs';
 import { Lokasi, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { PhotoComponent } from '../photo/photo.component';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 interface UserUpload {
     lokasi: Lokasi;
@@ -38,24 +39,30 @@ interface ProfileDetails {
     selector: 'app-user-profile',
     standalone: true,
     imports: [CommonModule, FormsModule, MatRadioModule, PhotoComponent, RouterLink,
-      MatExpansionModule, MatIconModule, MatButtonModule],
+        MatExpansionModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule],
     templateUrl: './profile.component.html',
     styleUrl: './profile.component.css'
 })
 export class UserProfileComponent implements OnInit {
-    @Input() uid = '';
-
     profile$?: Observable<ProfileDetails>;
     STATUS = ['NEW', 'APPROVED', 'REJECTED', 'MOVED'];
+    loading = 'new';
 
-    constructor(public service: AppService) { }
+    constructor(public service: AppService, private route: ActivatedRoute) { }
 
     async ngOnInit() {
-        const userProfile$ = (this.uid.length > 0) ?
-            this.service.getUserProfile$(this.uid) :
-            this.service.profile$;
+        const userProfile$ =
+            this.route.paramMap.pipe(switchMap(params => {
+                const uid = params.get('uid') || '';
+                this.loading = (uid.length > 0) ? 'others' : 'self';
+                return (uid.length > 0) ?
+                    this.service.getUserProfile$(uid) :
+                    this.service.profile$;
+            }));
+
         this.profile$ = combineLatest([userProfile$, this.service.lokasi$]).pipe(switchMap(([profile, P]) => {
             if (!profile) return of();
+            this.loading = 'done';
             const profileDetails: ProfileDetails = {
                 profile,
                 uploads: [],
