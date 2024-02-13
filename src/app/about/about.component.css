@@ -23,3 +23,24 @@
 .about a:hover {
   text-decoration: underline;
 }
+
+.tutorial ol.instructions,
+.tutorial ul.explanations {
+  padding-inline-start: 1.5rem;
+}
+
+.tutorial img,
+.tutorial video {
+  width: 100%;
+  max-width: 30rem;
+}
+
+.tutorial li {
+  margin-left: -10px;
+  padding-right: 10px;
+  line-height: 2;
+}
+
+.tutorial li a {
+  font-weight: bold;
+}
