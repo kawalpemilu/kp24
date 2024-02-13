@@ -75,11 +75,13 @@
                     TPS #{{ u.uploadRequest.idLokasi.substring(10) }}
                 </a>
                 <br>
-                @for (lokasiName of u.lokasi.names; track lokasiName) {
+                <span>
+                  @for (lokasiName of u.lokasi.names; track lokasiName) {
                     <span class="lokasi">
-                        {{ lokasiName }}
+                      {{ lokasiName }}
                     </span>
-                }
+                  }
+                </span>
                 <br>
                 <span title="Anies Baswedan dan Cak Imin">Paslon 1</span>: {{ v.pas1 }}<br>
                 <span title="Prabowo Subianto dan Gibran Rakabuming"></span>Paslon 2: {{ v.pas2 }}<br>
