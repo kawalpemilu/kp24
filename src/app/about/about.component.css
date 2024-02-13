@@ -35,6 +35,10 @@
   max-width: 30rem;
 }
 
+.tutorial img.c-hasil {
+  max-width: 100%;
+}
+
 .tutorial li {
   margin-left: -10px;
   padding-right: 10px;
