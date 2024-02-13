@@ -148,10 +148,6 @@ a.app-home-link h1.app-home-title:hover {
 }
 
 @media (min-width: 22rem) {
-  a.app-home-link h1.app-home-title {
-    font-size: 1.5rem;
-  }
-
   .toolbar .mat-mdc-button>.mat-icon,
   .toolbar .about-logo {
     font-size: 1.25rem;
@@ -185,11 +181,8 @@ a.app-home-link h1.app-home-title:hover {
 }
 
 @media (min-width: 30rem) {
-  .toolbar .mat-mdc-button>.mat-icon,
-  .toolbar .about-logo {
+  a.app-home-link h1.app-home-title {
     font-size: 1.5rem;
-    height: 1.5rem;
-    width: 1.5rem;
   }
 
   a.search::after {
