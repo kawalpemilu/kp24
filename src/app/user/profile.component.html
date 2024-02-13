@@ -70,10 +70,17 @@
                 </app-photo>
             </td>
             <td *ngIf="u.uploadRequest.votes[0] as v">
-                {{ i + 1 }}. {{ v.updateTs | date }} [{{ STATUS[u.uploadRequest.status] }}]
+                {{ i + 1 }}. {{ v.updateTs | date }}
                 <a class="hierarchy" [routerLink]="['/h', u.uploadRequest.idLokasi]" target="_blank">
                     TPS #{{ u.uploadRequest.idLokasi.substring(10) }}
                 </a>
+                <span class="status"
+                    [class]="u.uploadRequest.status === 0 ? 'new' :
+                              u.uploadRequest.status === 1 ? 'approved' :
+                              u.uploadRequest.status === 2 ? 'rejected' :
+                              'moved'">
+                    {{ STATUS[u.uploadRequest.status] }}
+                </span>
                 <br>
                 <span>
                   @for (lokasiName of u.lokasi.names; track lokasiName) {

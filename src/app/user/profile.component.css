@@ -21,3 +21,31 @@ ol.instructions li img {
   display: inline-block;
   content: "→";
 }
+
+.status {
+  height: fit-content;
+  width: fit-content;
+  border-radius: 1rem;
+  padding: 0.1rem 0.5rem;
+  vertical-align: middle;
+  color: white;
+  display: inline-block;
+}
+
+.status.new {
+  background-color: #FFD54F; /* Amber 300 */
+  color: #000000DE;
+}
+
+.status.approved {
+  background-color: #AED581; /* Light Green 300 */
+  color: #000000DE;
+}
+
+.status.rejected {
+  background-color: #D32F2F; /* Red 700 */
+}
+
+.status.moved {
+  background-color: #9C27B0; /* Purple 500 */
+}
