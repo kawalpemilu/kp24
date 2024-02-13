@@ -18,10 +18,16 @@
                 </a>
             </td>
             <td>
-                {{ t.uploaded ? '✅' : '☑️' }}
+                <span [title]="t.uploaded ? 'Foto Terunggah' : 'Menunggu Unggahan Foto'">
+                    {{ t.uploaded ? '✅' : '☑️' }}
+                </span>
             </td>
             <td>
-                {{ t.lokasi.names.join(' / ') }}
+                @for (lokasiName of t.lokasi.names; track lokasiName) {
+                    <span class="lokasi">
+                        {{ lokasiName }}
+                    </span>
+                }
             </td>
         </tr>
         }
@@ -69,10 +75,15 @@
                     TPS #{{ u.uploadRequest.idLokasi.substring(10) }}
                 </a>
                 <br>
-                {{ u.lokasi.names | json }}<br>
-                <span title="Anies Baswedan dan Cak Imin">PasLon01</span>: {{ v.pas1 }}<br>
-                <span title="Prabowo Subianto dan Gibran Rakabuming"></span>PasLon02: {{ v.pas2 }}<br>
-                <span title="Ganjar Pranowo dan Mahfud MD"></span>PasLon03: {{ v.pas3 }}<br>
+                @for (lokasiName of u.lokasi.names; track lokasiName) {
+                    <span class="lokasi">
+                        {{ lokasiName }}
+                    </span>
+                }
+                <br>
+                <span title="Anies Baswedan dan Cak Imin">Paslon 1</span>: {{ v.pas1 }}<br>
+                <span title="Prabowo Subianto dan Gibran Rakabuming"></span>Paslon 2: {{ v.pas2 }}<br>
+                <span title="Ganjar Pranowo dan Mahfud MD"></span>Paslon 3: {{ v.pas3 }}<br>
             </td>
         </tr>
         }

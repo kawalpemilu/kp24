@@ -90,6 +90,7 @@ export class UserProfileComponent implements OnInit {
                 );
                 profileDetails.jagaTps.push({ tpsId, lokasi, uploaded });
             }
+            profileDetails.jagaTps.sort((a, b) => a.tpsId.localeCompare(b.tpsId));
             return of(profileDetails);
         }));
     }
