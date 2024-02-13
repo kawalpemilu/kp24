@@ -102,6 +102,7 @@ a.app-home-link h1.app-home-title:hover {
   padding: 0.1rem 0.3rem;
   background-color: #914689; /* KawalPemilu 2024 Plum */
   color: white;
+  display: inline-block;
 }
 
 @media (min-width: 36rem) {
