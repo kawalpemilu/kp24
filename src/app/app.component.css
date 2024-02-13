@@ -36,6 +36,7 @@ a.app-home-link h1.app-home-title {
   color: white;
   line-height: 60px;
   font-weight: bold;
+  font-size: 1.25rem;
 }
 
 a.app-home-link h1.app-home-title .kp {
@@ -146,12 +147,16 @@ a.app-home-link h1.app-home-title:hover {
   height: 2rem;
 }
 
-@media (min-width: 30rem) {
+@media (min-width: 22rem) {
+  a.app-home-link h1.app-home-title {
+    font-size: 1.5rem;
+  }
+
   .toolbar .mat-mdc-button>.mat-icon,
   .toolbar .about-logo {
-    font-size: 1.5rem;
-    height: 1.5rem;
-    width: 1.5rem;
+    font-size: 1.25rem;
+    height: 1.25rem;
+    width: 1.25rem;
   }
 
   a.home::after {
@@ -159,11 +164,11 @@ a.app-home-link h1.app-home-title:hover {
   }
 
   a.search::after {
-    content: 'Cari Lokasi TPS';
+    content: 'Cari';
   }
 
   a.profile::after {
-    content: 'Profil Saya';
+    content: 'Profil';
   }
 
   a.login::after {
@@ -172,6 +177,27 @@ a.app-home-link h1.app-home-title:hover {
 
   a.logout::after {
     content: 'Keluar';
+  }
+
+  a.about::after {
+    content: 'KP 2024'
+  }
+}
+
+@media (min-width: 30rem) {
+  .toolbar .mat-mdc-button>.mat-icon,
+  .toolbar .about-logo {
+    font-size: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+
+  a.search::after {
+    content: 'Cari Lokasi TPS';
+  }
+
+  a.profile::after {
+    content: 'Profil Saya';
   }
 
   a.about::after {
