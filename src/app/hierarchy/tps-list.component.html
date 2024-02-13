@@ -22,33 +22,33 @@
     @for (c of tpsList; track c.id) {
         @defer (on viewport) {
             <div class="tps-item" *ngIf="c.agg[0] as a">
-                <td class="tps" align="center" nowrap valign="top"
-                    [style.background-color]="
-                        a.totalPendingTps ? '#FFD54F' :
-                        a.totalJagaTps ? '#AED581' : ''">
-                    <br>
-                    <b style="font-size: large">
+                <td class="tps" nowrap valign="top"
+                    [class]="
+                        a.totalPendingTps ? 'pending' :
+                        a.totalJagaTps ? 'jaga' : ''">
+                    <span class="tps-number">
                         @if (lokasi.id.startsWith('99')) {
                             {{ lokasi.parents[lokasi.parents.length - 1][1] }}
                         } @else {
-                            TPS
+                            TPS<br>
                         }
                         #{{ a.name }}
-                    </b>
-                    <br>
-                    <br>
-                    Pas1: <b>{{ a.pas1 }}</b><br>
-                    Pas2: <b>{{ a.pas2 }}</b><br>
-                    Pas3: <b>{{ a.pas3 }}</b><br>
-                    <br>
-                    @if (a.dpt && a.dpt > 0) {
-                        DPT: <b>{{ a.dpt }}</b><br>
-                    }
+                    </span>
+                    <span class="tps-result">
+                        Pas1: <b>{{ a.pas1 }}</b><br>
+                        Pas2: <b>{{ a.pas2 }}</b><br>
+                        Pas3: <b>{{ a.pas3 }}</b>
+                    </span>
+                    <span class="tps-dpt">
+                        @if (a.dpt && a.dpt > 0) {
+                            DPT: <b>{{ a.dpt }}</b>
+                        }
+                    </span>
                     @if (a.totalErrorTps) {
-                        <span class="error">Error!</span><br>
+                        <span class="error">Error!</span>
                     }
                     @if (a.totalJagaTps) {
-                        <span class="jaga">Terjaga</span><br>
+                        <span class="jaga">Terjaga</span>
                     }
                     @if (a.totalLaporTps) {
                         <span class="lapor">{{a.totalLaporTps}} Laporan</span><br>

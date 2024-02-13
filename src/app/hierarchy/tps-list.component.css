@@ -57,6 +57,32 @@ section.table-header > .table-filter {
   }
 }
 
+td.tps {
+  text-align: center;
+}
+
+td.tps.pending {
+  background-color: #FFD54F; /* Amber 300 */
+}
+
+td.tps.jaga {
+  background-color: #AED581; /* Light Green 300 */
+}
+
+td.tps span.tps-number {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+td.tps span.tps-result,
+td.tps span.tps-dpt {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
 td.tps span.error,
 td.tps span.jaga,
 td.tps span.lapor {
@@ -66,8 +92,8 @@ td.tps span.lapor {
   padding: 0.1rem 0.5rem;
   color: white;
   font-size: 0.7rem;
-  display: inline-block;
-  margin-top: 0.25rem;
+  display: block;
+  margin: 0.25rem auto 0;
 }
 
 span.error {
