@@ -36,9 +36,8 @@ export interface UserProfile {
   uploadCount: number; // Number of uploaded photos.
   uploadMaxCount: number; // Whitelist this person to go beyond.
   uploadRemaining: number;
-
-  nTps: number; // Number of different TPS uploaded.
-  nKel: number; // Number of different kelurahans uploaded.
+  uploadDistinctTps: number; // Number of different TPS uploaded.
+  uploadDistinctDesa: number; // Number of different kelurahans uploaded.
 
   // reviews[tpsId] = number of photos reviewed in that TPS.
   reviews: Record<string, number>;

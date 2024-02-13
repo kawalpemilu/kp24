@@ -1,5 +1,8 @@
 import * as admin from "firebase-admin";
-import { APPROVAL_STATUS, ImageMetadata, Lokasi, TESTER_UID, UploadRequest } from "./interfaces";
+import {
+  APPROVAL_STATUS, DEFAULT_MAX_LAPORS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
+  TESTER_UID, UploadRequest, UserProfile
+} from "./interfaces";
 import { uploadHandler } from "./upload_handler";
 
 admin.initializeApp();
@@ -40,7 +43,7 @@ async function clearDesa(idDesa: string) {
   const snap = await firestore.doc(`h/i${idDesa}`).get();
   const lokasi = snap.data() as Lokasi | null;
   if (!lokasi) throw new Error();
-  
+
   console.log('Clearing Desa', idDesa, lokasi.names[lokasi.names.length - 1]);
   for (const [tpsNo, agg] of Object.entries(lokasi.aggregated)) {
     // Reject approved photos.
@@ -107,14 +110,11 @@ async function clearProp(idProp: string) {
   await Promise.all(promises);
 }
 
-/**
- * Run administrative function.
- */
-async function run() {
+async function clearAll() {
   const snap = await firestore.doc(`h/i`).get();
   const lokasi = snap.data() as Lokasi | null;
   if (!lokasi) throw new Error();
-  
+
   const promises = [];
   for (const [idProp, agg] of Object.entries(lokasi?.aggregated)) {
     if (agg[0].totalCompletedTps || agg[0].totalPendingTps || agg[0].totalLaporTps) {
@@ -123,6 +123,66 @@ async function run() {
   }
   console.log('Parallel', promises.length);
   await Promise.all(promises);
+}
+
+async function clearUserStats() {
+  const tRef = firestore.collection(`/u`);
+  const qRef = tRef
+    .where('laporCount', '>', 0)
+    .orderBy('laporCount', 'desc')
+    .limit(10);
+  while (true) {
+    const snapshots = await qRef.get();
+    const userProfiles: UserProfile[] = [];
+    snapshots.forEach(snap => {
+      userProfiles.push(snap.data() as UserProfile);
+    });
+    if (!userProfiles.length) break;
+    for (const { uid } of userProfiles) {
+      const uRef = firestore.doc(`u/${uid}`);
+      const bRef = firestore.doc(`b/${uid}`);
+      const result = await firestore.runTransaction(async (t) => {
+        const p = (await t.get(uRef)).data() as UserProfile | undefined;
+        if (!p) throw new Error();
+        // console.log('p', JSON.stringify(p, null, 2));
+
+        t.set(bRef, JSON.parse(JSON.stringify(p)));
+
+        p.uploads = {};
+        p.uploadCount = 0;
+        p.uploadMaxCount = DEFAULT_MAX_UPLOADS;
+        p.uploadRemaining = DEFAULT_MAX_UPLOADS;
+        p.uploadDistinctTps = 0;
+        p.uploadDistinctDesa = 0;
+
+        p.reviews = {};
+        p.reviewCount = 0;
+
+        p.lapor = {};
+        p.laporCount = 0;
+        p.laporMaxCount = DEFAULT_MAX_LAPORS;
+        p.laporRemaining = DEFAULT_MAX_LAPORS;
+
+        p.size = JSON.stringify(p).length;
+
+        t.set(uRef, p);
+
+        return p;
+      });
+      console.log('Cleared', result.email, result.uid);
+      // return;
+    }
+  }
+}
+
+/**
+ * Run administrative function.
+ */
+async function run() {
+  if (false) await clearAll();
+
+  await clearUserStats();
+
 }
 
 run();

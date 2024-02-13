@@ -110,6 +110,13 @@ async function addDataToUserProfile(
 
   p.uploadRemaining = (p.uploadMaxCount || 0) - (p.uploadCount || 0);
   p.laporRemaining = (p.laporMaxCount || 0) - (p.laporCount || 0);
+
+  const tpsIds = Object.keys(p.uploads || {});
+  p.uploadDistinctTps = tpsIds.length; // Number of different TPS uploaded.
+  const idDesas = new Set<string>();
+  tpsIds.forEach(id => idDesas.add(getParentId(id)));
+  p.uploadDistinctDesa = idDesas.size; // Number of different kelurahans uploaded.
+
   p.size = JSON.stringify(p).length;
 
   t.set(uRef, p);
