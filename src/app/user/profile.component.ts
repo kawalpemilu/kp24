@@ -26,6 +26,7 @@ interface UserReview {
 interface UserJagaTps {
     tpsId: string;
     lokasi: Lokasi;
+    uploaded: boolean;
 }
 
 interface ProfileDetails {
@@ -84,7 +85,10 @@ export class UserProfileComponent implements OnInit {
             for (const tpsId of Object.keys(profile.jagaTps ?? {})) {
                 const lokasi = P.getPrestineLokasi(tpsId.substring(0, 10));
                 if (!lokasi) continue;
-                profileDetails.jagaTps.push({ tpsId, lokasi });
+                const uploaded = profileDetails.uploads.some(upload =>
+                  upload.uploadRequest.idLokasi.startsWith(tpsId)
+                );
+                profileDetails.jagaTps.push({ tpsId, lokasi, uploaded });
             }
             return of(profileDetails);
         }));
