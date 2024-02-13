@@ -19,6 +19,13 @@
     </app-digitize>
     <br><br>
 } @else {
+    <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
+    <br>
+    <button mat-raised-button color="primary" (click)="u.click()">
+        Unggah Foto
+    </button>
+    <br>
+    <br>
     <mat-accordion>
       <mat-expansion-panel>
         <mat-expansion-panel-header>
@@ -44,15 +51,9 @@
             <li>Lalu isikan angka perolehan tiap paslon dan klik <strong>Kirim</strong>.</li>
             <li>Anda juga <strong>bisa mengunggah foto dari banyak TPS</strong>. Yang penting fotonya adalah form C.HASIL-PPWP halaman 2.</li>
             <li>Pastikan Anda mengunggah di nomor TPS yang tepat.</li>
-            <li>Klik tombol <strong>Unggah Foto</strong> di bawah untuk mulai mengunggah.</li>
+            <li>Klik tombol <strong>Unggah Foto</strong> di atas untuk mulai mengunggah.</li>
         </ul>
       </mat-expansion-panel>
     </mat-accordion>
-
-    <input #u type="file" (change)="handleUpload($event)" style="display: none" accept="image/*" />
-    <br>
-    <button mat-raised-button color="primary" (click)="u.click()">
-        Unggah Foto
-    </button>
 }
 </div>
