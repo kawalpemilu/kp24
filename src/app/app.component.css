@@ -16,7 +16,7 @@ button.app-menu {
 }
 
 button.app-menu img.app-logo {
-  height: 3rem;
+  height: 1.5rem;
   width: auto;
   transition: transform 0.3s ease;
 }
@@ -28,15 +28,15 @@ button.app-menu img.app-logo:hover {
 a.app-home-link {
   text-decoration: none;
   color: white;
-  height: 60px;
+  height: 32px;
 }
 
 a.app-home-link h1.app-home-title {
   text-decoration: none;
   color: white;
-  line-height: 60px;
   font-weight: bold;
-  font-size: 1.25rem;
+  line-height: 2rem;
+  font-size: 1rem;
 }
 
 a.app-home-link h1.app-home-title .kp {
@@ -73,10 +73,10 @@ a.app-home-link h1.app-home-title:hover {
 }
 
 .profile-image {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 1rem;
-  top: -0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.75rem;
+  top: -0.125rem;
   vertical-align: middle;
   cursor: pointer;
   margin-right: 0.5rem;
@@ -106,7 +106,7 @@ a.app-home-link h1.app-home-title:hover {
   display: inline-block;
 }
 
-@media (min-width: 36rem) {
+@media (min-width: 36rem) and (min-height: 40rem) {
   .banner {
     font-size: 0.85rem;
     padding: 0.75rem 2rem;
@@ -115,9 +115,45 @@ a.app-home-link h1.app-home-title:hover {
 }
 
 .toolbar {
-  height: 4rem;
   background-color: #91468933; /* KawalPemilu 2024 Plum with transparency */
   padding: 0 2rem;
+}
+
+.toolbar.top-nav {
+  height: 2rem;
+}
+
+.toolbar.bottom-nav {
+  display: none;
+}
+
+@media (min-height: 40rem) {
+  .toolbar.top-nav {
+    height: 4rem;
+  }
+
+  .toolbar.bottom-nav {
+    display: block;
+  }
+
+  button.app-menu img.app-logo {
+    height: 3rem;
+  }
+
+  a.app-home-link {
+    height: 60px;
+  }
+
+  a.app-home-link h1.app-home-title {
+    line-height: 60px;
+    font-size: 1.25rem;
+  }
+
+  .profile-image {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 1rem;
+  }
 }
 
 .toolbar .top-nav-container,
@@ -180,7 +216,7 @@ a.app-home-link h1.app-home-title:hover {
   }
 }
 
-@media (min-width: 30rem) {
+@media (min-width: 30rem) and (min-height: 40rem) {
   a.app-home-link h1.app-home-title {
     font-size: 1.5rem;
   }
