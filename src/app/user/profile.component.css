@@ -8,6 +8,62 @@ a.hierarchy {
   margin: auto;
 }
 
+section.card {
+  margin: 1rem auto;
+  padding: 1.25rem;
+  background-color: #91468933; /* KawalPemilu 2024 Plum with transparency */
+  border-radius: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  width: fit-content;
+  min-width: 16rem;
+  max-width: 20rem;
+}
+
+section.card > img.pic {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 0.75rem;
+  flex: 0 0 auto;
+}
+
+section.card > div.info {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+section.card > div.info > span.name {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+section.card > div.info > p.contribution {
+  flex: 1 1 auto;
+}
+
+section.card > div.info > div.title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: -0.5rem;
+}
+
+section.card > div.info > div.title > span.role {
+  height: fit-content;
+  width: fit-content;
+  border-radius: 1rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8rem;
+  vertical-align: middle;
+  display: inline-block;
+  background-color: #914689; /* KawalPemilu 2024 Plum */
+  color: white;
+}
+
 ol.instructions {
   padding-inline-start: 1rem;
 }

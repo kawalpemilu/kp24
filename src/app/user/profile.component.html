@@ -2,7 +2,36 @@
     @if (profile$ | async; as profileDetails) {
     <h1>Halo, {{ getFirstName(profileDetails.profile.name) }}.</h1>
 
+    <section class="card">
+      <img class="pic" [src]="profileDetails.profile.pic" alt="Foto Profil" width="6rem" height="6rem" />
+      <div class="info">
+        <span class="name">{{ profileDetails.profile.name }}</span>
+        <p class="contributions">
+          @if (profileDetails.profile.jagaTpsCount) {
+            Penjaga di <strong>{{ profileDetails.profile.jagaTpsCount }}</strong> TPS.
+          } @else {
+            Belum menjadi penjaga TPS.
+          }
+          @if (profileDetails.profile.uploadCount) {
+            Telah mengunggah <strong>{{ profileDetails.profile.uploadCount }}</strong> foto.
+          } @else {
+            Belum mengunggah foto.
+          }
+          @if (profileDetails.profile.reviewCount) {
+            Telah meninjau <strong>{{ profileDetails.profile.reviewCount }}</strong> foto.
+          }
+        </p>
+        <div class="title">
+          <span class="role">{{ getRoleText(profileDetails.profile.role) }}</span>
+          <img src="/assets/kp.png" alt="KawalPemilu 2024" width="64" height="40" />
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
     @if (profileDetails.profile.jagaTpsCount) {
+    <h2>{{ profileDetails.profile.jagaTpsCount }} TPS yang Anda jaga</h2>
     <p>
         Berikut adalah daftar TPS yang Anda jaga untuk mengunggah
         hasil foto suara paslon pada tanggal <b>14 Februari 2024</b>.
@@ -62,7 +91,7 @@
     <hr class="separator">
 
     @if (profileDetails.uploads.length) {
-    <h2>Foto yang berhasil diunggah ({{profileDetails.profile.uploadCount}}):</h2>
+    <h2>{{profileDetails.profile.uploadCount}} foto yang Anda unggah</h2>
     <table class="collapsed_border upload">
         @for (u of profileDetails.uploads; track u.uploadRequest.imageId; let i = $index) {
         <tr>
@@ -102,7 +131,7 @@
 
     @if (profileDetails.reviews.length) {
     <br>
-    <h2>Foto yang sudah ditinjau ({{profileDetails.profile.reviewCount}}):</h2>
+    <h2>{{profileDetails.profile.reviewCount}} foto yang Anda tinjau</h2>
     <ol>
         @for (r of profileDetails.reviews; track r.lokasi.id; let i = $index) {
         <li>

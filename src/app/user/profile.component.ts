@@ -4,7 +4,7 @@ import { AppService } from '../app.service';
 import { FormsModule } from '@angular/forms';
 import { MatRadioModule } from '@angular/material/radio';
 import { Observable, combineLatest, of, switchMap } from 'rxjs';
-import { Lokasi, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
+import { Lokasi, USER_ROLE, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { PhotoComponent } from '../photo/photo.component';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -98,5 +98,9 @@ export class UserProfileComponent implements OnInit {
     getFirstName(name: string) {
         const parts = name.split(' ');
         return parts[0];
+    }
+
+    getRoleText(role: USER_ROLE) {
+        return USER_ROLE[role];
     }
 }
