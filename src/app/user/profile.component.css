@@ -27,6 +27,7 @@ ol.instructions li img {
   width: fit-content;
   border-radius: 1rem;
   padding: 0.1rem 0.5rem;
+  font-size: 0.65rem;
   vertical-align: middle;
   color: white;
   display: inline-block;
