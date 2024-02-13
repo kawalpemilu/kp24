@@ -15,7 +15,7 @@
 }
 
 .tps-item > .tps {
-  min-width:  6rem;
+  min-width:  5rem;
   border-right: #000000DE 1px solid;
 }
 
@@ -93,7 +93,7 @@ td.tps span.lapor {
   color: white;
   font-size: 0.7rem;
   display: block;
-  margin: 0.25rem auto 0;
+  margin: 0.25rem auto;
 }
 
 span.error {
