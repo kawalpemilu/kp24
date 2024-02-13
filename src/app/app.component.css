@@ -146,7 +146,7 @@ a.app-home-link h1.app-home-title:hover {
   height: 2rem;
 }
 
-@media (min-width: 48rem) {
+@media (min-width: 30rem) {
   .toolbar .mat-mdc-button>.mat-icon,
   .toolbar .about-logo {
     font-size: 1.5rem;
