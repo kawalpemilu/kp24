@@ -17,6 +17,11 @@ ol.instructions li img {
   width: 300px;
 }
 
+table.jaga,
+table.upload {
+  margin: auto;
+}
+
 .lokasi:not(:last-child)::after {
   display: inline-block;
   content: "→";
