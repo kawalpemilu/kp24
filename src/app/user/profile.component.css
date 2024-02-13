@@ -22,6 +22,10 @@ table.upload {
   margin: auto;
 }
 
+hr.separator:last-child {
+  display: none;
+}
+
 .lokasi:not(:last-child)::after {
   display: inline-block;
   content: "→";
