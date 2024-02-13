@@ -5,6 +5,10 @@
   gap: 0.5rem;
 }
 
+.digitize {
+  margin: auto;
+}
+
 .digitize td {
   width: 3rem;
 }
