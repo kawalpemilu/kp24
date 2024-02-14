@@ -196,7 +196,7 @@ export class AppService {
   async changeRole(p: UserProfile, role: USER_ROLE) {
     console.log('RPC changRole', p.uid, p.role, role);
     const callable = httpsCallable(this.functions, 'changeRole');
-    return callable({ uid: p.uid, role });
+    return callable({ uid: p.uid, role: +role });
   }
 
   async register() {
