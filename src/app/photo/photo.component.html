@@ -1,0 +1,28 @@
+@if (showRoiTooltip) {
+  <div #tippyTemplateRef>
+    <img alt="ROI paslon" style="min-height:120px;width:150px" loading="lazy"/>
+  </div>
+  <div [style.width]="maxWidth + 'px'"
+        [style.height]="maxHeight + 'px'"
+        [ngxTippy]="tippyTemplateRef"
+        [title]="tooltipUrl"
+        [tippyProps]="{
+          placement: 'right',
+          delay: [200, 200],
+          animation: 'shift-toward',
+          onCreate: loadTooltipImage,
+          onShow: onShowTippy,
+        }">
+      <div class="preview" (click)="openDialog()">
+          <img [style.max-width]="maxWidth + 'px'"
+                [style.max-height]="maxHeight + 'px'"
+                [src]="hiResThumb ? largePhoto : thumbnail" /><br>
+      </div>
+  </div>
+} @else {
+  <div class="preview" (click)="openDialog()">
+      <img [style.max-width]="maxWidth + 'px'"
+            [style.max-height]="maxHeight + 'px'"
+            [src]="hiResThumb ? largePhoto : thumbnail" /><br>
+  </div>
+}
