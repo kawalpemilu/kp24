@@ -12,6 +12,7 @@ section.card {
   margin: 1rem auto;
   padding: 1.25rem;
   background-color: #91468933; /* KawalPemilu 2024 Plum with transparency */
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2); /* Add shadow */
   border-radius: 1rem;
   display: flex;
   justify-content: flex-start;
