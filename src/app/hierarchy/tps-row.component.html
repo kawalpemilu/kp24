@@ -86,6 +86,9 @@
             <span>Pas1: {{ tps.pas1 }}</span><br>
             <span>Pas2: {{ tps.pas2 }}</span><br>
             <span>Pas3: {{ tps.pas3 }}</span><br>
+            @if (tps.ouid && (userProfile?.role || 0) >= USER_ROLE.ADMIN) {
+                <app-profile-link [uid]="tps.ouid"></app-profile-link><br>
+            }
             @if (tps.updateTs === 0) {
                 <mat-spinner [diameter]="15" style="float: left; margin-right: 5px">
                 </mat-spinner>
@@ -139,7 +142,7 @@
             }
         }
     }
-                <td valign="top">
+                <td valign="top" *ngIf="!c.agg[0].totalJagaTps">
                     <div style="width: 170px">
                         <h4><b>Komitmen Partisipasi</b></h4>
                         @if (userProfile?.jagaTps?.[tpsId]) {

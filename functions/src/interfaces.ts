@@ -371,6 +371,9 @@ export declare interface AggregateVotes extends Votes {
 
   // Shortcut to the any lapor TPS.
   anyLaporTps?:string;
+
+  // The original uploader uid.
+  ouid?: string;
 }
 
 // Extension to signify that the AggregateVotes is being submitted.

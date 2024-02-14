@@ -12,12 +12,13 @@ import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
 import { LaporComponent } from '../lapor/lapor.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ProfileLinkComponent } from '../user/link.component';
 
 @Component({
   selector: 'app-tps-row',
   standalone: true,
   imports: [CommonModule, MatSidenavModule, MatIconModule, MatButtonModule, LaporComponent,
-    UploadComponent, ReviewComponent, PhotoComponent, MatProgressSpinnerModule],
+    ProfileLinkComponent,  UploadComponent, ReviewComponent, PhotoComponent, MatProgressSpinnerModule],
   templateUrl: './tps-row.component.html',
   styleUrl: './tps-list.component.css'
 })

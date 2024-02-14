@@ -329,6 +329,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
           agg.pas2 = data.votes[0].pas2;
           agg.pas3 = data.votes[0].pas3;
           agg.uid = data.votes[0].uid;
+          agg.ouid = upload.votes[upload.votes.length - 1].uid ?? "";
           if (existingAggIdx > 0) {
             c[existingAggIdx].pas1 = data.votes[0].pas1;
             c[existingAggIdx].pas2 = data.votes[0].pas2;

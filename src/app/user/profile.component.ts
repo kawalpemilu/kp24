@@ -47,6 +47,7 @@ interface ProfileDetails {
 export class UserProfileComponent implements OnInit {
     profile$?: Observable<ProfileDetails>;
     STATUS = ['NEW', 'APPROVED', 'REJECTED', 'MOVED'];
+    USER_ROLE = USER_ROLE;
 
     constructor(public service: AppService, private route: ActivatedRoute) { }
 
