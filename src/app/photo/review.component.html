@@ -17,7 +17,7 @@
                 <td>
                     <select *ngIf="getPropinsiList(P) as arr" class="lokasi"
                             [(ngModel)]="newPropId"
-                            (change)="updateNewId($event)">
+                            (change)="updateNewId($event, P)">
                     @for (p of arr; track p.id) {
                         <option [value]="p.id">{{ p.name }}</option>
                     }
@@ -29,7 +29,7 @@
                 <td>
                     <select *ngIf="getKabupatenList(P) as arr" class="lokasi"
                             [(ngModel)]="newKabId"
-                            (change)="updateNewId($event)">
+                            (change)="updateNewId($event, P)">
                         @for (p of arr; track p.id) {
                             <option [value]="p.id">{{ p.name }}</option>
                         }
@@ -41,7 +41,7 @@
                 <td>
                     <select *ngIf="getKecamatanList(P) as arr" class="lokasi"
                             [(ngModel)]="newKecId"
-                            (change)="updateNewId($event)">
+                            (change)="updateNewId($event, P)">
                         @for (p of arr; track p.id) {
                             <option [value]="p.id">{{ p.name }}</option>
                         }
@@ -53,7 +53,7 @@
                 <td>
                     <select *ngIf="getKelurahanList(P) as arr" class="lokasi"
                             [(ngModel)]="newKelId"
-                            (change)="updateNewId($event)">
+                            (change)="updateNewId($event, P)">
                         @for (p of arr; track p.id) {
                             <option [value]="p.id">{{ p.name }}</option>
                         }

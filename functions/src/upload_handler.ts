@@ -154,6 +154,11 @@ export async function uploadHandler(firestore: admin.firestore.Firestore,
  */
 export async function aggregateUp(firestore: admin.firestore.Firestore,
   ids: string[], aggs: AggregateVotes[]): Promise<void> {
+  logger.log('aggregateUp', ids.length, aggs.length);
+  if (!aggs.length) {
+    logger.warn('skip aggregateUp', ids.length, aggs.length);
+    return;
+  }
   const t0 = Date.now();
   let numRetries = 0;
   const res = firestore
@@ -161,7 +166,6 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       const t1 = Date.now();
       numRetries++;
       // Read all Lokasi before writing them all later.
-      logger.log("Read all lokasi");
       const lokasiMap: { [id: string]: Lokasi } = {};
       for (const a of aggs) {
         for (let id = a.idLokasi; id.length > 0;) {
@@ -172,6 +176,11 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
       }
       // Read in parallel to save time.
       const lokasiIds = Object.keys(lokasiMap);
+      logger.log("Read all lokasi", lokasiIds.length);
+      if (!lokasiIds.length) {
+        logger.error('empty lokasiIds', lokasiIds.length);
+        return;
+      }
       const hRefs = lokasiIds.map((id) => firestore.doc(`h/i${id}`));
       await t.getAll(...hRefs).then((docs) => {
         for (let i = 0; i < hRefs.length; i++) {
@@ -204,7 +213,7 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
           if (!lokasi) throw new Error(`Missing lokasi ${id}`);
           for (const agg of caggs) {
             const c = lokasi.aggregated[agg.idLokasi];
-            if (!c) throw new Error(`Child ${agg.idLokasi} not found`);
+            if (!c) throw new Error(`Child ${agg.idLokasi} not found, ${id}`);
             if (isIdentical(c[0], agg)) {
               logger.log("Identical", JSON.stringify(agg, null, 2));
               continue;

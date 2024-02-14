@@ -89,7 +89,7 @@ function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
   return false;
 }
 export const hierarchy2 = onCall(
-  {cors: ALLOW_ORIGINS},
+  {cors: ALLOW_ORIGINS, memory: "512MiB"},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
     if (shouldRateLimitHierarchy(now, request)) return {} as Lokasi;

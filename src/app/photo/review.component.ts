@@ -84,38 +84,51 @@ export class ReviewComponent {
         this.newKelId = this.id.substring(0, 10);
         this.newTpsNo = this.id.substring(10);
     }
+    sortIt(opts: OptionLokasi[]) {
+        return opts.sort((a, b) => a.name.localeCompare(b.name));
+    }
     getPropinsiList(P: PrestineLokasi): OptionLokasi[] {
         const aggregated = P.getPrestineLokasi('')?.aggregated || {};
-        return Object.values(aggregated).map(a => {
+        return this.sortIt(Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
-        });
+        }));
     }
     getKabupatenList(P: PrestineLokasi): OptionLokasi[] | undefined {
         if (this.newPropId.length < 2) return undefined;
         const aggregated = P.getPrestineLokasi(this.newPropId)?.aggregated || {};
-        return Object.values(aggregated).map(a => {
+        return this.sortIt(Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
-        });
+        }));
     }
     getKecamatanList(P: PrestineLokasi): OptionLokasi[] | undefined {
         if (this.newKabId.length < 4) return undefined;
         const aggregated = P.getPrestineLokasi(this.newKabId)?.aggregated || {};
-        return Object.values(aggregated).map(a => {
+        return this.sortIt(Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
-        });
+        }));
     }
     getKelurahanList(P: PrestineLokasi): OptionLokasi[] | undefined {
         if (this.newKecId.length < 6) return undefined;
         const aggregated = P.getPrestineLokasi(this.newKecId)?.aggregated || {};
-        return Object.values(aggregated).map(a => {
+        return this.sortIt(Object.values(aggregated).map(a => {
             return { id: a[0].idLokasi, name: a[0].name } as OptionLokasi;
-        });
+        }));
     }
-    updateNewId(event: any) {
+    updateNewId(event: any, P: PrestineLokasi) {
         this.newId = event.target.value;
-        if (this.newId.length <= 2) this.newKabId = '';
-        if (this.newId.length <= 4) this.newKelId = '';
-        if (this.newId.length <= 6) this.newKelId = '';
+        if (this.newId.length <= 2) {
+            this.newPropId = this.newId;
+            this.newId = this.getKabupatenList(P)?.[0].id ?? '';
+        }
+        if (this.newId.length <= 4) {
+            this.newKabId = this.newId;
+            this.newId = this.getKecamatanList(P)?.[0].id ?? '';
+        }
+        if (this.newId.length <= 6) {
+            this.newKecId = this.newId;
+            this.newId = this.getKelurahanList(P)?.[0].id ?? '';
+        }
+        this.newKelId = this.newId;
     }
     isValid(P: PrestineLokasi) {
         if (this.newKelId.length !== 10) return false;
