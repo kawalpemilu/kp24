@@ -36,7 +36,7 @@ async function shouldLockTps(
   let numNewOrApproved = 0;
   snapshots.forEach(x => { numNewOrApproved++; });
   if (numNewOrApproved >= 3) {
-    logger.error("Locked TPS", tpsId);
+    logger.error("Locked TPS", tpsId, numNewOrApproved);
     return true;
   }
   return false;
