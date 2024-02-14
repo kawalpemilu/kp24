@@ -61,6 +61,7 @@ export class PhotoComponent {
     @Input({ required: false })
     set roiToolTip(value: string[]) {
       this.tooltipUrl = this.roiUrl(value[0], value[1]);
+      console.log(this.tooltipUrl)
       this.roiImageUrl.emit(this.tooltipUrl);
     }
 
@@ -70,7 +71,7 @@ export class PhotoComponent {
       }
 
       return !photoUrl ? '' :
-        `https://argocd.kawalc1.org/roi/${
+        `https://storage.googleapis.com/kawalc1/static/2024/transformed/${
           tpsId.substring(0,10)}/${
           tpsId.substring(10)}/extracted/${
           photoUrl.replace('http://lh3.googleusercontent.com/', '')
