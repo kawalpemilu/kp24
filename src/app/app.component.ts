@@ -19,6 +19,7 @@ import { map, shareReplay } from 'rxjs';
   styleUrl: './app.component.css',
 })
 export class AppComponent {
+  showBanner = true;
   USER_ROLE = USER_ROLE;
 
   constructor(

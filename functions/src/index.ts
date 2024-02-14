@@ -139,7 +139,7 @@ export const register = onCall(
     try {
       const u = await uRef.get();
       if (u.data()) {
-        logger.error("register-user-exists", request.auth.uid);
+        logger.log("register-user-exists", request.auth.uid);
         return false;
       }
     } catch (e) {

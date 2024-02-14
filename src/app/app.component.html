@@ -80,11 +80,12 @@
     </mat-sidenav-content>
   </mat-sidenav-container>
 
-  <div class="banner">
+  <div class="banner" *ngIf="showBanner">
       <div class="banner-text">
           Ayo datang ke TPS Anda dan foto <a href="/assets/c-hasil.png" target="_blank" rel="noopener noreferrer" >C.HASIL-PPWP hal. 2</a> lalu unggah ke situs ini ya 🙏.
           Pelajari caranya di <a routerLink="/about">halaman ini</a>.
           Hasil suara di situs ini tidak dapat digunakan untuk menentukan hasil akhir Pilpres 2024.
+          [<b (click)="showBanner=false" style="color: blue; cursor: pointer;">dismiss</b>].
       </div>
   </div>
 
