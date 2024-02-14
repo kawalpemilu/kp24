@@ -97,12 +97,18 @@ table.sticky_table {
     margin: auto;
 }
 
+main.result {
+    max-width: 48rem;
+    margin: auto;
+    padding: 0;
+}
+
 .sticky_table thead {
     position: sticky;
     top: 45px;
     border-bottom: 2px solid #ccc;
     background: lightgray;
-    max-width: 48rem;
+    max-width: 44rem;
 }
 
 .sticky_table tfoot {
@@ -163,18 +169,22 @@ header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item > 
 }
 
 @media (min-width: 500px) {
+    main.result {
+        padding: 0 2rem;
+    }
+
     header.sticky-header {
         font-size: 0.85rem;
     }
 
     th.lokasi {
-        width: 300px;
+        width: 20rem;
     }
 
     th.paslon,
     th.cov,
     th.jaga {
-        width: 75px;
+        width: 6rem;
     }
 
     th.paslon::before {

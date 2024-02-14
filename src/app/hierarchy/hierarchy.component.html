@@ -32,6 +32,7 @@
     </app-tps-list>
 } @else {
     <!-- Level Provinsi, Kecamatan, Kelurahan -->
+  <main class="result">
     <table class="collapsed_border sticky_table">
     <thead>
         <tr>
@@ -40,7 +41,6 @@
             <th class="paslon">2</th>
             <th class="paslon">3</th>
             <th class="cov"></th>
-            <th class="jaga">Jaga</th>
         </tr>
     </thead>
     <tbody class="data">
@@ -76,9 +76,6 @@
             <td nowrap class="numbers">
                 <app-percent [nom]="a.totalCompletedTps" [den]="a.totalTps"></app-percent>
             </td>
-            <td nowrap class="numbers">
-                <app-percent [nom]="a.totalJagaTps || 0" [den]="a.totalTps"></app-percent>
-            </td>
         </tr>
         }
     </tbody>
@@ -107,11 +104,9 @@
             <th>
                 <app-percent [nom]="lokasi.total.totalCompletedTps" [den]="lokasi.total.totalTps"></app-percent>
             </th>
-            <th>
-                <app-percent [nom]="lokasi.total.totalJagaTps" [den]="lokasi.total.totalTps"></app-percent>
-            </th>
         </tr>
     </tfoot>
     </table>
+  </main>
 }
 </div>
