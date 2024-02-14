@@ -216,6 +216,8 @@ export const jagaTps = onCall(
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
+    if (now > 1707929660706) return false; // Disable Jaga TPS end of 14 Feb.
+
     if (shouldRateLimit(userRateLimiter, now, request.auth.uid)) {
       logger.error("jaga-tps-rate-limited", request.auth.uid);
       return false;
