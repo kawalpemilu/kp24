@@ -27,6 +27,21 @@ function isIdentical(a: AggregateVotes, b: AggregateVotes): boolean {
     Object.keys(b.pendingUploads ?? {}).length;
 }
 
+async function shouldLockTps(
+  firestore: admin.firestore.Firestore,
+  t: admin.firestore.Transaction,
+  tpsId: string) {
+  const tpsRef = firestore.collection(`t/${tpsId}/p`).where('status', '<', 2).limit(3);
+  const snapshots = await t.get(tpsRef);
+  let numNewOrApproved = 0;
+  snapshots.forEach(x => { numNewOrApproved++; });
+  if (numNewOrApproved >= 3) {
+    logger.error("Locked TPS", tpsId);
+    return true;
+  }
+  return false;
+}
+
 /**
  * @param {admin.firestore.Firestore} firestore the handle to the Firestore.
  * @param {admin.firestore.Transaction} t the running transaction.
@@ -282,6 +297,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
   const hRef = firestore.doc(`h/i${idDesa}`);
   return firestore
     .runTransaction(async (t) => {
+      if (await shouldLockTps(firestore, t, data.idLokasi)) return null;
       let lokasi = (await t.get(hRef)).data() as Lokasi | null;
       if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
       if (!lokasi) {
