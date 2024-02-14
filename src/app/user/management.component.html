@@ -36,7 +36,7 @@
     <td>
         {{ u.name }}<br>
         ({{ u.email }})<br>
-        {{ u.uid }}<br>
+        <app-profile-link [uid]="u.uid"></app-profile-link><br>
         Created: {{ u.createdTs | date }}<br>
         @if (u.uploadCount || u.reviewCount || u.laporCount) {
             @if (u.uploadCount) { {{ u.uploadCount }} uploads, }

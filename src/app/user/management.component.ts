@@ -8,11 +8,12 @@ import {
     BehaviorSubject, Observable, combineLatest,
     debounceTime, distinctUntilChanged, shareReplay, switchMap
 } from 'rxjs';
+import { ProfileLinkComponent } from './link.component';
 
 @Component({
     selector: 'app-user-management',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatInputModule],
+    imports: [CommonModule, FormsModule, MatInputModule, ProfileLinkComponent],
     templateUrl: './management.component.html',
     styleUrl: './management.component.css'
 })
