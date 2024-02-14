@@ -70,7 +70,7 @@ export class PhotoComponent {
       }
 
       return !photoUrl ? '' :
-        `https://argocd.kawalc1.org/roi/${
+        `https://storage.googleapis.com/kawalc1/static/2024/transformed/${
           tpsId.substring(0,10)}/${
           tpsId.substring(10)}/extracted/${
           photoUrl.replace('http://lh3.googleusercontent.com/', '')
