@@ -110,8 +110,8 @@ export class PhotoComponent {
 
     openDialog() {
       const dialogRef = this.dialog.open(PhotoDialog, {
-        height: '80vh',
-        width: '80vw',
+        height: '90vh',
+        width: '90vw',
         data: {
           largePhoto: this.largePhoto,
         }
@@ -136,4 +136,14 @@ export interface PhotoDialogData {
 })
 export class PhotoDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public data: PhotoDialogData) {}
+
+  rotation: number = 0;
+
+  rotateLeft() {
+    this.rotation = (this.rotation - 90) % 360;
+  }
+
+  rotateRight() {
+    this.rotation = (this.rotation + 90) % 360;
+  }
 }
