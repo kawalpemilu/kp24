@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Foto C.HASIL di TPS</h2>
+<mat-dialog-content>
+  <a class="photo-link" [href]="data.largePhoto" target="_blank" rel="noopener noreferrer">
+    <img class="photo-img"
+        [src]="data.largePhoto"
+        [style.transform]="rotation === 90 ? 'rotate(90deg)' :
+                          rotation === 180 ? 'rotate(180deg)' :
+                          rotation === 270 ? 'rotate(270deg)' : 'rotate(0deg)'"
+        alt="Foto C.HASIL di TPS" />
+  </a>
+</mat-dialog-content>
+<mat-dialog-actions align="center">
+  <button mat-button cdkFocusInitial (click)="rotateLeft()">Rotate Left ⤴</button>
+  <button mat-button (click)="rotateRight()">Rotate Right ⤵</button>
+</mat-dialog-actions>

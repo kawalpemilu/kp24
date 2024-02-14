@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
 
@@ -12,40 +13,9 @@ interface TippyInstanceWithLoading extends NgxTippyInstance {
 @Component({
     selector: 'app-photo',
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule, NgxTippyModule],
-    template: `
-      @if (showRoiTooltip) {
-        <div #tippyTemplateRef>
-          <img alt="ROI paslon" style="min-height:120px;width:150px" loading="lazy"/>
-        </div>
-        <div [style.width]="maxWidth + 'px'"
-             [style.height]="maxHeight + 'px'"
-             [ngxTippy]="tippyTemplateRef"
-             [title]="tooltipUrl"
-             [tippyProps]="{
-                placement: 'right',
-                delay: [200, 200],
-                animation: 'shift-toward',
-                onCreate: loadTooltipImage,
-                onShow: onShowTippy,
-             }">
-            <a [href]="largePhoto" target="_blank">
-                <img [style.max-width]="maxWidth + 'px'"
-                     [style.max-height]="maxHeight + 'px'"
-                     [src]="hiResThumb ? largePhoto : thumbnail" /><br>
-            </a>
-        </div>
-      } @else {
-        <a [href]="largePhoto" target="_blank">
-            <img [style.max-width]="maxWidth + 'px'"
-                 [style.max-height]="maxHeight + 'px'"
-                 [src]="hiResThumb ? largePhoto : thumbnail" /><br>
-        </a>
-      }
-        <!-- @if (imageMetadata; as m) { -->
-            <!-- Size: {{ (m.z || m.s) / 1024 | number: '1.0-0'}}KB<br> -->
-            <!-- <pre style="text-align: left; width: 200px">{{ m | json }}</pre> -->
-        <!-- } -->`,
+    imports: [CommonModule, MatButtonModule, MatDialogModule, MatProgressSpinnerModule, NgxTippyModule],
+    templateUrl: './photo.component.html',
+    styleUrl: './photo.component.css',
 })
 export class PhotoComponent {
     @Input() maxWidth = 125;
@@ -135,4 +105,45 @@ export class PhotoComponent {
             this.thumbnail = url + '=s200';
         }
     }
+
+    constructor(public dialog: MatDialog) {}
+
+    openDialog() {
+      const dialogRef = this.dialog.open(PhotoDialog, {
+        height: '90vh',
+        width: '90vw',
+        data: {
+          largePhoto: this.largePhoto,
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        console.log(`Dialog result: ${result}`);
+      });
+    }
+}
+
+export interface PhotoDialogData {
+  largePhoto: string;
+}
+
+@Component({
+  selector: 'app-photo-dialog',
+  templateUrl: './photo-dialog.component.html',
+  styleUrl: './photo.component.css',
+  standalone: true,
+  imports: [MatDialogModule, MatButtonModule],
+})
+export class PhotoDialog {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: PhotoDialogData) {}
+
+  rotation: number = 0;
+
+  rotateLeft() {
+    this.rotation = (this.rotation - 90) % 360;
+  }
+
+  rotateRight() {
+    this.rotation = (this.rotation + 90) % 360;
+  }
 }
