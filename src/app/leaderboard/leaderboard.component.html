@@ -13,10 +13,14 @@
         </tr>
         @for (u of topUploaders$ | async; track u.uid) {
         <tr>
-            <th [style.background-color]="(u.uploadMaxCount - u.uploadCount < 5) ? 'magenta' : ''">
+            <th [style.background-color]="(
+                u.uploadMaxCount - u.uploadCount < 5 &&
+                getNumberOfApprovedPhotos(u) * 10 - u.uploadCount < 5
+                ) ? 'magenta' : ''">
                 {{ u.uploadCount | number }}
                 / 
-                {{ u.uploadMaxCount | number }}
+                {{ u.uploadMaxCount | number }}<br>
+                Approved: {{ getNumberOfApprovedPhotos(u) }}
             </th>
             <td>
                 <img [src]="u.pic" width="40"

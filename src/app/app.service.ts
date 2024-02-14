@@ -100,7 +100,7 @@ export class AppService {
 
   topUploaders$() {
     console.log('Firestore TopUploaders');
-    const constraints = [ orderBy('uploadCount', 'desc'), limit(10)];
+    const constraints = [ orderBy('uploadCount', 'desc'), limit(100)];
     const uRef = collection(this.firestore, `/u`);
     const qRef = query(uRef, ...constraints);
     return collectionSnapshots(qRef).pipe(

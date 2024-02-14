@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../app.service';
 import { MatTabsModule } from '@angular/material/tabs';
-import { USER_ROLE } from '../../../functions/src/interfaces';
+import { USER_ROLE, getNumberOfApprovedPhotos } from '../../../functions/src/interfaces';
 import { ProfileLinkComponent } from '../user/link.component';
 
 @Component({
@@ -22,4 +22,6 @@ export class LeaderboardComponent {
     USER_ROLE = USER_ROLE;
 
     constructor(public service: AppService) { }
+
+    getNumberOfApprovedPhotos = getNumberOfApprovedPhotos;
 }

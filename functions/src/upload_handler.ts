@@ -1,6 +1,6 @@
 import {
   APPROVAL_STATUS, AggregateVotes, Lokasi, TESTER_UID, USER_ROLE, autoId,
-  UploadRequest, UserProfile, UserStats, aggregate, getParentId, getUserStats,
+  UploadRequest, UserProfile, UserStats, aggregate, getParentId, getUserStats, getNumberOfApprovedPhotos,
 } from "./interfaces";
 
 import * as admin from "firebase-admin";
@@ -120,10 +120,17 @@ async function addDataToUserProfile(
     }
     p.uploads[data.idLokasi][data.imageId] = data;
     p.uploadCount++;
+    p.uploadApprovedCount = getNumberOfApprovedPhotos(p);
     s.uploadCount++;
+
     if (s.uploadCount > s.uploadMaxCount) {
-      logger.error("Uploads exceeded", uid);
-      return false;
+      if (s.uploadCount <= 10 * p.uploadApprovedCount) {
+        logger.warn("Uploads less than 10x approved",
+          uid, s.uploadCount, p.uploadApprovedCount);
+      } else {
+        logger.error("Uploads exceeded", uid);
+        return false;
+      }
     }
   }
 

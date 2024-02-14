@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { APPROVAL_STATUS, autoId, ImageMetadata, Votes, PendingAggregateVotes, UserProfile } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, autoId, ImageMetadata, Votes, PendingAggregateVotes, UserProfile, getNumberOfApprovedPhotos } from '../../../functions/src/interfaces';
 import { DigitizeComponent } from './digitize.component';
 import { AppService } from '../app.service';
 import * as piexif from 'piexifjs';
@@ -325,6 +325,8 @@ export class UploadComponent {
 
   userExceedsMaxUploads() {
     const u = this.userProfile;
-    return u && (u.uploadCount >= u.uploadMaxCount);
+    return u &&
+      (u.uploadCount >= u.uploadMaxCount) &&
+      (u.uploadCount >= 10 * getNumberOfApprovedPhotos(u));
   }
 }

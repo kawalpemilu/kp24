@@ -162,6 +162,7 @@ export const register = onCall(
       uploadRemaining: DEFAULT_MAX_UPLOADS,
       uploadDistinctDesa: 0,
       uploadDistinctTps: 0,
+      uploadApprovedCount: 0,
       lapor: {},
       laporCount: 0,
       laporMaxCount: DEFAULT_MAX_LAPORS,

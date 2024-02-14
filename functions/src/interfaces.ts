@@ -38,6 +38,7 @@ export interface UserProfile {
   uploadRemaining: number;
   uploadDistinctTps: number; // Number of different TPS uploaded.
   uploadDistinctDesa: number; // Number of different kelurahans uploaded.
+  uploadApprovedCount: number; // Number of approved photos.
 
   // reviews[tpsId] = number of photos reviewed in that TPS.
   reviews: Record<string, number>;
@@ -644,4 +645,16 @@ export function aggregate(lokasi: Lokasi) {
     if (cagg.anyLaporTps) nextAgg.anyLaporTps = cagg.anyLaporTps;
   }
   return nextAgg;
+}
+
+export function getNumberOfApprovedPhotos(p: UserProfile) {
+  let nApproved = 0;
+  for (const imgs of Object.values(p.uploads)) {
+    for (const u of Object.values(imgs)) {
+      if (u.status === APPROVAL_STATUS.APPROVED) {
+        nApproved++;
+      }
+    }
+  }
+  return nApproved;
 }
