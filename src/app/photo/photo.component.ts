@@ -61,7 +61,6 @@ export class PhotoComponent {
     @Input({ required: false })
     set roiToolTip(value: string[]) {
       this.tooltipUrl = this.roiUrl(value[0], value[1]);
-      console.log(this.tooltipUrl)
       this.roiImageUrl.emit(this.tooltipUrl);
     }
 
