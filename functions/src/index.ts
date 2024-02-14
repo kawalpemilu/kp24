@@ -396,7 +396,7 @@ export const lapor = onCall(
       uid: request.auth.uid,
       reason,
       isResolved: !!request.data.isResolved,
-      votes: {pas1, pas2, pas3, status, updateTs: 0},
+      votes: {pas1, pas2, pas3, status, updateTs: Date.now()},
     };
     return laporHandler(firestore, sanitized).then((success) => {
       if (success) {

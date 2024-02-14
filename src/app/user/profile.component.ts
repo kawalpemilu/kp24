@@ -29,11 +29,22 @@ interface UserJagaTps {
     uploaded: boolean;
 }
 
+interface UserLapor {
+    key: string;
+    tpsId: string;
+    imageId: string;
+    lokasi: Lokasi;
+    reason: string;
+    laporTs: number;
+}
+
 interface ProfileDetails {
-    profile: UserProfile;
+    profile: UserProfile; // The profile being viewed.
     uploads: UserUpload[];
     reviews: UserReview[];
     jagaTps: UserJagaTps[];
+    laporan: UserLapor[];
+    loggedInProfile: UserProfile | null; // The logged-in profile.
 }
 
 @Component({
@@ -60,13 +71,18 @@ export class UserProfileComponent implements OnInit {
                     this.service.profile$;
             }));
 
-        this.profile$ = combineLatest([userProfile$, this.service.lokasi$]).pipe(switchMap(([profile, P]) => {
+        this.profile$ = combineLatest([
+            userProfile$,
+            this.service.lokasi$,
+            this.service.profile$]).pipe(switchMap(([profile, P, loggedInProfile]) => {
             if (!profile) return of();
             const profileDetails: ProfileDetails = {
                 profile,
                 uploads: [],
                 reviews: [],
                 jagaTps: [],
+                laporan: [],
+                loggedInProfile
             };
             for (const images of Object.values(profile.uploads ?? {})) {
                 for (const uploadRequest of Object.values(images)) {
@@ -92,6 +108,19 @@ export class UserProfileComponent implements OnInit {
                 profileDetails.jagaTps.push({ tpsId, lokasi, uploaded });
             }
             profileDetails.jagaTps.sort((a, b) => a.tpsId.localeCompare(b.tpsId));
+            for (const [key, lapor] of Object.entries(profile.lapor ?? {})) {
+                const lokasi = P.getPrestineLokasi(lapor.idLokasi.substring(0, 10));
+                if (!lokasi) continue;
+                profileDetails.laporan.push({
+                    key,
+                    tpsId: lapor.idLokasi,
+                    imageId: lapor.imageId,
+                    lokasi,
+                    reason: lapor.reason,
+                    laporTs: lapor.votes.updateTs
+                });
+            }
+            profileDetails.laporan.sort((a, b) => b.laporTs - a.laporTs);
             return of(profileDetails);
         }));
     }

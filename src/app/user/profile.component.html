@@ -6,7 +6,7 @@
       <img class="pic" [src]="profileDetails.profile.pic" alt="Foto Profil" width="6rem" height="6rem" />
       <div class="info">
         <span class="name">{{ profileDetails.profile.name }}</span>
-        @if (((service.profile$ | async)?.role || 0) >= USER_ROLE.ADMIN) {
+        @if ((profileDetails.loggedInProfile?.role || 0) >= USER_ROLE.ADMIN) {
             {{ profileDetails.profile.email }}
         }
     
@@ -67,6 +67,26 @@
     </table>
     <br>
     <hr>
+    }
+
+    @if (profileDetails.laporan.length) {
+        <h2>Laporan Anda</h2>
+        <table class="collapsed_border">
+            @for (lapor of profileDetails.laporan; track lapor.key) {
+            <tr>
+                <td>
+                    <a class="hierarchy" [routerLink]="['/h', lapor.tpsId]">
+                        TPS #{{ lapor.tpsId.substring(10) }}
+                    </a>
+                </td>
+                <td>
+                    {{ lapor.reason }}
+                </td>
+            </tr>
+            }
+        </table>
+        <br>
+        <hr>
     }
 
     @if (!profileDetails.uploads.length) {
