@@ -26,7 +26,7 @@ export class AppComponent {
     public router: Router,
     public service: AppService,
     private http: HttpClient) {
-
+    service.http = http;
     service.lokasi$ =
       this.http.get('assets/tps2.json').pipe(
         map(json => new PrestineLokasi(json as Hierarchy)),

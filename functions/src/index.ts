@@ -59,40 +59,12 @@ function getCacheTimeoutMs(id: string) {
   return 60 * 60 * 1000; // 1 hour, about 24 QPS.
 }
 type HierarchyRequest = CallableRequest<{ id: string, uid?: string }>;
-const hierarchyRateLimiter = new LruCache<string, [number, number]>(1000);
-/**
- * @param {number} now the current timestamp.
- * @param {HierarchyRequest} request
- * @return {boolean} true if the request should be rate limited.
- */
-function shouldRateLimitHierarchy(now: number, request: HierarchyRequest) {
-  const r = request.rawRequest;
-  const ip = `${r.headers["x-forwarded-for"] || r.connection.remoteAddress}`;
-  logger.log("IP Address:", ip, request);
-
-  if (request.data.uid === "kawalc1") {
-    if (shouldRateLimit(hierarchyRateLimiter, now, request.data.uid, 25)) {
-      logger.error("hierarchy-rate-limited-kawalc1",
-        request.data.id, request.data.uid);
-      return true;
-    }
-    return false;
-  }
-  if (request.auth?.token?.email) {
-    logger.error("hierarchy-rate-limited-user", request.data.id,
-      request.auth.uid, request.auth.token.name, request.auth.token.email);
-  }
-  if (shouldRateLimit(hierarchyRateLimiter, now, ip, 20)) {
-    logger.info("hierarchy-rate-limited-public", request.data.id, ip);
-    return true;
-  }
-  return false;
-}
-export const hierarchy2 = onCall(
+export const h = onCall(
   {cors: ALLOW_ORIGINS, memory: "512MiB"},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
-    if (shouldRateLimitHierarchy(now, request)) return {} as Lokasi;
+    if (request.data.uid !== "kawalc1" &&
+        request.data.uid !== "gae") return {} as Lokasi;
 
     let id = request.data.id;
     if (!(/^\d{0,13}$/.test(id))) id = "";

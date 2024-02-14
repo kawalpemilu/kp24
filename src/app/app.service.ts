@@ -7,6 +7,7 @@ import { Firestore, QueryConstraint, collection, collectionSnapshots,
 import { GoogleAuthProvider } from "firebase/auth";
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { APPROVAL_STATUS, LaporRequest, Lokasi, PrestineLokasi, USER_ROLE, UploadRequest, UserProfile, Votes, delayTime } from '../../functions/src/interfaces';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,7 @@ export class AppService {
   auth: Auth = inject(Auth);
   firestore: Firestore = inject(Firestore);
   functions: Functions = inject(Functions);
+  http!: HttpClient;
 
   public lokasi$!: Observable<PrestineLokasi>;
   public viewportWidth = window.innerWidth;
@@ -207,11 +209,11 @@ export class AppService {
 
   async getHierarchy(id: string) {
     this.rpcIsRunning = true;
-    const callable = httpsCallable(this.functions, 'hierarchy2');
-    const result = await callable({ id })
+    const result: any = await firstValueFrom(this.http.get(
+      `https://kp24-fd486.et.r.appspot.com/h?id=${id}`));
     console.log('RPC hierarchy: ', id, result);
     this.rpcIsRunning = false;
-    return result;
+    return result.result as Lokasi | null;
   }
 
   upload(request: UploadRequest) {

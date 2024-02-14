@@ -146,8 +146,7 @@ export class HierarchyComponent implements OnInit {
 
   getLokasiDataFromRpc$(id: string): Observable<LokasiData> {
     return from(this.service.getHierarchy(id))
-      .pipe(switchMap(result => {
-        const lokasi = result.data as Lokasi | null;
+      .pipe(switchMap(lokasi => {
         return lokasi?.aggregated ? of(this.toLokasiData(lokasi)) : of();
       }));
   }
