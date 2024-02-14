@@ -2,11 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { APPROVAL_STATUS, ImageMetadata, PendingAggregateVotes, PrestineLokasi, UploadRequest, Votes } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, ImageMetadata, PendingAggregateVotes, PrestineLokasi, Votes } from '../../../functions/src/interfaces';
 import { AppService } from '../app.service';
 import { PhotoComponent } from './photo.component';
 import { DigitizeComponent } from '../upload/digitize.component';
 import { FormsModule } from '@angular/forms';
+import { ProfileLinkComponent } from '../user/link.component';
 
 interface OptionLokasi {
     id: string;
@@ -16,7 +17,7 @@ interface OptionLokasi {
 @Component({
     selector: 'app-review',
     standalone: true,
-    imports: [CommonModule, MatButtonModule, FormsModule,
+    imports: [CommonModule, MatButtonModule, FormsModule, ProfileLinkComponent,
         MatProgressSpinnerModule, PhotoComponent, DigitizeComponent],
     templateUrl: './review.component.html',
     styleUrl: './review.component.css',

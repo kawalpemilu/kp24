@@ -91,6 +91,7 @@
             [review]="true"
             (onSubmit)="approve($event)">
         </app-digitize>
+        Uploader: <app-profile-link *ngIf="votes.uid" [uid]="votes.uid"></app-profile-link>
     }
     </td>
     <td *ngIf="roiImageUrl">
