@@ -109,7 +109,7 @@ export class PhotoComponent {
     constructor(public dialog: MatDialog) {}
 
     openDialog() {
-      const dialogRef = this.dialog.open(PhotoDialog, {
+      this.dialog.open(PhotoDialog, {
         height: '90vh',
         width: '90vw',
         data: {
@@ -117,9 +117,7 @@ export class PhotoComponent {
         }
       });
 
-      dialogRef.afterClosed().subscribe(result => {
-        console.log(`Dialog result: ${result}`);
-      });
+      return false;
     }
 }
 

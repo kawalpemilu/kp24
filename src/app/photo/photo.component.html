@@ -13,16 +13,16 @@
           onCreate: loadTooltipImage,
           onShow: onShowTippy,
         }">
-      <div class="preview" (click)="openDialog()">
+      <a [href]="largePhoto" target="_blank" rel="noopener noreferrer" (contextmenu)="openDialog()">
           <img [style.max-width]="maxWidth + 'px'"
                 [style.max-height]="maxHeight + 'px'"
                 [src]="hiResThumb ? largePhoto : thumbnail" /><br>
-      </div>
+      </a>
   </div>
 } @else {
-  <div class="preview" (click)="openDialog()">
+  <a [href]="largePhoto" target="_blank" rel="noopener noreferrer" (contextmenu)="openDialog()">
       <img [style.max-width]="maxWidth + 'px'"
             [style.max-height]="maxHeight + 'px'"
             [src]="hiResThumb ? largePhoto : thumbnail" /><br>
-  </div>
+  </a>
 }
