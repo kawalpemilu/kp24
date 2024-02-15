@@ -109,6 +109,18 @@ export class AppService {
       map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
   }
 
+  maxedOutUploaders$() {
+    console.log('Firestore TopUploadersNeedReview');
+    const constraints = [
+      where('uploadCount', '==', 100),
+      orderBy('uploadApprovedCount', 'asc'),
+      limit(20)];
+    const uRef = collection(this.firestore, `/u`);
+    const qRef = query(uRef, ...constraints);
+    return collectionSnapshots(qRef).pipe(
+      map((snapshots) => snapshots.map(s => s.data() as UserProfile)));
+  }
+
   topReviewers$() {
     console.log('Firestore TopReviewers');
     const constraints = [ orderBy('reviewCount', 'desc'), limit(10)];

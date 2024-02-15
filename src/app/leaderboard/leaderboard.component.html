@@ -5,6 +5,41 @@
 <h2 style="margin-top: 10px;">Leaderboard</h2>
 
 <mat-tab-group>
+<mat-tab label="MaxedOut">
+    <table class="collapsed_border">
+        <tr>
+            <th>#Uploads</th>
+            <th width="300">Name, Email, UID, Role</th>
+        </tr>
+        @for (u of maxedOutUploaders$ | async; track u.uid) {
+        <tr>
+            <th [style.background-color]="(
+                u.uploadMaxCount - u.uploadCount < 5 &&
+                getNumberOfApprovedPhotos(u) * 10 - u.uploadCount < 5
+                ) ? 'magenta' : ''">
+                {{ u.uploadCount | number }}
+                / 
+                {{ u.uploadMaxCount | number }}<br>
+                Approved: {{ getNumberOfApprovedPhotos(u) }}
+            </th>
+            <td>
+                <img [src]="u.pic" width="40"
+                        onerror="this.style.display='none'"
+                        style="float: left; padding: 0 5px 0 0" />
+                {{ u.name }}<br>
+                ({{ u.email }})<br>
+                <app-profile-link [uid]="u.uid"></app-profile-link><br>
+                Created: {{ u.createdTs | date }}<br>
+                Role: {{ USER_ROLE[u.role] }}
+            </td>
+        </tr>
+        } @empty {
+            <br>
+            No user found.
+        }
+    </table>
+</mat-tab>
+
 <mat-tab label="Uploaders">
     <table class="collapsed_border">
         <tr>

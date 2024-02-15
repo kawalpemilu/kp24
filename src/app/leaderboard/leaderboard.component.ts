@@ -13,6 +13,7 @@ import { ProfileLinkComponent } from '../user/link.component';
     styleUrl: './leaderboard.component.css'
 })
 export class LeaderboardComponent {
+    maxedOutUploaders$ = this.service.maxedOutUploaders$();
     topUploaders$ = this.service.topUploaders$();
     topReviewers$ = this.service.topReviewers$();
     topLaporers$ = this.service.topLaporers$();

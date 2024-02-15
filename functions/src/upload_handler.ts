@@ -134,7 +134,9 @@ async function addDataToUserProfile(
     }
   }
 
-  p.uploadRemaining = (p.uploadMaxCount || 0) - (p.uploadCount || 0);
+  p.uploadRemaining = Math.max(
+    10 * (p.uploadApprovedCount || 0),
+    p.uploadMaxCount || 0) - (p.uploadCount || 0);
   p.laporRemaining = (p.laporMaxCount || 0) - (p.laporCount || 0);
 
   const tpsIds = Object.keys(p.uploads || {});
