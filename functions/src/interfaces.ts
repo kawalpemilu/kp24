@@ -556,7 +556,7 @@ export function shouldRateLimit(
  */
 export function isValidVoteNumbers(votes: number) {
   if (isNaN(votes)) return false;
-  return votes >= 0 && votes < 1000;
+  return votes >= 0 && votes < 10000;
 }
 
 /**
