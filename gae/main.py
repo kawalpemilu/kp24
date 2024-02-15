@@ -46,7 +46,8 @@ def hierarchy():
 
         jsonTxt = response.content
         headers['X-Cache'] = 'HIT-D'
-        memcache.set(id, jsonTxt, 3600)
+        t = 60 * 60 if len(id) >= 6 else 30 * 60 if len(id) >= 4 else 10 * 60 if len(id) >= 2 else 5 * 60
+        memcache.set(id, jsonTxt, t)
         return jsonTxt, 200, headers
 
     except (urlfetch.Error, RuntimeError) as e:
