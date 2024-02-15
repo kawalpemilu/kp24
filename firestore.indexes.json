@@ -41,6 +41,20 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "u",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "uploadCount",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "uploadApprovedCount",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
