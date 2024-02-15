@@ -103,7 +103,7 @@
                 } @else if (tps.status === APPROVAL_STATUS.LAPOR) {
                     Laporing ...
                 }
-            } @else {
+            } @else if (userProfile) {
                 <button class="lapor" mat-raised-button color="basic" (click)="
                     lapor(tps);
                     isUploadDrawer = false;
