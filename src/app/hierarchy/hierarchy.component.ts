@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
 import { shareReplay, switchMap, startWith, catchError, map, distinctUntilChanged } from 'rxjs/operators';
-import { APPROVAL_STATUS, AggregateVotes, Lokasi, LruCache, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
+import { APPROVAL_STATUS, AggregateVotes, Lokasi, LruCache, USER_ROLE, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../app.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -157,9 +157,9 @@ export class HierarchyComponent implements OnInit {
    * and then emit another more fresh LokasiData from the server and cache it.
    */
   getLokasiDataWithVotes(id: string): Observable<LokasiData> {
-    return this.service.user$.pipe(
+    return this.service.profile$.pipe(
       switchMap(user =>
-        (user)
+        this.shouldUseFirestore(user)
           ? this.getLokasiDataFromFirestore$(id)
           : this.getLokasiDataFromRpc$(id)),
       switchMap(async (lokasi) => {
@@ -173,6 +173,18 @@ export class HierarchyComponent implements OnInit {
       startWith(this.lokasiCache.get(id)),
       switchMap(lokasi => lokasi ? of(lokasi) : of())
     );
+  }
+
+  shouldUseFirestore(u: UserProfile | null) {
+    if (!u) return false;
+    if (u.role >= USER_ROLE.MODERATOR) return true;
+    let lastUpdate = 0;
+    for (const imgs of Object.values(u.uploads || {})) {
+      for (const req of Object.values(imgs)) {
+        lastUpdate = Math.max(lastUpdate, req.votes[0].updateTs);
+      }
+    }
+    return (Date.now() - lastUpdate) < 1000 * 60 * 60 * 24;
   }
 
   toLokasiData(lokasiWithVotes: Lokasi) {
