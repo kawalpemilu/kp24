@@ -169,14 +169,14 @@ export const changeRole = onCall(
     const adminRef = firestore.doc(`u/${request.auth.uid}`);
     const admin = (await adminRef.get()).data() as UserProfile | undefined;
     if (!admin || admin.role <= USER_ROLE.MODERATOR) return "peasants";
-    if (request.data.role >= admin.role) return "generous";
+    if (+request.data.role >= admin.role) return "generous";
 
     const userRef = firestore.doc(`u/${request.data.uid}`);
     const user = (await userRef.get()).data() as UserProfile | undefined;
     if (!user || user.role >= admin.role) return "nunjak";
-    if (user.role === request.data.role) return "unchanged";
+    if (user.role === +request.data.role) return "unchanged";
 
-    user.role = request.data.role;
+    user.role = +request.data.role;
     await userRef.set(user);
     return "bravo";
   });
