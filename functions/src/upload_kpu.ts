@@ -53,8 +53,9 @@ async function fetchSamBot(idDesa: string, tpsNo: string, filename: string) {
 
 async function uploadKpuAtDesa(idDesa: string) {
   const hRef = firestore.doc(`h/i${idDesa}`);
-  const lokasi = (await hRef.get()).data() as Lokasi | undefined;
-  if (!lokasi) throw new Error();
+  let lokasi = ((await hRef.get()).data() as Lokasi) ||
+               LOKASI.getPrestineLokasi(idDesa);
+  if (!lokasi) throw new Error(idDesa);
   for (const [tpsNo, agg] of Object.entries(lokasi.aggregated)) {
     if (agg[0].totalKpuTps) continue;
     const kpuData = await fetchKpuData(idDesa + tpsNo.padStart(3, '0'));
@@ -101,7 +102,7 @@ async function uploadKpuAtDesa(idDesa: string) {
 }
 
 (async () => {
-  const parallelism = 5;
+  const parallelism = 20;
   const promises: Promise<void>[] = [];
   const desaIds = LOKASI.getDesaIds();
   for (let i = 0; i < desaIds.length; i++) {
@@ -109,9 +110,9 @@ async function uploadKpuAtDesa(idDesa: string) {
     const j = i % parallelism;
 
     if (!promises[j]) {
-      promises[j] = uploadKpuAtDesa(idDesa).catch(e => {});
+      promises[j] = uploadKpuAtDesa(idDesa).catch(console.error);
     } else {
-      promises[j] = promises[j].then(() => uploadKpuAtDesa(idDesa).catch(e => {}));
+      promises[j] = promises[j].then(() => uploadKpuAtDesa(idDesa).catch(console.error));
     }
   }
   await Promise.all(promises);
