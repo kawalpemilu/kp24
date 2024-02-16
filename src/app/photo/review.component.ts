@@ -63,9 +63,9 @@ export class ReviewComponent {
             totalCompletedTps: 0,
             totalJagaTps: 0,
             totalLaporTps: 0,
-            pas1: votes.pas1,
-            pas2: votes.pas2,
-            pas3: votes.pas3,
+            pas1: votes.pas1 || 0,
+            pas2: votes.pas2 || 0,
+            pas3: votes.pas3 || 0,
             updateTs: 0,
             status: votes.status,
             uploadedPhoto: {
