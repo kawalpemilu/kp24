@@ -55,8 +55,8 @@ async function uploadKpuAtDesa(idDesa: string) {
   const hRef = firestore.doc(`h/i${idDesa}`);
   const lokasi = (await hRef.get()).data() as Lokasi | undefined;
   if (!lokasi) throw new Error();
-  for (const [tpsNo] of Object.entries(lokasi.aggregated)) {
-    // if (agg[0].totalKpuTps) continue;
+  for (const [tpsNo, agg] of Object.entries(lokasi.aggregated)) {
+    if (agg[0].totalKpuTps) continue;
     const kpuData = await fetchKpuData(idDesa + tpsNo.padStart(3, '0'));
     if (!kpuData) continue;
     if (!kpuData.status_suara) continue;

@@ -42,7 +42,7 @@ export function writeToStream(url: string, pst: any) {
   return new Promise((resolve, reject) => {
     const req = https.get(url, (response) => {
       response.pipe(pst).on('finish', resolve);
-    });
+    }).on("error", reject);
     // Set a 1-minute timeout
     req.setTimeout(60000, () => {
       req.abort(); // Abort the request
