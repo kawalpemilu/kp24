@@ -145,6 +145,44 @@
             }
         }
     }
+    @if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
+        <td class="foto" valign="top">
+            <button *ngIf="uploadHistory === null" mat-raised-button color="primary" style="height: 80px"
+                (click)="getUploadHistory()" [disabled]="service.rpcIsRunning">
+                View<br>
+                Upload<br>
+                History
+            </button>
+            @for (u of uploadHistory || []; track u.imageId) {
+                <td class="foto" valign="top">
+                    <div style="height: 125px; padding-bottom: 5px">
+                        <app-photo [photoUrl]="u.servingUrl"
+                                [roiToolTip]="[u.servingUrl, tpsId]">
+                        </app-photo>
+                    </div>
+                    @if (u.votes[0]; as v) {
+                        <span>Pas1: {{ v.pas1 }}</span><br>
+                        <span>Pas2: {{ v.pas2 }}</span><br>
+                        <span>Pas3: {{ v.pas3 }}</span><br>
+                    }
+                    @if (u.status === APPROVAL_STATUS.NEW) {
+                        Pending Review
+                    } @else if (u.status === APPROVAL_STATUS.REJECTED) {
+                        Rejected
+                    } @else if (u.status === APPROVAL_STATUS.MOVED) {
+                        Moved
+                    }
+                    <br>
+                    @if (u.votes[1].uid) {
+                        U:<app-profile-link [uid]="u.votes[1].uid"></app-profile-link><br>
+                    }
+                    @if (u.votes[0].uid) {
+                        R:<app-profile-link [uid]="u.votes[0].uid"></app-profile-link><br>
+                    }
+                </td>
+            }            
+        </td>
+    }
                 <td valign="top" *ngIf="false">
                     <div style="width: 170px">
                         <h4><b>Komitmen Partisipasi</b></h4>

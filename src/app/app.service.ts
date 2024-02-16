@@ -207,6 +207,18 @@ export class AppService {
     return collectionSnapshots(qRef).pipe(map(ss => ss.map(s => s.data() as UserProfile)));
   }
 
+  async getUploadHistory(tpsId: string) {
+    console.log('Firestore RejectedPhotos', tpsId);
+    this.rpcIsRunning = true;
+    const tRef = collection(this.firestore, `/t/${tpsId}/p`);
+    const qRef = query(tRef, where('status', '>', APPROVAL_STATUS.APPROVED), limit(10));
+    const snapshots = await firstValueFrom(collectionSnapshots(qRef));
+    const history: UploadRequest[] = [];
+    snapshots.forEach(s => history.push(s.data() as UploadRequest));
+    this.rpcIsRunning = false;
+    return history;
+  }
+
   async changeRole(p: UserProfile, role: USER_ROLE) {
     console.log('RPC changRole', p.uid, p.role, role);
     const callable = httpsCallable(this.functions, 'changeRole');

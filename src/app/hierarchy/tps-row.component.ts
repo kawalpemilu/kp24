@@ -27,6 +27,7 @@ export class TpsRowComponent {
   @Input({required: true}) c!: ChildLokasi;
   @Input({required: true}) userProfile: UserProfile | null = null;
 
+  uploadHistory: UploadRequest[] | null = null;
   reviewUploadRequest: UploadRequest | null = null;
   laporRequest: LaporRequest | null = null;
   isUploadDrawer = true;
@@ -85,5 +86,9 @@ export class TpsRowComponent {
         isResolved: a.uploadedPhoto?.laporResolved ?? false,
         votes: a,
     };
+  }
+
+  async getUploadHistory() {
+    this.uploadHistory = await this.service.getUploadHistory(this.tpsId);
   }
 }
