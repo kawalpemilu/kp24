@@ -160,6 +160,17 @@
                                 [roiToolTip]="[u.servingUrl, tpsId]">
                         </app-photo>
                     </div>
+                    <div style="float: right;">
+                        <button mat-mini-fab color="basic" (click)="
+                            reviewUploadRequest = u;
+                            isUploadDrawer = false;
+                            isLaporDrawer = false;
+                            isDrawerOpen = !drawer.opened;
+                            drawer.toggle()">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                    </div>
+        
                     @if (u.votes[0]; as v) {
                         <span>Pas1: {{ v.pas1 }}</span><br>
                         <span>Pas2: {{ v.pas2 }}</span><br>
