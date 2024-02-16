@@ -85,6 +85,7 @@
                 TOTAL
                 <span class="total pending" *ngIf="lokasi.total.totalPendingTps as p" >{{ p }}</span>
                 <span class="total error" *ngIf="lokasi.total.totalErrorTps as e" >{{ e }}</span>
+                <span class="total lapor" *ngIf="lokasi.total.totalLaporTps as e" >{{ e }}</span>
             </th>
             @if (lokasi.total.pas1 + lokasi.total.pas2 + lokasi.total.pas3; as totalVotes) {
                 <th class="numbers">
