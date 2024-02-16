@@ -16,7 +16,7 @@ import { CommonModule } from '@angular/common';
         </span>
         <br>
         <span class="fraction">
-            {{ nom | number }}@if(showDen){/{{ den | number }}}
+            {{ nom | number }}@if(nom2!==null){/{{ nom2 | number }}}@if(showDen){/{{ den | number }}}
         </span>
     } @else {
         -
@@ -36,6 +36,7 @@ import { CommonModule } from '@angular/common';
 })
 export class PercentComponent {
     @Input() nom = 0;
+    @Input() nom2: number | null = null;
     @Input() den = 0;
     @Input() showDen = true;
 }

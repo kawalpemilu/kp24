@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { ChildLokasi } from './hierarchy.component';
 import { AppService } from '../app.service';
 import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes, UserProfile,
-  UploadRequest, ImageMetadata, LaporRequest } from '../../../functions/src/interfaces';
+  UploadRequest, ImageMetadata, LaporRequest, KPU_UID } from '../../../functions/src/interfaces';
 import { UploadComponent } from '../upload/upload.component';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
@@ -37,6 +37,7 @@ export class TpsRowComponent {
 
   USER_ROLE = USER_ROLE;
   APPROVAL_STATUS = APPROVAL_STATUS;
+  KPU_UID = KPU_UID;
 
   constructor(public service: AppService) { }
 

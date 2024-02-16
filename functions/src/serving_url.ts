@@ -17,9 +17,10 @@ export async function getServingUrl(objectName: string) {
  * @param {string} url The url to be fetched.
  * @return {string} The content of the url.
  */
-function fetch(url: string) {
+export function fetch(url: string, ignoreCertificate = false) {
+  const agent = new https.Agent({ rejectUnauthorized: !ignoreCertificate });
   return new Promise<string>((resolve, reject) => {
-    https.get(url, (resp: http.IncomingMessage) => {
+    const req = https.get(url, {agent}, (resp: http.IncomingMessage) => {
       let data = "";
       resp.on("data", (chunk: string) => {
         data += chunk;
@@ -28,5 +29,24 @@ function fetch(url: string) {
         resolve(data);
       });
     }).on("error", reject);
+
+    // Set a 1-minute timeout
+    req.setTimeout(60000, () => {
+      req.abort(); // Abort the request
+      reject(new Error('Request timed out after 1 minute.'));
+    });
+  });
+}
+
+export function writeToStream(url: string, pst: any) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, (response) => {
+      response.pipe(pst).on('finish', resolve);
+    });
+    // Set a 1-minute timeout
+    req.setTimeout(60000, () => {
+      req.abort(); // Abort the request
+      reject(new Error('Request timed out after 1 minute.'));
+    });
   });
 }

@@ -65,13 +65,14 @@
             </td>
     @if (c.agg.length > 1) {
         @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
-        <td valign="top" [class]="tps.totalLaporTps ? 'foto-terlapor' : ''">
+        <td valign="top" [class]="tps.totalLaporTps ? 'foto-terlapor' : ''"
+            [style.background-color]="tps.uploadedPhoto?.kpuData ? 'lightgreen' : ''">
             <div style="height: 125px; padding-bottom: 5px">
                 <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"
                             [roiToolTip]="[tps.uploadedPhoto?.photoUrl || '', tpsId]">
                 </app-photo>
             </div>
-            @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
+            @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR && tps.ouid != KPU_UID) {
                 <div style="float: right;">
                 <button mat-mini-fab color="basic" (click)="
                     reReview(tps);
@@ -86,7 +87,9 @@
             <span>Pas1: {{ tps.pas1 }}</span><br>
             <span>Pas2: {{ tps.pas2 }}</span><br>
             <span>Pas3: {{ tps.pas3 }}</span><br>
-            @if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
+            @if (tps.uploadedPhoto?.kpuData) {
+                <b>[KPU]</b><br>
+            } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                 @if (tps.uid) {
                     R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
                 }

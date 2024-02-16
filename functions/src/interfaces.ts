@@ -5,6 +5,7 @@ export const DEFAULT_MAX_UPLOADS = 100;
 export const DEFAULT_MAX_LAPORS = 100;
 
 export const TESTER_UID = "tester_uid";
+export const KPU_UID = "kpu_uid";
 
 export const ALLOW_ORIGINS = [
   "https://kawalpemilu.org",
@@ -282,6 +283,7 @@ export class PrestineLokasi {
       totalErrorTps: 0,
       totalJagaTps: 0,
       totalLaporTps: 0,
+      totalKpuTps: 0,
       updateTs: 0,
       dpt,
     };
@@ -354,6 +356,9 @@ export declare interface AggregateVotes extends Votes {
   // Total TPS has at least one volunter that plans to take photo.
   totalJagaTps: number;
 
+  // Total TPS has KPU data.
+  totalKpuTps: number;
+
   // Only available at Desa level.
   uploadedPhoto?: UploadedPhoto;
 
@@ -395,6 +400,11 @@ export declare interface UploadedPhoto {
 
   // Whether the laporan is resolved.
   laporResolved?: boolean;
+
+  // Whether this photo is from KPU website.
+  kpuData?: KpuData;
+
+  samBot?: SamBot;
 }
 
 // Lokasi detail for Provinsi, Kabupaten, and Kecamatan level.
@@ -427,6 +437,55 @@ export declare interface Lokasi {
   lastCachedTs?: number;
 }
 
+export declare interface KpuData {
+  // The digitization of halaman 2 C1 plano.
+  chart: Record<string, number>;
+
+  // The url for each halaman of C1 plano.
+  images: string[];
+
+  // Additional admin info.
+  administrasi: Record<string, number>;
+
+  // The timestamp.
+  ts: string;
+
+  // Whether the votes has been digitized?
+  status_suara: boolean;
+
+  status_adm: boolean;
+}
+
+export declare interface SamDigits {
+  anies: number;
+  prabowo: number;
+  ganjar: number;
+  confidence: number;
+}
+
+export declare interface SamBot {
+  transformedUrl: string;
+  similarity: number;
+  hash: string;
+  digitArea: string;
+  bubbleNumbers: {
+    anies: number;
+    prabowo: number;
+    ganjar: number;
+    confidence: number;
+  };
+  extractedRoi: {
+    paslon: string;
+    bubbleSheet1: string;
+    bubbleSheet2: string;
+    bubbleSheet3: string;
+    lokasi: string;
+  };
+  neuralNumbers: SamDigits;
+  outcome: SamDigits;
+  configFile: string;
+}
+
 export declare interface UploadRequest {
   // The idDesa + tpsNo
   idLokasi: string;
@@ -445,6 +504,12 @@ export declare interface UploadRequest {
 
   // Is the photo and digitiziation approved.
   status: APPROVAL_STATUS;
+
+  // The upload containing data from KPU.
+  kpuData?: KpuData;
+
+  // The result of Sam's bot.
+  samBot?: SamBot;
 }
 
 // Intentionally make the field name short to save bytes.
@@ -628,6 +693,7 @@ export function aggregate(lokasi: Lokasi) {
     totalErrorTps: 0,
     totalJagaTps: 0,
     totalLaporTps: 0,
+    totalKpuTps: 0,
   };
   for (const [cagg] of Object.values(lokasi.aggregated)) {
     nextAgg.pas1 += cagg.pas1 ?? 0;
@@ -639,6 +705,7 @@ export function aggregate(lokasi: Lokasi) {
     nextAgg.totalErrorTps += cagg.totalErrorTps ?? 0;
     nextAgg.totalJagaTps += cagg.totalJagaTps ?? 0;
     nextAgg.totalLaporTps += cagg.totalLaporTps ?? 0;
+    nextAgg.totalKpuTps += cagg.totalKpuTps ?? 0;
     nextAgg.updateTs = Math.max(nextAgg.updateTs, cagg.updateTs);
     if (cagg.anyPendingTps) nextAgg.anyPendingTps = cagg.anyPendingTps;
     if (cagg.anyErrorTps) nextAgg.anyErrorTps = cagg.anyErrorTps;

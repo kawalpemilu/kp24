@@ -1,6 +1,6 @@
 import {
   APPROVAL_STATUS, AggregateVotes, Lokasi, TESTER_UID, USER_ROLE, autoId,
-  UploadRequest, UserProfile, UserStats, aggregate, getParentId, getUserStats, getNumberOfApprovedPhotos,
+  UploadRequest, UserProfile, UserStats, aggregate, getParentId, getUserStats, getNumberOfApprovedPhotos, KPU_UID,
 } from "./interfaces";
 
 import * as admin from "firebase-admin";
@@ -23,6 +23,7 @@ function isIdentical(a: AggregateVotes, b: AggregateVotes): boolean {
     a.totalErrorTps === b.totalErrorTps &&
     a.totalJagaTps === b.totalJagaTps &&
     a.totalLaporTps === b.totalLaporTps &&
+    a.totalKpuTps === b.totalKpuTps &&
     Object.keys(a.pendingUploads ?? {}).length ===
     Object.keys(b.pendingUploads ?? {}).length;
 }
@@ -63,7 +64,7 @@ async function addDataToUserProfile(
   const uid = data.votes[0].uid;
 
   // For testing skip updating the profile.
-  if (uid == TESTER_UID) return true;
+  if (uid == TESTER_UID || uid == KPU_UID) return true;
 
   const uRef = firestore.doc(`u/${uid}`);
   const p = (await t.get(uRef)).data() as UserProfile | undefined;
@@ -286,7 +287,7 @@ export async function aggregateUp(firestore: admin.firestore.Firestore,
  */
 async function updateTps(firestore: admin.firestore.Firestore,
   data: UploadRequest): Promise<Lokasi | null> {
-  logger.log(`Update TPS t/${data.idLokasi}/p/${data.imageId}:${data.status}`, data);
+  // logger.log(`Update TPS t/${data.idLokasi}/p/${data.imageId}:${data.status}`, data);
 
   if (!data.votes || data.votes.length !== 1) {
     logger.error("Invalid votes", JSON.stringify(data, null, 2));
@@ -335,10 +336,34 @@ async function updateTps(firestore: admin.firestore.Firestore,
           return null;
         }
         if (!await addDataToUserProfile(firestore, t, data)) return null;
-        data.status = data.votes[0].status = APPROVAL_STATUS.NEW;
-        t.set(uploadRef, data);
         if (!agg.pendingUploads) agg.pendingUploads = {};
-        agg.pendingUploads[data.imageId] = data.servingUrl;
+        if (data.votes[0].uid != KPU_UID) {
+          data.status = data.votes[0].status = APPROVAL_STATUS.NEW;
+          agg.pendingUploads[data.imageId] = data.servingUrl;
+        }
+        t.set(uploadRef, data);
+        if (data.votes[0].uid == KPU_UID) {
+          // Auto approve and publish KPU data.
+          const existingAggIdx = c.findIndex(
+            (a) => a.uploadedPhoto?.imageId === data.imageId);
+          if (existingAggIdx > 0) throw new Error();
+          data.status = data.votes[0].status = APPROVAL_STATUS.APPROVED;
+          agg.pas1 = data.votes[0].pas1;
+          agg.pas2 = data.votes[0].pas2;
+          agg.pas3 = data.votes[0].pas3;
+          agg.uid = data.votes[0].uid;
+          agg.ouid = data.votes[0].uid;
+          
+          // Adds the photo and the votes.
+          c.splice(1, 0, {
+              ...agg, uploadedPhoto: {
+              imageId: data.imageId,
+              photoUrl: data.servingUrl,
+              kpuData: data.kpuData,
+              samBot: data.samBot
+            },
+          });
+        }
       } else {
         // Reviewer or editor for existing upload, must have status.
         if (!data.votes[0].status) {
@@ -373,6 +398,13 @@ async function updateTps(firestore: admin.firestore.Firestore,
             c[existingAggIdx].pas2 = data.votes[0].pas2;
             c[existingAggIdx].pas3 = data.votes[0].pas3;
             c[existingAggIdx].uid = data.votes[0].uid;
+            if (data.votes[0].uid == KPU_UID) {
+              const x = c[existingAggIdx];
+              if (x.uploadedPhoto) {
+                x.uploadedPhoto.kpuData = data.kpuData;
+                x.uploadedPhoto.samBot = data.samBot;
+              }
+            }
           } else {
             // Adds the photo and the votes.
             c.splice(1, 0, {
@@ -410,6 +442,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
       agg.totalErrorTps = (agg.dpt && agg.dpt > 0) ?
         +(agg.pas1 + agg.pas2 + agg.pas3 > agg.dpt * 1.02) : 0;
       agg.totalLaporTps = 0;
+      agg.totalKpuTps = 0;
       for (let i = 1; i < c.length; i++) {
         if (agg.pas1 !== c[i].pas1 ||
             agg.pas2 !== c[i].pas2 ||
@@ -417,6 +450,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
           agg.totalErrorTps = 1;
         }
         if (c[i].totalLaporTps) agg.totalLaporTps++;
+        if (c[i].uploadedPhoto?.kpuData) agg.totalKpuTps++;
       }
 
       if (agg.totalPendingTps > 0) {
