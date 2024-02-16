@@ -306,7 +306,6 @@ async function updateTps(firestore: admin.firestore.Firestore,
     return null;
   }
 
-  const now = Date.now();
   const idDesa = getParentId(data.idLokasi);
   const hRef = firestore.doc(`h/i${idDesa}`);
   return firestore
@@ -325,6 +324,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
         return null;
       }
       const agg = JSON.parse(JSON.stringify(c[0])) as AggregateVotes;
+      agg.updateTs = data.votes[0].updateTs;
       const uploadRef = firestore.doc(`t/${data.idLokasi}/p/${data.imageId}`);
       const upload =
         (await t.get(uploadRef)).data() as UploadRequest | undefined;
@@ -433,7 +433,6 @@ async function updateTps(firestore: admin.firestore.Firestore,
           isEdit = true;
         }
       }
-      agg.updateTs = now;
       agg.totalTps = 1;
       agg.totalPendingTps = Object.keys(agg.pendingUploads).length ? 1 : 0;
       agg.totalCompletedTps = c.length > 1 ? 1 : 0;
@@ -451,6 +450,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
         }
         if (c[i].totalLaporTps) agg.totalLaporTps++;
         if (c[i].uploadedPhoto?.kpuData) agg.totalKpuTps++;
+        if (!c[i].updateTs && data.votes[0].uid == KPU_UID) c[i].updateTs = data.votes[0].updateTs;
       }
 
       if (agg.totalPendingTps > 0) {

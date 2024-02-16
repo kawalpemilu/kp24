@@ -40,6 +40,7 @@ export function fetch(url: string, ignoreCertificate = false) {
 
 export function writeToStream(url: string, pst: any) {
   return new Promise((resolve, reject) => {
+    pst.on("error", reject);
     const req = https.get(url, (response) => {
       response.pipe(pst).on('finish', resolve);
     }).on("error", reject);
