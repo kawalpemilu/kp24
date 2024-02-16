@@ -1,14 +1,30 @@
 <table class="review">
 <tr>
     <td align="center">
-    <app-photo [photoUrl]="servingUrl"
-               [roiToolTip]="[servingUrl || '', this.id]"
-               [hiResThumb]="true"
-               [maxWidth]="200"
-               [maxHeight]="250"
-               [showRoiTooltip]="false"
-               (roiImageUrl)="roiImageUrl=$event">
-    </app-photo>
+    <div *ngIf="roiImageUrl2">
+        <img [src]="roiImageUrl2"
+                alt="Region of interest"
+                class="photo-img"
+                onerror="this.style.display='none'">
+    </div>
+    <div class="image-bottom">
+        <app-photo [photoUrl]="servingUrl"
+            [roiToolTip]="[servingUrl || '', this.id]"
+            [hiResThumb]="true"
+            [maxWidth]="200"
+            [maxHeight]="250"
+            [showRoiTooltip]="false"
+            (roiImageUrl)="roiImageUrl=$event"
+            (roiImageUrl2)="roiImageUrl2=$event">
+        </app-photo>
+        <div *ngIf="roiImageUrl">
+            <img [src]="roiImageUrl"
+                    class="photo-img"
+                    alt="Region of interest"
+                    onerror="this.style.display='none'">
+        </div>
+    </div>
+    
     @if (ubahLokasi) { @if (service.lokasi$ | async; as P) {
         <br>
         <table>
@@ -93,12 +109,6 @@
         </app-digitize>
         Uploader: <app-profile-link *ngIf="votes.uid" [uid]="votes.uid"></app-profile-link>
     }
-    </td>
-    <td *ngIf="roiImageUrl">
-        <img [src]="roiImageUrl"
-             alt="Region of interest"
-             class="roi-image"
-             onerror="this.style.display='none'">
     </td>
 </tr>
 </table>

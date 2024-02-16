@@ -1,15 +1,23 @@
 .review {
-  max-width: 225px;
+  max-width: 270px;
   padding: 0.1rem;
 }
 
-.roi-image {
-  max-width: 5rem;
-  max-height: 490px;
+.image-bottom {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+}
+
+.photo-img {
+  width: 100%;
+  height: auto;
+  max-height: 250px;
 }
 
 .lokasi {
-  width: 150px
+  width: 150px;
 }
 
 .ubah-lokasi-trigger {
