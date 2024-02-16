@@ -160,6 +160,7 @@
         @for (r of profileDetails.reviews; track r.lokasi.id; let i = $index) {
         <li>
             Jumlah Tinjauan: {{ r.numReviews }} at
+            {{ r.lokasi.names[r.lokasi.names.length - 1] }}
             <a class="hierarchy" [routerLink]="['/h', r.idLokasi]" target="_blank">
                 TPS #{{ r.idLokasi.substring(10) }}
             </a>

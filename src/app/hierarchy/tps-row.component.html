@@ -87,7 +87,10 @@
             <span>Pas2: {{ tps.pas2 }}</span><br>
             <span>Pas3: {{ tps.pas3 }}</span><br>
             @if (tps.ouid && (userProfile?.role || 0) >= USER_ROLE.ADMIN) {
-                <app-profile-link [uid]="tps.ouid"></app-profile-link><br>
+                U:<app-profile-link [uid]="tps.ouid"></app-profile-link><br>
+            }
+            @if (tps.uid && (userProfile?.role || 0) >= USER_ROLE.ADMIN) {
+                R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
             }
             @if (tps.updateTs === 0) {
                 <mat-spinner [diameter]="15" style="float: left; margin-right: 5px">
