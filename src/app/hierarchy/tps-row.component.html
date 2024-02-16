@@ -86,11 +86,13 @@
             <span>Pas1: {{ tps.pas1 }}</span><br>
             <span>Pas2: {{ tps.pas2 }}</span><br>
             <span>Pas3: {{ tps.pas3 }}</span><br>
-            @if (tps.ouid && (userProfile?.role || 0) >= USER_ROLE.ADMIN) {
-                U:<app-profile-link [uid]="tps.ouid"></app-profile-link><br>
-            }
-            @if (tps.uid && (userProfile?.role || 0) >= USER_ROLE.ADMIN) {
-                R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
+            @if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
+                @if (tps.uid) {
+                    R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
+                }
+                @if (tps.ouid) {
+                    U:<app-profile-link [uid]="tps.ouid"></app-profile-link><br>
+                }
             }
             @if (tps.updateTs === 0) {
                 <mat-spinner [diameter]="15" style="float: left; margin-right: 5px">
@@ -184,11 +186,20 @@
                         Moved
                     }
                     <br>
-                    @if (u.votes[1].uid) {
-                        U:<app-profile-link [uid]="u.votes[1].uid"></app-profile-link><br>
-                    }
-                    @if (u.votes[0].uid) {
-                        R:<app-profile-link [uid]="u.votes[0].uid"></app-profile-link><br>
+                    @for (v of u.votes; track v; let i = $index) {
+                        @if ($last && v.uid) {
+                            U:<app-profile-link [uid]="v.uid"></app-profile-link>
+                        } @else if (v.uid) {
+                            R:<app-profile-link [uid]="v.uid"></app-profile-link>
+                        } @else {
+                            ???
+                        }
+                        [{{ v.pas1 }},
+                        {{ v.pas2 }},
+                        {{ v.pas3 }}]
+                        {{ APPROVAL_STATUS[v.status ?? 0] }}
+                        {{ v.updateTs | date:'short' }}
+                        <br>
                     }
                 </td>
             }            
