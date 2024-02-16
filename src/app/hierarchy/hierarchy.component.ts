@@ -10,6 +10,7 @@ import { PercentComponent } from './percent.component';
 import { TpsListComponent } from './tps-list.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Meta } from '@angular/platform-browser';
 
 const idLengths = [2, 4, 6, 10];
 const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
@@ -55,6 +56,7 @@ export class HierarchyComponent implements OnInit {
   tpsNo = '';
 
   constructor(
+    private meta: Meta,
     private route: ActivatedRoute,
     public service: AppService) {
   }
@@ -87,6 +89,20 @@ export class HierarchyComponent implements OnInit {
         const lokasi2$ = this.getLokasiDataWithVotes(id);
         // Both observable have initial value of null so that
         // the combineLatest kicks in immediately.
+
+        lokasi1$.subscribe(lokasi => {
+          const locationId = lokasi?.id;
+          const currentLocation = lokasi?.parents.filter((item) => item[0] === locationId).flat();
+          if (currentLocation?.length != 2) {
+            return;
+          }
+
+          const locationName = this.capitalizeFirstLetter(currentLocation[1]);
+
+          this.meta.updateTag({ property: 'og:title', content: `KawalPemilu 2024 | ${locationName}` });
+          this.meta.updateTag({ property: 'twitter:title', content: `KawalPemilu 2024 | ${locationName}` });
+        })
+
         return combineLatest([
           lokasi1$.pipe(startWith(null)),
           lokasi2$.pipe(startWith(null))
@@ -104,6 +120,15 @@ export class HierarchyComponent implements OnInit {
             return of(lokasi);
           }), shareReplay(1));
       }));
+  }
+
+  
+
+  capitalizeFirstLetter(str: string) {
+    return str.toLowerCase()
+      .split(' ')
+      .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+      .join(' ');
   }
 
   populateUserUploads(lokasi: LokasiData, profile: UserProfile | null) {

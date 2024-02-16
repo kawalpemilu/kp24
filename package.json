@@ -24,9 +24,11 @@
     "@angular/platform-browser": "^17.0.0",
     "@angular/platform-browser-dynamic": "^17.0.0",
     "@angular/router": "^17.0.0",
+    "firebase": "^10.8.0",
     "ngx-tippy-wrapper": "^6.2.2",
     "piexifjs": "^2.0.0-beta.9",
     "rxjs": "~7.8.0",
+    "tippy.js": "^6.3.7",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
   },

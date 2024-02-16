@@ -35,6 +35,16 @@ Therefore, for now, we will use the production environment to develop and test.
 
 If we couldn't fix this issue in time, we may need to set up a staging environment for development and testing purposes.
 
+### Local Firebase Emulator (with Docker)
+
+If you didn't have docker, follow [installation process here](https://docs.docker.com/engine/install/)
+
+```
+$ docker-compose up -d   # to start firebase emulators
+$ docker-compose logs -f # to check logs
+$ docker-compose down    # to stop docker services
+```
+
 ## Default commands
 
 These are the default commands provided when generating this project.
