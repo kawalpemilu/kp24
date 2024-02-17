@@ -52,7 +52,7 @@ export class PhotoComponent {
       instance._isFetching = true;
       instance._failedToLoad = true;
 
-      const tooltipPicture = instance.reference.getAttribute('title')
+      const tooltipPicture = instance.reference.getAttribute('id')
       if (!tooltipPicture || tooltipPicture == 'undefined') {
         instance.disable()
         return
