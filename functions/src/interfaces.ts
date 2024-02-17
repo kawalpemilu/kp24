@@ -725,3 +725,44 @@ export function getNumberOfApprovedPhotos(p: UserProfile) {
   }
   return nApproved;
 }
+
+export function recomputeAgg(lokasi: Lokasi) {
+  for (const agg of Object.values(lokasi.aggregated)) {
+    agg[0].pas1 = 0;
+    agg[0].pas2 = 0;
+    agg[0].pas3 = 0;
+
+    // Find the first approved upload from RELAWAN instead of KPU.
+    let i = 1;
+    for (; i < agg.length; i++) {
+      const a = agg[i];
+      if (a.status !== APPROVAL_STATUS.APPROVED) continue;
+      // TODO: simply remove this when we want to use KPU data.
+      if (a.ouid === KPU_UID) continue;
+      agg[0].pas1 = a.pas1;
+      agg[0].pas2 = a.pas2;
+      agg[0].pas3 = a.pas3;
+      break;
+    }
+
+    if (i >= agg.length) {
+      agg[0].totalCompletedTps = 0;
+      continue;
+    }
+
+    agg[0].totalErrorTps = (agg[0].dpt && agg[0].dpt > 0) ?
+      +(agg[0].pas1 + agg[0].pas2 + agg[0].pas3 > agg[0].dpt * 1.02) : 0;
+    agg[0].totalKpuTps = 0;
+    for (i = 1; i < agg.length; i++) {
+      if (agg[0].pas1 !== agg[i].pas1 ||
+          agg[0].pas2 !== agg[i].pas2 ||
+          agg[0].pas3 !== agg[i].pas3) {
+        agg[0].totalErrorTps = 1;
+      }
+      if (agg[i].uploadedPhoto?.kpuData) {
+        agg[0].totalKpuTps++;
+        if (!agg[i].updateTs) agg[i].updateTs = Date.now();
+      }
+    }
+  }
+}
