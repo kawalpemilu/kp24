@@ -88,7 +88,13 @@
             <span>Pas2: {{ tps.pas2 }}</span><br>
             <span>Pas3: {{ tps.pas3 }}</span><br>
             @if (tps.uploadedPhoto?.kpuData) {
-                <b>[KPU]</b><br>
+                <b>[KPU]</b><br><br>
+                @if (tps.uploadedPhoto?.samBot) {
+                  <span>Pas1: {{ tps.uploadedPhoto?.samBot?.outcome?.anies }}</span><br>
+                  <span>Pas2: {{ tps.uploadedPhoto?.samBot?.outcome?.prabowo }}</span><br>
+                  <span>Pas3: {{ tps.uploadedPhoto?.samBot?.outcome?.ganjar }}</span><br>
+                  <b>[KP AI]</b><br>
+                }
             } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                 @if (tps.uid) {
                     R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
@@ -175,7 +181,7 @@
                             <mat-icon>edit</mat-icon>
                         </button>
                     </div>
-        
+
                     @if (u.votes[0]; as v) {
                         <span>Pas1: {{ v.pas1 }}</span><br>
                         <span>Pas2: {{ v.pas2 }}</span><br>
@@ -205,7 +211,7 @@
                         <br>
                     }
                 </td>
-            }            
+            }
         </td>
     }
                 <td valign="top" *ngIf="false">
