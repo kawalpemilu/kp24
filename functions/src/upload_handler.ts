@@ -1,6 +1,6 @@
 import {
   APPROVAL_STATUS, AggregateVotes, Lokasi, TESTER_UID, USER_ROLE, autoId,
-  UploadRequest, UserProfile, UserStats, aggregate, getParentId, getUserStats, getNumberOfApprovedPhotos, KPU_UID,
+  UploadRequest, UserProfile, UserStats, aggregate, getParentId, getUserStats, getNumberOfApprovedPhotos, KPU_UID, recomputeAgg,
 } from "./interfaces";
 
 import * as admin from "firebase-admin";
@@ -474,6 +474,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
         return null;
       }
       c[0] = agg;
+      recomputeAgg(lokasi);
       t.set(hRef, lokasi);
       return lokasi;
     });

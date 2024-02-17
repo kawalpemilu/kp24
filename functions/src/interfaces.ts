@@ -731,37 +731,61 @@ export function recomputeAgg(lokasi: Lokasi) {
     agg[0].pas1 = 0;
     agg[0].pas2 = 0;
     agg[0].pas3 = 0;
+    agg[0].totalCompletedTps = 0;
 
     // Find the first approved upload from RELAWAN instead of KPU.
     let i = 1;
     for (; i < agg.length; i++) {
       const a = agg[i];
-      if (a.status !== APPROVAL_STATUS.APPROVED) continue;
       // TODO: simply remove this when we want to use KPU data.
       if (a.ouid === KPU_UID) continue;
       agg[0].pas1 = a.pas1;
       agg[0].pas2 = a.pas2;
       agg[0].pas3 = a.pas3;
+      agg[0].totalCompletedTps = 1;
       break;
     }
 
-    if (i >= agg.length) {
-      agg[0].totalCompletedTps = 0;
-      continue;
+    agg[0].totalErrorTps = 0;
+    if ((agg[0].dpt && agg[0].dpt > 0) &&
+       +(agg[0].pas1 + agg[0].pas2 + agg[0].pas3 > agg[0].dpt * 1.02)) {
+        agg[0].totalErrorTps = 1;
     }
 
-    agg[0].totalErrorTps = (agg[0].dpt && agg[0].dpt > 0) ?
-      +(agg[0].pas1 + agg[0].pas2 + agg[0].pas3 > agg[0].dpt * 1.02) : 0;
     agg[0].totalKpuTps = 0;
     for (i = 1; i < agg.length; i++) {
-      if (agg[0].pas1 !== agg[i].pas1 ||
+      if (agg[0].totalCompletedTps) {
+        if (agg[0].pas1 !== agg[i].pas1 ||
           agg[0].pas2 !== agg[i].pas2 ||
           agg[0].pas3 !== agg[i].pas3) {
-        agg[0].totalErrorTps = 1;
+          agg[0].totalErrorTps = 1;
+        }
       }
-      if (agg[i].uploadedPhoto?.kpuData) {
-        agg[0].totalKpuTps++;
-        if (!agg[i].updateTs) agg[i].updateTs = Date.now();
+      const kpuData = agg[i].uploadedPhoto?.kpuData;
+      if (!kpuData) continue;
+
+      agg[0].totalKpuTps++;
+      if (!agg[i].updateTs) agg[i].updateTs = Date.now();
+
+      const samBot = agg[i].uploadedPhoto?.samBot;
+      if (!samBot) continue;
+      if (!samBot.outcome) continue;
+      if (samBot.outcome.confidence < 0.7) continue;
+
+      const kpuDataNumbers = {
+        pas1: kpuData.chart['100025'],
+        pas2: kpuData.chart['100026'],
+        pas3: kpuData.chart['100027']
+      }
+      const samBotNumbers = {
+        pas1: samBot.outcome.anies,
+        pas2: samBot.outcome.prabowo,
+        pas3: samBot.outcome.ganjar,
+      }
+      if (kpuDataNumbers.pas1 != samBotNumbers.pas1 ||
+        kpuDataNumbers.pas2 != samBotNumbers.pas2 ||
+        kpuDataNumbers.pas3 != samBotNumbers.pas3) {
+        agg[0].totalErrorTps = 1;
       }
     }
   }

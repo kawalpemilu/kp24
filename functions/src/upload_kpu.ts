@@ -84,6 +84,10 @@ async function uploadKpuAtDesa(idDesa: string) {
       pas3: kpuData.chart['100027']
     }
 
+    if (!samBot.outcome) {
+      console.log('Incomplete', idDesa + tpsNo);
+      continue;
+    }
     const samBotNumbers = {
       pas1: samBot.outcome.anies,
       pas2: samBot.outcome.prabowo,
@@ -119,11 +123,12 @@ async function uploadKpuAtDesa(idDesa: string) {
 }
 
 (async () => {
-  const parallelism = 20;
+  const parallelism = 50;
   const promises: Promise<void>[] = [];
   const desaIds = LOKASI.getDesaIds();
   for (let i = 0; i < desaIds.length; i++) {
     const idDesa = desaIds[i];
+    // if (idDesa != '3173041007') continue;
     const j = i % parallelism;
 
     if (!promises[j]) {
