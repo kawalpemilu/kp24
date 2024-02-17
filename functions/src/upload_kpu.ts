@@ -78,17 +78,21 @@ async function uploadKpuAtDesa(idDesa: string) {
     const samBot = await fetchSamBot(idDesa, tpsNo, filename);
     if (!samBot) continue;
 
-    // Use kpuData as the source of truth for this image
-    const pas1 = kpuData.chart['100025'];
-    const pas2 = kpuData.chart['100026'];
-    const pas3 = kpuData.chart['100027'];
+    const kpuDataNumbers = {
+      pas1: kpuData.chart['100025'],
+      pas2: kpuData.chart['100026'],
+      pas3: kpuData.chart['100027']
+    }
 
-    // TODO: We wish we could have used samBot as the source of truth for this image
     const samBotNumbers = {
       pas1: samBot.outcome.anies,
       pas2: samBot.outcome.prabowo,
       pas3: samBot.outcome.ganjar,
     }
+
+    const { pas1, pas2, pas3 } = samBot.outcome.confidence >= 0.7
+      ? samBotNumbers
+      : kpuDataNumbers;
 
     if (pas1 === undefined) continue;
     console.log(tpsNo, pas1, pas2, pas3, imageId, imageUrl);
