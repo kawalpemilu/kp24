@@ -66,7 +66,7 @@
     @if (c.agg.length > 1) {
         @for (tps of c.agg.slice(1); track tps.uploadedPhoto?.imageId) {
         <td valign="top" [class]="tps.totalLaporTps ? 'foto-terlapor' : ''"
-            [style.background-color]="tps.uploadedPhoto?.kpuData ? 'lightgreen' : ''">
+            [class]="tps.uploadedPhoto?.kpuData ? 'foto-kpu' : ''">
             <div style="height: 125px; padding-bottom: 5px">
                 <app-photo [photoUrl]="tps.uploadedPhoto?.photoUrl || ''"
                             [roiToolTip]="[tps.uploadedPhoto?.photoUrl || '', tpsId]">
