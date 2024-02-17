@@ -21,8 +21,6 @@
   </div>
 } @else {
   <a [href]="largePhoto" target="_blank" rel="noopener noreferrer" (contextmenu)="openDialog()">
-      <img [style.max-width]="maxWidth + 'px'"
-            [style.max-height]="maxHeight + 'px'"
-            [src]="hiResThumb ? largePhoto : thumbnail" /><br>
+      <img class="photo-img" [src]="hiResThumb ? largePhoto : thumbnail" /><br>
   </a>
 }
