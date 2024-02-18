@@ -89,12 +89,6 @@
             <span>Pas3: {{ tps.pas3 }}</span><br>
             @if (tps.uploadedPhoto?.kpuData) {
                 <b>[KPU]</b><br><br>
-                @if (tps.uploadedPhoto?.samBot && (tps.uploadedPhoto?.samBot?.outcome?.confidence || 0) >= 0.7) {
-                  <span>Pas1: {{ tps.uploadedPhoto?.samBot?.outcome?.anies }}</span><br>
-                  <span>Pas2: {{ tps.uploadedPhoto?.samBot?.outcome?.prabowo }}</span><br>
-                  <span>Pas3: {{ tps.uploadedPhoto?.samBot?.outcome?.ganjar }}</span><br>
-                  <b>[KP AI]</b><br>
-                }
             } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                 @if (tps.uid) {
                     R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
