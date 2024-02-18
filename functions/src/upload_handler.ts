@@ -24,6 +24,7 @@ function isIdentical(a: AggregateVotes, b: AggregateVotes): boolean {
     a.totalJagaTps === b.totalJagaTps &&
     a.totalLaporTps === b.totalLaporTps &&
     a.totalKpuTps === b.totalKpuTps &&
+    a.totalSamBotErrorTps === b.totalSamBotErrorTps &&
     Object.keys(a.pendingUploads ?? {}).length ===
     Object.keys(b.pendingUploads ?? {}).length;
 }
@@ -476,6 +477,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
       c[0] = agg;
       recomputeAgg(lokasi);
       t.set(hRef, lokasi);
+      // console.log(JSON.stringify(lokasi, null, 2));
       return lokasi;
     });
 }

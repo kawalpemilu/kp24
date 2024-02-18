@@ -284,6 +284,7 @@ export class PrestineLokasi {
       totalJagaTps: 0,
       totalLaporTps: 0,
       totalKpuTps: 0,
+      totalSamBotErrorTps: 0,
       updateTs: 0,
       dpt,
     };
@@ -346,6 +347,9 @@ export declare interface AggregateVotes extends Votes {
 
   // Total TPS needs to be reviewed for errors.
   totalErrorTps: number;
+
+  // Total photos that SamBot disagrees.
+  totalSamBotErrorTps: number;
 
   // Total TPS that are lapored by public.
   totalLaporTps: number;
@@ -694,6 +698,7 @@ export function aggregate(lokasi: Lokasi) {
     totalJagaTps: 0,
     totalLaporTps: 0,
     totalKpuTps: 0,
+    totalSamBotErrorTps: 0,
   };
   for (const [cagg] of Object.values(lokasi.aggregated)) {
     nextAgg.pas1 += cagg.pas1 ?? 0;
@@ -706,6 +711,7 @@ export function aggregate(lokasi: Lokasi) {
     nextAgg.totalJagaTps += cagg.totalJagaTps ?? 0;
     nextAgg.totalLaporTps += cagg.totalLaporTps ?? 0;
     nextAgg.totalKpuTps += cagg.totalKpuTps ?? 0;
+    nextAgg.totalSamBotErrorTps += cagg.totalSamBotErrorTps ?? 0;
     nextAgg.updateTs = Math.max(nextAgg.updateTs, cagg.updateTs);
     if (cagg.anyPendingTps) nextAgg.anyPendingTps = cagg.anyPendingTps;
     if (cagg.anyErrorTps) nextAgg.anyErrorTps = cagg.anyErrorTps;
@@ -739,6 +745,7 @@ export function recomputeAgg(lokasi: Lokasi) {
       const a = agg[i];
       // TODO: simply remove this when we want to use KPU data.
       if (a.ouid === KPU_UID) continue;
+      // Sets the TPS votes using the upload number from RELAWAN.
       agg[0].pas1 = a.pas1;
       agg[0].pas2 = a.pas2;
       agg[0].pas3 = a.pas3;
@@ -753,39 +760,36 @@ export function recomputeAgg(lokasi: Lokasi) {
     }
 
     agg[0].totalKpuTps = 0;
+    agg[0].totalSamBotErrorTps = 0;
     for (i = 1; i < agg.length; i++) {
+      const a = agg[i];
+
+      const kpuData = a.uploadedPhoto?.kpuData;
+      if (kpuData) {
+        // Use KPU data from KPU, not SamBot.
+        agg[0].totalKpuTps++;
+        if (!a.updateTs) a.updateTs = Date.now();
+        a.pas1 = kpuData.chart['100025'];
+        a.pas2 = kpuData.chart['100026'];
+        a.pas3 = kpuData.chart['100027'];
+      }
+
       if (agg[0].totalCompletedTps) {
-        if (agg[0].pas1 !== agg[i].pas1 ||
-          agg[0].pas2 !== agg[i].pas2 ||
-          agg[0].pas3 !== agg[i].pas3) {
+        if (agg[0].pas1 !== a.pas1 ||
+            agg[0].pas2 !== a.pas2 ||
+            agg[0].pas3 !== a.pas3) {
           agg[0].totalErrorTps = 1;
         }
       }
-      const kpuData = agg[i].uploadedPhoto?.kpuData;
-      if (!kpuData) continue;
 
-      agg[0].totalKpuTps++;
-      if (!agg[i].updateTs) agg[i].updateTs = Date.now();
-
-      const samBot = agg[i].uploadedPhoto?.samBot;
-      if (!samBot) continue;
-      if (!samBot.outcome) continue;
+      const samBot = a.uploadedPhoto?.samBot;
+      if (!samBot || !samBot.outcome) continue;
       if (samBot.outcome.confidence < 0.7) continue;
-
-      const kpuDataNumbers = {
-        pas1: kpuData.chart['100025'],
-        pas2: kpuData.chart['100026'],
-        pas3: kpuData.chart['100027']
-      }
-      const samBotNumbers = {
-        pas1: samBot.outcome.anies,
-        pas2: samBot.outcome.prabowo,
-        pas3: samBot.outcome.ganjar,
-      }
-      if (kpuDataNumbers.pas1 != samBotNumbers.pas1 ||
-        kpuDataNumbers.pas2 != samBotNumbers.pas2 ||
-        kpuDataNumbers.pas3 != samBotNumbers.pas3) {
-        agg[0].totalErrorTps = 1;
+      if (a.pas1 != samBot.outcome.anies ||
+          a.pas2 != samBot.outcome.prabowo ||
+          a.pas3 != samBot.outcome.ganjar) {
+        agg[0].totalSamBotErrorTps = 1;
+        a.totalSamBotErrorTps = 1;
       }
     }
   }

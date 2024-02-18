@@ -1,10 +1,11 @@
 import * as admin from "firebase-admin";
 import { fetch, getServingUrl, writeToStream } from "./serving_url";
 import { LOKASI } from "./lokasi";
-import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, SamBot, UploadRequest } from "./interfaces";
+import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, UploadRequest, recomputeAgg } from "./interfaces";
 import { uploadHandler } from "./upload_handler";
 
 const baseServingUrl = 'http://lh3.googleusercontent.com';
+const debugIdDesa: string = '';
 
 admin.initializeApp();
 const bucket = admin.storage().bucket('kp24-fd486.appspot.com');
@@ -38,23 +39,26 @@ async function fetchKpuData(id: string) {
   }
 }
 
-async function fetchSamBot(idDesa: string, tpsNo: string, filename: string) {
-  const prefix = `https://43.252.138.9${1 + Math.floor(Math.random() * 4)}`;
-  const url = `${prefix}/download/${idDesa}/${tpsNo}/${filename
-    }?configFile=pilpres_2024_plano_halaman2.json&baseUrl=${baseServingUrl}`;
-  try {
-    return JSON.parse(await fetch(url, true)) as SamBot;
-  } catch (e) {
-    console.error(e);
-    console.log('url', url);
-    return undefined;
-  }
-}
+// async function fetchSamBot(idDesa: string, tpsNo: string, filename: string) {
+//   const prefix = `https://43.252.138.9${1 + Math.floor(Math.random() * 4)}`;
+//   const url = `${prefix}/download/${idDesa}/${tpsNo}/${filename
+//     }?configFile=pilpres_2024_plano_halaman2.json&baseUrl=${baseServingUrl}`;
+//   try {
+//     return JSON.parse(await fetch(url, true)) as SamBot;
+//   } catch (e) {
+//     console.error(e);
+//     console.log('url', url);
+//     return undefined;
+//   }
+// }
 
-async function uploadKpuAtDesa(idDesa: string) {
+async function uploadKpuDesa(idDesa: string) {
   const hRef = firestore.doc(`h/i${idDesa}`);
-  let lokasi = ((await hRef.get()).data() as Lokasi) ||
+  const lokasi = ((await hRef.get()).data() as Lokasi) ||
                LOKASI.getPrestineLokasi(idDesa);
+  // console.log(JSON.stringify(lokasi, null, 2));
+
+  let numUpdates = 0;
   if (!lokasi) throw new Error(idDesa);
   for (const [tpsNo, agg] of Object.entries(lokasi.aggregated)) {
     if (agg[0].totalKpuTps) continue;
@@ -72,34 +76,34 @@ async function uploadKpuAtDesa(idDesa: string) {
     if (!exists) await writeToStream(imageUrl, f.createWriteStream());
     const servingUrl = await getServingUrl(objName);
     if (!servingUrl.startsWith(baseServingUrl)) throw new Error(servingUrl);
-    const filename = servingUrl.substring(baseServingUrl.length + 1) + '=s1280';
+    // const filename = servingUrl.substring(baseServingUrl.length + 1) + '=s1280';
 
-    // Fetch SamBot data
-    const samBot = await fetchSamBot(idDesa, tpsNo, filename);
-    if (!samBot) continue;
+    // Fetch SamBot data [disabled for now]:
+    // const samBot = await fetchSamBot(idDesa, tpsNo, filename);
+    // if (!samBot) continue;
 
-    const kpuDataNumbers = {
-      pas1: kpuData.chart['100025'],
-      pas2: kpuData.chart['100026'],
-      pas3: kpuData.chart['100027']
-    }
+    // const kpuDataNumbers = {
+    //   pas1: kpuData.chart['100025'],
+    //   pas2: kpuData.chart['100026'],
+    //   pas3: kpuData.chart['100027']
+    // }
 
-    if (!samBot.outcome) {
-      console.log('Incomplete', idDesa + tpsNo);
-      continue;
-    }
-    const samBotNumbers = {
-      pas1: samBot.outcome.anies,
-      pas2: samBot.outcome.prabowo,
-      pas3: samBot.outcome.ganjar,
-    }
+    // if (!samBot.outcome) {
+    //   console.log('Incomplete', idDesa + tpsNo);
+    //   continue;
+    // }
+    // const samBotNumbers = {
+    //   pas1: samBot.outcome.anies,
+    //   pas2: samBot.outcome.prabowo,
+    //   pas3: samBot.outcome.ganjar,
+    // }
 
-    const { pas1, pas2, pas3 } = samBot.outcome.confidence >= 0.7
-      ? samBotNumbers
-      : kpuDataNumbers;
+    // const { pas1, pas2, pas3 } = samBot.outcome.confidence >= 0.7
+    //   ? samBotNumbers
+    //   : kpuDataNumbers;
 
-    if (pas1 === undefined) continue;
-    console.log(tpsNo, pas1, pas2, pas3, imageId, imageUrl);
+    // if (pas1 === undefined) continue;
+    // console.log(tpsNo, pas1, pas2, pas3, imageId, imageUrl);
 
     const sanitized: UploadRequest = {
       idLokasi: idDesa + tpsNo,
@@ -108,34 +112,90 @@ async function uploadKpuAtDesa(idDesa: string) {
       servingUrl,
       votes: [{
         uid: KPU_UID,
-        pas1, pas2, pas3,
+        pas1: kpuData.chart['100025'],
+        pas2: kpuData.chart['100026'],
+        pas3: kpuData.chart['100027'],
         updateTs: Date.now(),
         status: APPROVAL_STATUS.APPROVED,
       }],
       status: APPROVAL_STATUS.APPROVED,
       kpuData,
-      samBot
+      // samBot
     };
     const res = await uploadHandler(firestore, sanitized);
     if (!res) throw new Error();
-    console.log('res', res, idDesa, tpsNo, pas1, pas2, pas3);
+    console.log('TPS', res, idDesa, tpsNo);
+    numUpdates++;
+  }
+  return numUpdates;
+}
+
+async function uploadKpuKec(idKec: string) {
+  console.log('Processing kec', idKec);
+  const hRef = firestore.doc(`h/i${idKec}`);
+  const lokasi = ((await hRef.get()).data() as Lokasi) ||
+               LOKASI.getPrestineLokasi(idKec);
+  if (!lokasi) throw new Error(idKec);
+
+  for (const [idDesa] of Object.entries(lokasi?.aggregated)) {
+    if (debugIdDesa && !debugIdDesa.startsWith(idDesa)) continue;
+    const numUpdates = await uploadKpuDesa(idDesa);
+    if (numUpdates) continue;
+    // Recompute all values in the desa.
+    await firestore.runTransaction(async t => {
+      const dRef = firestore.doc(`h/i${idDesa}`);
+      const lokDesa = (await t.get(dRef)).data() as Lokasi;
+      if (!lokDesa) throw new Error();
+      recomputeAgg(lokDesa);
+      t.set(dRef, lokDesa);
+    });
+    console.log('Recommputed Desa', idDesa);
   }
 }
 
-(async () => {
-  const parallelism = 50;
-  const promises: Promise<void>[] = [];
-  const desaIds = LOKASI.getDesaIds();
-  for (let i = 0; i < desaIds.length; i++) {
-    const idDesa = desaIds[i];
-    // if (idDesa != '3173041007') continue;
-    const j = i % parallelism;
+async function uploadKpuKab(idKab: string) {
+  console.log('Processing kab', idKab);
+  const hRef = firestore.doc(`h/i${idKab}`);
+  const lokasi = ((await hRef.get()).data() as Lokasi) ||
+               LOKASI.getPrestineLokasi(idKab);
+  if (!lokasi) throw new Error(idKab);
 
-    if (!promises[j]) {
-      promises[j] = uploadKpuAtDesa(idDesa).catch(console.error);
-    } else {
-      promises[j] = promises[j].then(() => uploadKpuAtDesa(idDesa).catch(console.error));
-    }
+  for (const [idKec] of Object.entries(lokasi?.aggregated)) {
+    if (debugIdDesa && !debugIdDesa.startsWith(idKec)) continue;
+    await uploadKpuKec(idKec);
   }
+}
+
+async function uploadKpuProp(idProp: string) {
+  const snap = await firestore.doc(`h/i${idProp}`).get();
+  const lokasi = snap.data() as Lokasi | null;
+  if (!lokasi) throw new Error();
+
+  const promises = [];
+  for (const [idKab] of Object.entries(lokasi?.aggregated)) {
+    if (debugIdDesa && !debugIdDesa.startsWith(idKab)) continue;
+    promises.push(uploadKpuKab(idKab));
+  }
+  console.log('Processing prop', idProp, 'parallelism', promises.length);
   await Promise.all(promises);
+}
+
+async function uploadKpuRoot() {
+  const snap = await firestore.doc(`h/i`).get();
+  const lokasi = snap.data() as Lokasi | null;
+  if (!lokasi) throw new Error();
+
+  const promises = [];
+  for (const [idProp] of Object.entries(lokasi?.aggregated)) {
+    if (idProp.startsWith('99')) continue;
+    if (idProp.startsWith('95')) continue;
+    if (debugIdDesa && !debugIdDesa.startsWith(idProp)) continue;
+    promises.push(uploadKpuProp(idProp));
+  }
+  console.log('Parallel', promises.length);
+  await Promise.all(promises);
+}
+
+(async () => {
+  await uploadKpuRoot();
 })();
