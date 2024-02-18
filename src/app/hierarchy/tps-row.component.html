@@ -88,8 +88,7 @@
             <span>Pas2: {{ tps.pas2 }}</span><br>
             <span>Pas3: {{ tps.pas3 }}</span><br>
             @if (tps.uploadedPhoto?.kpuData) {
-                <b>
-                  <a href="{{toKpuUrl(tps.uploadedPhoto?.kpuData?.images)}}" target="_blank">[KPU]</a></b>
+                <b><a [href]="service.getKpuLink(tps.idLokasi)" target="_blank">[KPU]</a></b>
                 <br><br>
             } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                 @if (tps.uid) {

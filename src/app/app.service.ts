@@ -272,4 +272,14 @@ export class AppService {
       console.error('Signout failed', error);
     });
   }
+
+  getKpuLink(tpsId: string) {
+    const idDesa = tpsId.substring(0, 10);
+    const tpsNo = tpsId.substring(10).padStart(3, '0');
+    return `https://pemilu2024.kpu.go.id/pilpres/hitung-suara/${
+        idDesa.substring(0, 2)}/${
+        idDesa.substring(0, 4)}/${
+        idDesa.substring(0, 6)}/${
+        idDesa}/${idDesa + tpsNo}`;
+  }
 }

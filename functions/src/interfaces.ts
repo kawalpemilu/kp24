@@ -439,6 +439,9 @@ export declare interface Lokasi {
 
   // Only used for caching purposes.
   lastCachedTs?: number;
+
+  // Used for backfill.
+  lastRecomputedTs?: number;
 }
 
 export declare interface KpuData {
@@ -793,4 +796,5 @@ export function recomputeAgg(lokasi: Lokasi) {
       }
     }
   }
+  lokasi.lastRecomputedTs = Date.now();
 }
