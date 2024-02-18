@@ -147,6 +147,7 @@ export class UploadComponent {
         totalJagaTps: 0,
         totalLaporTps: 0,
         totalKpuTps: 0,
+        totalSamBotErrorTps: 0,
         pas1: votes.pas1,
         pas2: votes.pas2,
         pas3: votes.pas3,

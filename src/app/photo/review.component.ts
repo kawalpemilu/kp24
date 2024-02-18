@@ -79,6 +79,7 @@ export class ReviewComponent {
       totalJagaTps: 0,
       totalLaporTps: 0,
       totalKpuTps: 0,
+      totalSamBotErrorTps: 0,
       pas1: votes.pas1 || 0,
       pas2: votes.pas2 || 0,
       pas3: votes.pas3 || 0,
