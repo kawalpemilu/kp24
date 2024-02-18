@@ -51,7 +51,7 @@ export async function laporHandler(firestore: admin.firestore.Firestore,
       p.lapor[key] = request;
       p.laporCount = Object.keys(p.lapor).length;
       s.laporCount++;
-      if (s.laporCount > s.laporMaxCount) {
+      if (s.laporCount > s.laporMaxCount && p.role < USER_ROLE.MODERATOR) {
         logger.error("User has too many lapor", request.uid, s.laporCount);
         return false;
       }
