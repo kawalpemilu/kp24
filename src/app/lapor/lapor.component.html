@@ -14,12 +14,14 @@
             </div>
             <textarea rows="6" cols="30" [(ngModel)]="request.reason"></textarea>
             <br>
-            <button mat-raised-button color="warn" (click)="laporkan(false)">
+            <button mat-raised-button color="warn" (click)="laporkan(false)"
+                [disabled]="service.rpcIsRunning">
                 Laporkan!
             </button>
             @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                 &nbsp; &nbsp;
-                <button mat-raised-button color="primary" (click)="laporkan(true)">
+                <button mat-raised-button color="primary" (click)="laporkan(true)"
+                    [disabled]="service.rpcIsRunning">
                     Resolve
                 </button>
             }

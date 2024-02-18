@@ -94,10 +94,13 @@ export class AppService {
     return callable({ tpsId, imageId, votes });
   }
 
-  lapor(request: LaporRequest) {
+  async lapor(request: LaporRequest) {
+    this.rpcIsRunning = true;
     console.log('RPC lapor', JSON.stringify(request, null, 2));
     const callable = httpsCallable(this.functions, 'lapor');
-    return callable(request);
+    const result = await callable(request);
+    this.rpcIsRunning = false;
+    return result;
   }
 
   topUploaders$() {
@@ -250,7 +253,7 @@ export class AppService {
     this.rpcIsRunning = true;
     console.log('RPC jagaTps', tpsId);
     const callable = httpsCallable(this.functions, 'jagaTps');
-    const result = callable({ tpsId });
+    const result = await callable({ tpsId });
     this.rpcIsRunning = false;
     return result;
   }
