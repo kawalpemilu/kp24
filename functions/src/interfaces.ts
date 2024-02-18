@@ -786,7 +786,10 @@ export function recomputeAgg(lokasi: Lokasi) {
       }
 
       const samBot = a.uploadedPhoto?.samBot;
-      if (!samBot || !samBot.outcome) continue;
+      if (!samBot || !samBot.outcome) {
+        delete a.uploadedPhoto?.samBot;
+        continue;
+      }
       if (samBot.outcome.confidence < 0.7) continue;
       if (a.pas1 != samBot.outcome.anies ||
           a.pas2 != samBot.outcome.prabowo ||

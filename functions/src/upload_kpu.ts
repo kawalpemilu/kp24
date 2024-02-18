@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { fetch, getServingUrl, writeToStream } from "./serving_url";
 import { LOKASI } from "./lokasi";
-import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, UploadRequest, recomputeAgg } from "./interfaces";
+import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, UploadRequest } from "./interfaces";
 import { uploadHandler } from "./upload_handler";
 
 const baseServingUrl = 'http://lh3.googleusercontent.com';
@@ -122,6 +122,9 @@ async function uploadKpuDesa(idDesa: string) {
       kpuData,
       // samBot
     };
+    if (sanitized.votes[0].pas1 === undefined) continue;
+    if (sanitized.votes[0].pas2 === undefined) continue;
+    if (sanitized.votes[0].pas3 === undefined) continue;
     const res = await uploadHandler(firestore, sanitized);
     if (!res) throw new Error();
     console.log('TPS', res, idDesa, tpsNo);
@@ -141,15 +144,15 @@ async function uploadKpuKec(idKec: string) {
     if (debugIdDesa && !debugIdDesa.startsWith(idDesa)) continue;
     const numUpdates = await uploadKpuDesa(idDesa);
     if (numUpdates) continue;
-    // Recompute all values in the desa.
-    await firestore.runTransaction(async t => {
-      const dRef = firestore.doc(`h/i${idDesa}`);
-      const lokDesa = (await t.get(dRef)).data() as Lokasi;
-      if (!lokDesa) throw new Error();
-      recomputeAgg(lokDesa);
-      t.set(dRef, lokDesa);
-    });
-    console.log('Recommputed Desa', idDesa);
+    // // Recompute all values in the desa.
+    // await firestore.runTransaction(async t => {
+    //   const dRef = firestore.doc(`h/i${idDesa}`);
+    //   const lokDesa = (await t.get(dRef)).data() as Lokasi;
+    //   if (!lokDesa) throw new Error();
+    //   recomputeAgg(lokDesa);
+    //   t.set(dRef, lokDesa);
+    // });
+    // console.log('Recommputed Desa', idDesa);
   }
 }
 
@@ -188,7 +191,7 @@ async function uploadKpuRoot() {
   const promises = [];
   for (const [idProp] of Object.entries(lokasi?.aggregated)) {
     if (idProp.startsWith('99')) continue;
-    if (idProp.startsWith('95')) continue;
+    // if (idProp.startsWith('95')) continue;
     if (debugIdDesa && !debugIdDesa.startsWith(idProp)) continue;
     promises.push(uploadKpuProp(idProp));
   }

@@ -477,7 +477,6 @@ async function updateTps(firestore: admin.firestore.Firestore,
       c[0] = agg;
       recomputeAgg(lokasi);
       t.set(hRef, lokasi);
-      // console.log(JSON.stringify(lokasi, null, 2));
       return lokasi;
     });
 }
