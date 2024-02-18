@@ -53,6 +53,28 @@ export class TpsRowComponent {
     });
   }
 
+  toKpuUrl(imageUrls: string[] | undefined): string {
+    if (!imageUrls) {
+      return ''
+    }
+
+    const firstUrl = imageUrls[0];
+    const parts = firstUrl.split('ppwp/');
+    if (parts.length == 1) {
+      return ''
+    }
+    const segments = parts[1].split('/');
+
+    let first = `${segments[0]}`;
+    let second = `${first}${segments[1]}`;
+    let third = `${second}${segments[2]}`;
+    let fourth = `${third}${segments[3]}${segments[4]}`;
+    let fifth = segments[5].split('-')[0]
+    const full = `${first}/${second}/${third}/${fourth}/${fifth}`
+
+    return `https://pemilu2024.kpu.go.id/pilpres/hitung-suara/${full}`
+  }
+
   numPendingUploads(a: AggregateVotes) {
     return Object.keys(a.pendingUploads || {}).length;
   }

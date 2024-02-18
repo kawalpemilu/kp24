@@ -88,7 +88,9 @@
             <span>Pas2: {{ tps.pas2 }}</span><br>
             <span>Pas3: {{ tps.pas3 }}</span><br>
             @if (tps.uploadedPhoto?.kpuData) {
-                <b>[KPU]</b><br><br>
+                <b>
+                  <a href="{{toKpuUrl(tps.uploadedPhoto?.kpuData?.images)}}" target="_blank">[KPU]</a></b>
+                <br><br>
             } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                 @if (tps.uid) {
                     R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
