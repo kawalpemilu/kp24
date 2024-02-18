@@ -166,7 +166,7 @@
             }
         }
     }
-    @if ((userProfile?.role || 0) >= USER_ROLE.MODERATOR) {
+    @if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
         <td class="foto" valign="top">
             <button *ngIf="uploadHistory === null" mat-raised-button color="primary" style="height: 80px"
                 (click)="getUploadHistory()" [disabled]="service.rpcIsRunning">
