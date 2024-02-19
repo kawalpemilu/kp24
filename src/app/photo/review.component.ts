@@ -14,6 +14,7 @@ import { PhotoComponent } from './photo.component';
 import { DigitizeComponent } from '../upload/digitize.component';
 import { FormsModule } from '@angular/forms';
 import { ProfileLinkComponent } from '../user/link.component';
+import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
 
 interface OptionLokasi {
   id: string;
@@ -31,6 +32,7 @@ interface OptionLokasi {
     MatProgressSpinnerModule,
     PhotoComponent,
     DigitizeComponent,
+    NgxTippyModule,
   ],
   templateUrl: './review.component.html',
   styleUrl: './review.component.css',

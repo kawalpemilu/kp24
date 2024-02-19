@@ -2,11 +2,21 @@
 <tr>
     <td align="center">
     <div *ngIf="roiImageUrl2">
+      <div #tippyTemplateRoiLokasiTps>
+        <img alt="ROI lokasi TPS" [src]="roiImageUrl2" style="height:120px;min-width:350px" loading="lazy"/>
+      </div>
         <img [src]="roiImageUrl2"
+                [ngxTippy]="tippyTemplateRoiLokasiTps"
+                [tippyProps]="{
+                  placement: 'top',
+                  delay: [200, 200],
+                  animation: 'shift-toward',
+                }"
                 alt="Region of interest"
                 class="photo-img"
                 onerror="this.style.display='none'">
     </div>
+
     <div class="image-bottom">
         <app-photo [photoUrl]="servingUrl"
             [roiToolTip]="[servingUrl || '', this.id]"
@@ -18,13 +28,22 @@
             (roiImageUrl2)="roiImageUrl2=$event">
         </app-photo>
         <div *ngIf="roiImageUrl">
+          <div #tippyTemplateRoiPaslon>
+            <img alt="ROI paslon" [src]="roiImageUrl" style="min-height:120px;width:150px" loading="lazy"/>
+          </div>
             <img [src]="roiImageUrl"
                     class="photo-img"
+                    [ngxTippy]="tippyTemplateRoiPaslon"
+                    [tippyProps]="{
+                      placement: 'right',
+                      delay: [200, 200],
+                      animation: 'shift-toward',
+                    }"
                     alt="Region of interest"
                     onerror="this.style.display='none'">
         </div>
     </div>
-    
+
     @if (ubahLokasi) { @if (service.lokasi$ | async; as P) {
         <br>
         <table>
