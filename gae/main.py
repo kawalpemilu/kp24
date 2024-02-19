@@ -5,6 +5,7 @@ from google.appengine.api.images import get_serving_url
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 import json
+import random
 
 app = Flask(__name__)
 app.wsgi_app = wrap_wsgi_app(app.wsgi_app)
@@ -46,7 +47,7 @@ def hierarchy():
 
         jsonTxt = response.content
         headers['X-Cache'] = 'HIT-D'
-        t = 60 * 60 if len(id) >= 6 else 30 * 60 if len(id) >= 4 else 10 * 60 if len(id) >= 2 else 5 * 60
+        t = random.randint(1 * 60 * 60, 4 * 60 * 60) if len(id) >= 6 else 30 * 60 if len(id) >= 4 else 10 * 60 if len(id) >= 2 else 5 * 60
         memcache.set(id, jsonTxt, t)
         return jsonTxt, 200, headers
 
