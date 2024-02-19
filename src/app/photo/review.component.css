@@ -11,12 +11,6 @@
   max-height: 200px;
 }
 
-.photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
 .lokasi {
   width: 150px;
 }
@@ -47,8 +41,12 @@
 .photo-img-container {
   position: relative;
   width: 100%;
+  height: 200px;
+}
+.photo-img-container-roi2 {
+  position: relative;
+  width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 .photo-img {
@@ -85,7 +83,8 @@
   color: black;
 }
 
-.photo-img-container:hover .overlay {
+.photo-img-container:hover .overlay,
+.photo-img-container-roi2:hover .overlay {
   opacity: 1;
 }
 
