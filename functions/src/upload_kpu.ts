@@ -19,6 +19,8 @@ process.on("unhandledRejection", (reason) => {
   console.error("Unhandled Rejection at:", reason);
 });
 
+let totalNumUpdates = 0;
+
 async function getImageId(url: string) {
     const hash = crypto.subtle.digest("SHA-256", new TextEncoder().encode(url));
     const hashArray = new Uint8Array(await hash);
@@ -143,6 +145,7 @@ async function uploadKpuKec(idKec: string) {
   for (const [idDesa] of Object.entries(lokasi?.aggregated)) {
     if (debugIdDesa && !debugIdDesa.startsWith(idDesa)) continue;
     const numUpdates = await uploadKpuDesa(idDesa);
+    totalNumUpdates += numUpdates;
     if (numUpdates) continue;
     // // Recompute all values in the desa.
     // await firestore.runTransaction(async t => {
@@ -201,4 +204,5 @@ async function uploadKpuRoot() {
 
 (async () => {
   await uploadKpuRoot();
+  console.log('totalNumUpdates', totalNumUpdates);
 })();
