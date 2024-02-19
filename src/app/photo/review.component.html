@@ -1,118 +1,164 @@
 <table class="review">
-<tr>
+  <tr>
     <td align="center">
-    <div *ngIf="roiImageUrl2">
-        <img [src]="roiImageUrl2"
-                alt="Region of interest"
-                class="photo-img"
-                onerror="this.style.display='none'">
-    </div>
-    <div class="image-bottom">
-        <app-photo [photoUrl]="servingUrl"
-            [roiToolTip]="[servingUrl || '', this.id]"
-            [hiResThumb]="true"
-            [maxWidth]="200"
-            [maxHeight]="250"
-            [showRoiTooltip]="false"
-            (roiImageUrl)="roiImageUrl=$event"
-            (roiImageUrl2)="roiImageUrl2=$event">
+      <div *ngIf="roiImageUrl2">
+        <a [href]="roiImageUrl2" target="_blank" rel="noopener noreferrer">
+          <div class="photo-img-container">
+            <img
+              [src]="roiImageUrl2"
+              alt="Region of interest"
+              class="photo-img"
+              onerror="this.style.display='none'"
+            />
+            <div class="overlay">
+              <div class="zoom-icon">
+                <mat-icon class="icon">zoom_in</mat-icon>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="image-bottom">
+        <app-photo
+          [photoUrl]="servingUrl"
+          [roiToolTip]="[servingUrl || '', this.id]"
+          [hiResThumb]="true"
+          [maxWidth]="200"
+          [maxHeight]="250"
+          [showRoiTooltip]="false"
+          (roiImageUrl)="roiImageUrl = $event"
+          (roiImageUrl2)="roiImageUrl2 = $event"
+        >
         </app-photo>
         <div *ngIf="roiImageUrl">
-            <img [src]="roiImageUrl"
-                    class="photo-img"
-                    alt="Region of interest"
-                    onerror="this.style.display='none'">
+          <a [href]="roiImageUrl" target="_blank" rel="noopener noreferrer">
+            <div class="photo-img-container">
+              <img
+                [src]="roiImageUrl"
+                class="photo-img"
+                alt="Region of interest"
+                onerror="this.style.display='none'"
+              />
+              <div class="overlay">
+                <div class="zoom-icon">
+                  <mat-icon class="icon">zoom_in</mat-icon>
+                </div>
+              </div>
+            </div>
+          </a>
         </div>
-    </div>
-    <div class="pinch-to-zoom">
-        <br>
-        <mat-icon class="pinch-icon">pinch_outline</mat-icon> Gunakan dua jari untuk memperbesar gambar
-    </div>
-    
-    @if (ubahLokasi) { @if (service.lokasi$ | async; as P) {
-        <br>
-        <table>
-            <tr>
-                <td>Provinsi:</td>
-                <td>
-                    <select *ngIf="getPropinsiList(P) as arr" class="lokasi"
-                            [(ngModel)]="newPropId"
-                            (change)="updateNewId($event, P)">
-                    @for (p of arr; track p.id) {
-                        <option [value]="p.id">{{ p.name }}</option>
-                    }
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Kabupaten:</td>
-                <td>
-                    <select *ngIf="getKabupatenList(P) as arr" class="lokasi"
-                            [(ngModel)]="newKabId"
-                            (change)="updateNewId($event, P)">
-                        @for (p of arr; track p.id) {
-                            <option [value]="p.id">{{ p.name }}</option>
-                        }
-                        </select>
-                    </td>
-            </tr>
-            <tr>
-                <td>Kecamatan:</td>
-                <td>
-                    <select *ngIf="getKecamatanList(P) as arr" class="lokasi"
-                            [(ngModel)]="newKecId"
-                            (change)="updateNewId($event, P)">
-                        @for (p of arr; track p.id) {
-                            <option [value]="p.id">{{ p.name }}</option>
-                        }
-                        </select>
-                    </td>
-            </tr>
-            <tr>
-                <td>Kelurahan:</td>
-                <td>
-                    <select *ngIf="getKelurahanList(P) as arr" class="lokasi"
-                            [(ngModel)]="newKelId"
-                            (change)="updateNewId($event, P)">
-                        @for (p of arr; track p.id) {
-                            <option [value]="p.id">{{ p.name }}</option>
-                        }
-                        </select>
-                    </td>
-            </tr>
-            <tr>
-                <td>TPS #:</td>
-                <td>
-                    <input [(ngModel)]="newTpsNo" type="number" size="3"
-                            (keydown.enter)="updateLokasi()">
-                </td>
-            </tr>
-        </table>
-        <br>
-        <div class="action">
-            <button [disabled]="!isValid(P)" mat-raised-button color="primary"
-                    (click)="updateLokasi()">
-                Update Lokasi
-            </button>
-            <button mat-raised-button color="warn" (click)="ubahLokasi = false">
-                Batal
-            </button>
-        </div>
-    }
-    } @else {
-        <div class="ubah-lokasi-trigger">
-            <button mat-raised-button color="accent" (click)="startUbahLokasi()">
-                Ubah LOKASI TPS
-            </button>
-        </div>
-        <app-digitize
-            [votes]="votes"
-            [imageId]="imageId"
-            [review]="true"
-            (onSubmit)="approve($event)">
-        </app-digitize>
-        Uploader: <app-profile-link *ngIf="votes.uid" [uid]="votes.uid"></app-profile-link>
-    }
+      </div>
+      <div class="pinch-to-zoom">
+        <br />
+        <mat-icon class="pinch-icon">pinch_outline</mat-icon> Gunakan dua jari
+        untuk memperbesar gambar
+      </div>
+
+      @if (ubahLokasi) { @if (service.lokasi$ | async; as P) {
+      <br />
+      <table>
+        <tr>
+          <td>Provinsi:</td>
+          <td>
+            <select
+              *ngIf="getPropinsiList(P) as arr"
+              class="lokasi"
+              [(ngModel)]="newPropId"
+              (change)="updateNewId($event, P)"
+            >
+              @for (p of arr; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Kabupaten:</td>
+          <td>
+            <select
+              *ngIf="getKabupatenList(P) as arr"
+              class="lokasi"
+              [(ngModel)]="newKabId"
+              (change)="updateNewId($event, P)"
+            >
+              @for (p of arr; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Kecamatan:</td>
+          <td>
+            <select
+              *ngIf="getKecamatanList(P) as arr"
+              class="lokasi"
+              [(ngModel)]="newKecId"
+              (change)="updateNewId($event, P)"
+            >
+              @for (p of arr; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Kelurahan:</td>
+          <td>
+            <select
+              *ngIf="getKelurahanList(P) as arr"
+              class="lokasi"
+              [(ngModel)]="newKelId"
+              (change)="updateNewId($event, P)"
+            >
+              @for (p of arr; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>TPS #:</td>
+          <td>
+            <input
+              [(ngModel)]="newTpsNo"
+              type="number"
+              size="3"
+              (keydown.enter)="updateLokasi()"
+            />
+          </td>
+        </tr>
+      </table>
+      <br />
+      <div class="action">
+        <button
+          [disabled]="!isValid(P)"
+          mat-raised-button
+          color="primary"
+          (click)="updateLokasi()"
+        >
+          Update Lokasi
+        </button>
+        <button mat-raised-button color="warn" (click)="ubahLokasi = false">
+          Batal
+        </button>
+      </div>
+      } } @else {
+      <div class="ubah-lokasi-trigger">
+        <button mat-raised-button color="accent" (click)="startUbahLokasi()">
+          Ubah LOKASI TPS
+        </button>
+      </div>
+      <app-digitize
+        [votes]="votes"
+        [imageId]="imageId"
+        [review]="true"
+        (onSubmit)="approve($event)"
+      >
+      </app-digitize>
+      Uploader:
+      <app-profile-link *ngIf="votes.uid" [uid]="votes.uid"></app-profile-link>
+      }
     </td>
-</tr>
+  </tr>
 </table>

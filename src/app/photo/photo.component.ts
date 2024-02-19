@@ -8,6 +8,7 @@ import {
 } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
+import { MatIconModule } from '@angular/material/icon';
 
 interface TippyInstanceWithLoading extends NgxTippyInstance {
   _isFetching: boolean;
@@ -23,6 +24,7 @@ interface TippyInstanceWithLoading extends NgxTippyInstance {
     MatDialogModule,
     MatProgressSpinnerModule,
     NgxTippyModule,
+    MatIconModule,
   ],
   templateUrl: './photo.component.html',
   styleUrl: './photo.component.css',

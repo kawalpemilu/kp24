@@ -1,5 +1,44 @@
+.photo-img-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .photo-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.zoom-icon {
+  background-color: #fff;
+  opacity: 0.6;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.zoom-icon .icon {
+  color: black;
+}
+
+.photo-img-container:hover .overlay {
+  opacity: 1;
 }

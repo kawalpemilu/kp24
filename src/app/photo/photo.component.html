@@ -21,6 +21,13 @@
   </div>
 } @else {
   <a [href]="largePhoto" target="_blank" rel="noopener noreferrer" (contextmenu)="openDialog()">
+    <div class="photo-img-container">
       <img class="photo-img" [src]="hiResThumb ? largePhoto : thumbnail" /><br>
+      <div class="overlay">
+        <div class="zoom-icon">
+          <mat-icon class="icon">zoom_in</mat-icon>
+        </div>
+      </div>
+    </div>
   </a>
 }
