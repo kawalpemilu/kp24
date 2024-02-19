@@ -32,3 +32,20 @@
   flex-direction: row-reverse;
   gap: 0.5rem;
 }
+
+.pinch-to-zoom {
+  display: none;
+  font-size: 10px;
+}
+
+.pinch-icon {
+  width: 10px;
+  height: 10px;
+  font-size: 10px;
+}
+
+@media (max-width: 500px) {
+  .pinch-to-zoom {
+    display: block;
+  }
+}
