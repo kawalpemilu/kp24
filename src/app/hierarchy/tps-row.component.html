@@ -97,10 +97,16 @@
                 } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                     <div class="history">
                         @if (tps.uid) {
-                            R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
+                            <div>
+                                R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
+                            </div>
+                            
                         }
                         @if (tps.ouid) {
-                            U:<app-profile-link [uid]="tps.ouid"></app-profile-link><br>
+                            <div>
+                                U:<app-profile-link [uid]="tps.ouid"></app-profile-link><br>
+                            </div>
+                            
                         }
                     </div>
                 }
