@@ -214,6 +214,10 @@ header.sticky-header
   font-size: 12px;
 }
 
+.largest {
+  background-color: #d9c8b4;
+}
+
 @media (min-width: 500px) {
   main.result {
     padding: 0 2rem;

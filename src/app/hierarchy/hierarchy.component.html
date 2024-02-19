@@ -86,13 +86,13 @@
                 </a>
             </div></td>
             @if (a.pas1 + a.pas2 + a.pas3; as totalVotes) {
-                <td class="numbers">
+                <td class="numbers" [class.largest]="a.pas1 === getLargestTotal(a)">
                     <app-percent [nom]="a.pas1" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
-                <td class="numbers">
+                <td class="numbers" [class.largest]="a.pas2 === getLargestTotal(a)">
                     <app-percent [nom]="a.pas2" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
-                <td class="numbers">
+                <td class="numbers" [class.largest]="a.pas3 === getLargestTotal(a)">
                     <app-percent [nom]="a.pas3" [den]="totalVotes" [showDen]="false"></app-percent>
                 </td>
             } @else {
@@ -115,13 +115,13 @@
                 <span class="total lapor" *ngIf="lokasi.total.totalLaporTps as e" >{{ e }}</span>
             </th>
             @if (lokasi.total.pas1 + lokasi.total.pas2 + lokasi.total.pas3; as totalVotes) {
-                <th class="numbers">
+                <th class="numbers" [class.largest]="lokasi.total.pas1 === getLargestTotal(lokasi.total)">
                     <app-percent [nom]="lokasi.total.pas1" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
-                <th class="numbers">
+                <th class="numbers" [class.largest]="lokasi.total.pas2 === getLargestTotal(lokasi.total)">
                     <app-percent [nom]="lokasi.total.pas2" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
-                <th class="numbers">
+                <th class="numbers" [class.largest]="lokasi.total.pas3 === getLargestTotal(lokasi.total)">
                     <app-percent [nom]="lokasi.total.pas3" [den]="totalVotes" [showDen]="false"></app-percent>
                 </th>
             } @else {

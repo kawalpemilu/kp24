@@ -289,4 +289,8 @@ export class HierarchyComponent implements OnInit {
   reloadLokasi() {
     this.lokasiWithVotesTrigger$.next('');
   }
+
+  getLargestTotal(vote: AggregateVotes): number {
+    return Math.max(vote.pas1, vote.pas2, vote.pas3);
+  }
 }
