@@ -1,10 +1,9 @@
 <div class="upload">
 @if (!service.auth.currentUser) {
     <br><br>
-    Maaf, untuk sementara ini kita tidak menerima upload foto.
-    <!-- <button mat-raised-button color="warn" (click)="service.login()">
+    <button mat-raised-button color="warn" (click)="service.login()">
         Masuk untuk Unggah Foto
-    </button> -->
+    </button>
 } @else if (userExceedsMaxUploads()) {
     <br><br>
     Max Uploads Exceeded
