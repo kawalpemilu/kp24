@@ -53,6 +53,7 @@
                     @if (a.totalLaporTps) {
                         <span class="lapor">{{a.totalLaporTps}}<br>Laporan</span>
                     }
+                    <a [href]="service.getKpuLink(a.idLokasi)" target="_blank">KPU-link</a>
                 </td>
                 <td class="foto" align="left">
                     <app-tps-row [c]="c"

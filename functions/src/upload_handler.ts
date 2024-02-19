@@ -24,6 +24,7 @@ function isIdentical(a: AggregateVotes, b: AggregateVotes): boolean {
     a.totalJagaTps === b.totalJagaTps &&
     a.totalLaporTps === b.totalLaporTps &&
     a.totalKpuTps === b.totalKpuTps &&
+    a.totalSamBotErrorTps === b.totalSamBotErrorTps &&
     Object.keys(a.pendingUploads ?? {}).length ===
     Object.keys(b.pendingUploads ?? {}).length;
 }

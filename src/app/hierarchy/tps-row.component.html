@@ -93,15 +93,7 @@
                     }
                 </div>
                 @if (tps.uploadedPhoto?.kpuData) {
-                    <div><b>[KPU]</b></div>
-                    @if (tps.uploadedPhoto?.samBot && (tps.uploadedPhoto?.samBot?.outcome?.confidence || 0) >= 0.7) {
-                        <div class="sambot">
-                            <div>Pas1: {{ tps.uploadedPhoto?.samBot?.outcome?.anies }}</div>
-                            <div>Pas2: {{ tps.uploadedPhoto?.samBot?.outcome?.prabowo }}</div>
-                            <div>Pas3: {{ tps.uploadedPhoto?.samBot?.outcome?.ganjar }}</div>
-                            <div><b>[KP AI]</b></div>
-                        </div>
-                    }
+                    <div><b><a [href]="service.getKpuLink(tps.idLokasi)" target="_blank">[KPU]</a></b></div>
                 } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                     <div class="history">
                         @if (tps.uid) {

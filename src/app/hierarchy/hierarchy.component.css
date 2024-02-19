@@ -1,69 +1,83 @@
 a.hierarchy {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 a.hierarchy.pending,
 a.hierarchy.error,
 a.hierarchy.lapor,
 span.total {
-    height: fit-content;
-    width: fit-content;
-    border-radius: 1rem;
-    padding: 0.1rem 0.5rem;
-    margin-left: 0.5rem;
-    font-size: 0.65rem;
-    vertical-align: middle;
-    color: white;
-    display: inline-block;
+  height: fit-content;
+  width: fit-content;
+  border-radius: 1rem;
+  padding: 0.1rem 0.5rem;
+  margin-left: 0.5rem;
+  font-size: 0.65rem;
+  vertical-align: middle;
+  color: white;
+  display: inline-block;
 }
 
 a.hierarchy.pending,
 span.total.pending {
-    background-color: #FFD54F; /* Amber 300 */
-    color: #000000DE;
+  background-color: #ffd54f; /* Amber 300 */
+  color: #000000de;
 }
 
 a.hierarchy.pending:hover,
 span.total.pending:hover {
-  background-color: #FFB300; /* Amber 600 */
+  background-color: #ffb300; /* Amber 600 */
 }
 
 a.hierarchy.error,
 span.total.error {
-    background-color: #D32F2F; /* Red 700 */
+  background-color: #d32f2f; /* Red 700 */
 }
 
 a.hierarchy.error:hover,
 span.total.error:hover {
-    background-color: #EF5350; /* Red 400 */
+  background-color: #ef5350; /* Red 400 */
 }
 
 a.hierarchy.lapor,
 span.total.lapor {
-    background-color: #9C27B0; /* Purple 500 */
+  background-color: #9c27b0; /* Purple 500 */
 }
 
 a.hierarchy.lapor:hover,
 span.total.lapor:hover {
-    background-color: #BA68C8; /* Purple 300 */
+  background-color: #ba68c8; /* Purple 300 */
 }
 
 th.lokasi {
-    width: 16rem;
+  width: 16rem;
 }
 
 th.paslon,
 th.cov,
 th.jaga {
-    width: 4rem;
+  width: 4rem;
 }
 
 th.paslon::before {
-    content: "Pas";
+  content: "Pas";
 }
 
-th.cov::after {
-  content: "%";
+th.cov div::before {
+  content: "% TPS";
+}
+
+th.cov div {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.cov .info {
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 th.jaga::before {
@@ -73,16 +87,16 @@ th.jaga::before {
 /* Default styles - all columns visible */
 table th,
 table td {
-    display: table-cell;
+  display: table-cell;
 }
 
 tbody.data,
 tfoot.sum {
-    font-size: 0.7rem;
+  font-size: 0.7rem;
 }
 
 tbody.data tr:nth-child(odd) {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }
 
 tbody.data tr:hover {
@@ -90,122 +104,155 @@ tbody.data tr:hover {
 }
 
 tbody.data td.numbers {
-    text-align: center;
+  text-align: center;
 }
 
 table.sticky_table {
-    margin: auto;
+  margin: auto;
 }
 
 main.result {
-    max-width: 48rem;
-    margin: auto;
-    padding: 0;
+  max-width: 48rem;
+  margin: auto;
+  padding: 0;
 }
 
 .sticky_table thead {
-    position: sticky;
-    top: 45px;
-    border-bottom: 2px solid #ccc;
-    background: lightgray;
-    max-width: 44rem;
+  position: sticky;
+  top: 45px;
+  border-bottom: 2px solid #ccc;
+  background: lightgray;
+  max-width: 44rem;
 }
 
 .sticky_table tfoot {
-    position: sticky;
-    bottom: 0;
-    border-top: 2px solid #ccc;
-    background: lightgray;
+  position: sticky;
+  bottom: 0;
+  border-top: 2px solid #ccc;
+  background: lightgray;
 }
 
 header.sticky-header {
-    font-size: 0.7rem;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background-color: #E0F7FA; /* Cyan 100 */
-    padding: 0 2rem;
+  font-size: 0.7rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #e0f7fa; /* Cyan 100 */
+  padding: 0 2rem;
 }
 
 header.sticky-header div.header-container {
-    max-width: 48rem;
-    margin: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  max-width: 48rem;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 header.sticky-header nav.breadcrumb {
-    min-height: 3rem;
-    margin-right: auto;
+  min-height: 3rem;
+  margin-right: auto;
 }
 
 header.sticky-header button.refresh {
-    margin-left: 1rem;
+  margin-left: 1rem;
 }
 
 header.sticky-header nav.breadcrumb > ul.breadcrumb-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    min-height: 3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 3rem;
 }
 
 header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item {
-    line-height: 3;
+  line-height: 3;
 }
 
-header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li:not(:last-child)::after {
-    display: inline-block;
-    margin: 0 .25rem;
-    content: "→";
+header.sticky-header
+  nav.breadcrumb
+  > ul.breadcrumb-list
+  > li:not(:last-child)::after {
+  display: inline-block;
+  margin: 0 0.25rem;
+  content: "→";
 }
 
-header.sticky-header nav.breadcrumb > ul.breadcrumb-list > li.breadcrumb-item > a.breadcrumb-link {
-    text-decoration: none;
+header.sticky-header
+  nav.breadcrumb
+  > ul.breadcrumb-list
+  > li.breadcrumb-item
+  > a.breadcrumb-link {
+  text-decoration: none;
+}
+
+.info-cakupan {
+  text-align: center;
+  font-style: normal;
+  color: #909090;
+  font-size: 10px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-cakupan b {
+  color: #dedede;
+  font-style: normal;
+}
+
+.info-cakupan .title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.info-cakupan .subtitle {
+  font-size: 12px;
 }
 
 @media (min-width: 500px) {
-    main.result {
-        padding: 0 2rem;
-    }
+  main.result {
+    padding: 0 2rem;
+  }
 
-    header.sticky-header {
-        font-size: 0.85rem;
-    }
+  header.sticky-header {
+    font-size: 0.85rem;
+  }
 
-    th.lokasi {
-        width: 20rem;
-    }
+  th.lokasi {
+    width: 20rem;
+  }
 
-    th.paslon,
-    th.cov,
-    th.jaga {
-        width: 6rem;
-    }
+  th.paslon,
+  th.cov,
+  th.jaga {
+    width: 6rem;
+  }
 
-    th.paslon::before {
-        content: "Paslon ";
-    }
+  th.paslon::before {
+    content: "Paslon ";
+  }
 
-    th.cov::after {
-        content: "Cakupan";
-    }
+  th.cov div::before {
+    content: "Cakupan TPS";
+    margin-right: 2px;
+  }
 
-    th.jaga::before {
-        content: "Cakupan ";
-    }
+  th.jaga::before {
+    content: "Cakupan ";
+  }
 
-    tbody.data,
-    tfoot.sum {
-        font-size: 1rem;
-    }
+  tbody.data,
+  tfoot.sum {
+    font-size: 1rem;
+  }
 
-    a.hierarchy,
-    span.total {
-        font-size: 0.8rem;
-    }
+  a.hierarchy,
+  span.total {
+    font-size: 0.8rem;
+  }
 }

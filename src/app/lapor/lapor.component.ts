@@ -58,6 +58,7 @@ export class LaporComponent {
             totalJagaTps: 0,
             totalLaporTps: 0,
             totalKpuTps: 0,
+            totalSamBotErrorTps: 0,
             pas1: this.request.votes.pas1,
             pas2: this.request.votes.pas2,
             pas3: this.request.votes.pas3,

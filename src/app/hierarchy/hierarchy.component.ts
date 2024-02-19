@@ -1,8 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
-import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of } from 'rxjs';
-import { shareReplay, switchMap, startWith, catchError, map, distinctUntilChanged } from 'rxjs/operators';
-import { APPROVAL_STATUS, AggregateVotes, Lokasi, LruCache, USER_ROLE, UploadRequest, UserProfile } from '../../../functions/src/interfaces';
+import {
+  BehaviorSubject,
+  combineLatest,
+  EMPTY,
+  from,
+  Observable,
+  of,
+} from 'rxjs';
+import {
+  shareReplay,
+  switchMap,
+  startWith,
+  catchError,
+  map,
+  distinctUntilChanged,
+} from 'rxjs/operators';
+import {
+  APPROVAL_STATUS,
+  AggregateVotes,
+  Lokasi,
+  LruCache,
+  USER_ROLE,
+  UploadRequest,
+  UserProfile,
+} from '../../../functions/src/interfaces';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../app.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,9 +32,17 @@ import { PercentComponent } from './percent.component';
 import { TpsListComponent } from './tps-list.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NgxTippyModule } from 'ngx-tippy-wrapper';
 
 const idLengths = [2, 4, 6, 10];
-const levelNames = ['Nasional', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Kelurahan/Desa', 'TPS'];
+const levelNames = [
+  'Nasional',
+  'Provinsi',
+  'Kabupaten',
+  'Kecamatan',
+  'Kelurahan/Desa',
+  'TPS',
+];
 
 export interface ChildLokasi {
   id: string;
@@ -30,19 +60,30 @@ export interface LokasiData {
 
 function newLokasiData(id: string): LokasiData {
   return {
-    id, parents: [['', 'IDN']], children: [],
+    id,
+    parents: [['', 'IDN']],
+    children: [],
     total: {} as AggregateVotes,
-    level: ''
+    level: '',
   };
 }
 
 @Component({
   selector: 'app-hierarchy',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, MatButtonModule, MatProgressSpinnerModule,
-    MatIconModule, PercentComponent, TpsListComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    NgxTippyModule,
+    PercentComponent,
+    TpsListComponent,
+  ],
   templateUrl: './hierarchy.component.html',
-  styleUrl: './hierarchy.component.css'
+  styleUrl: './hierarchy.component.css',
 })
 export class HierarchyComponent implements OnInit {
   lokasi$!: Observable<LokasiData>;
@@ -54,16 +95,13 @@ export class HierarchyComponent implements OnInit {
   userProfile: UserProfile | null = null;
   tpsNo = '';
 
-  constructor(
-    private route: ActivatedRoute,
-    public service: AppService) {
-  }
+  constructor(private route: ActivatedRoute, public service: AppService) {}
 
   ngOnInit() {
     const id$ = this.route.paramMap.pipe(
-      map(params => {
+      map((params) => {
         let id = params.get('id') || '';
-        if (!(/^\d{0,13}$/.test(id))) id = '';
+        if (!/^\d{0,13}$/.test(id)) id = '';
         if (id.length > 10) {
           this.tpsNo = id.substring(10);
           id = id.substring(0, 10);
@@ -71,9 +109,15 @@ export class HierarchyComponent implements OnInit {
           this.tpsNo = '';
         }
         return id;
-      }), distinctUntilChanged());
+      }),
+      distinctUntilChanged()
+    );
 
-    this.lokasi$ = combineLatest([id$, this.service.profile$, this.lokasiWithVotesTrigger$]).pipe(
+    this.lokasi$ = combineLatest([
+      id$,
+      this.service.profile$,
+      this.lokasiWithVotesTrigger$,
+    ]).pipe(
       switchMap(([id, profile]) => {
         this.userProfile = profile;
         // Creates two observables from the given location id.
@@ -89,21 +133,25 @@ export class HierarchyComponent implements OnInit {
         // the combineLatest kicks in immediately.
         return combineLatest([
           lokasi1$.pipe(startWith(null)),
-          lokasi2$.pipe(startWith(null))
+          lokasi2$.pipe(startWith(null)),
         ]).pipe(
-          catchError(error => {
+          catchError((error) => {
             // On error, do not emit anything.
             console.error('Error occurred:', error);
             return EMPTY;
-          }), switchMap(([lokasi1, lokasi2]) => {
+          }),
+          switchMap(([lokasi1, lokasi2]) => {
             // Prefer lokasi2 if it's not null.
             const lokasi = lokasi2 ? lokasi2 : lokasi1;
             // Do not emit anything if it's null.
             if (!lokasi) return of();
             this.populateUserUploads(lokasi, profile);
             return of(lokasi);
-          }), shareReplay(1));
-      }));
+          }),
+          shareReplay(1)
+        );
+      })
+    );
   }
 
   populateUserUploads(lokasi: LokasiData, profile: UserProfile | null) {
@@ -118,7 +166,7 @@ export class HierarchyComponent implements OnInit {
           c.userUploads.push(u);
         }
       }
-      c.userUploads.sort((a, b) => (b.votes[0].updateTs - a.votes[0].updateTs))
+      c.userUploads.sort((a, b) => b.votes[0].updateTs - a.votes[0].updateTs);
     }
   }
 
@@ -129,26 +177,28 @@ export class HierarchyComponent implements OnInit {
    */
   getLokasiDataWithoutVotes(id: string): Observable<LokasiData | null> {
     if (!this.service.lokasi$) return of();
-    return this.service.lokasi$.pipe(switchMap(
-      LOKASI => {
+    return this.service.lokasi$.pipe(
+      switchMap((LOKASI) => {
         const lokasi = LOKASI.getPrestineLokasi(id);
         return lokasi?.aggregated ? of(this.toLokasiData(lokasi)) : of();
-      }
-    ));
+      })
+    );
   }
 
   getLokasiDataFromFirestore$(id: string): Observable<LokasiData> {
-    return this.service.getLokasiDataFromFirestore$(id)
-      .pipe(switchMap(lokasi => {
+    return this.service.getLokasiDataFromFirestore$(id).pipe(
+      switchMap((lokasi) => {
         return lokasi?.aggregated ? of(this.toLokasiData(lokasi)) : of();
-      }));
+      })
+    );
   }
 
   getLokasiDataFromRpc$(id: string): Observable<LokasiData> {
-    return from(this.service.getHierarchy(id))
-      .pipe(switchMap(lokasi => {
+    return from(this.service.getHierarchy(id)).pipe(
+      switchMap((lokasi) => {
         return lokasi?.aggregated ? of(this.toLokasiData(lokasi)) : of();
-      }));
+      })
+    );
   }
 
   /**
@@ -158,10 +208,11 @@ export class HierarchyComponent implements OnInit {
    */
   getLokasiDataWithVotes(id: string): Observable<LokasiData> {
     return this.service.profile$.pipe(
-      switchMap(user =>
+      switchMap((user) =>
         this.shouldUseFirestore(user)
           ? this.getLokasiDataFromFirestore$(id)
-          : this.getLokasiDataFromRpc$(id)),
+          : this.getLokasiDataFromRpc$(id)
+      ),
       switchMap(async (lokasi) => {
         // Artificial delay to test slow loading.
         // await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -171,7 +222,7 @@ export class HierarchyComponent implements OnInit {
       }),
       // Starts with the cached lokasi if exists.
       startWith(this.lokasiCache.get(id)),
-      switchMap(lokasi => lokasi ? of(lokasi) : of())
+      switchMap((lokasi) => (lokasi ? of(lokasi) : of()))
     );
   }
 
@@ -184,7 +235,7 @@ export class HierarchyComponent implements OnInit {
         lastUpdate = Math.max(lastUpdate, req.votes[0].updateTs);
       }
     }
-    return (Date.now() - lastUpdate) < 1000 * 60 * 60 * 24;
+    return Date.now() - lastUpdate < 1000 * 60 * 60 * 24;
   }
 
   toLokasiData(lokasiWithVotes: Lokasi) {
@@ -192,20 +243,26 @@ export class HierarchyComponent implements OnInit {
     lokasi.parents = [['', 'IDN']];
     for (let i = 0; i < lokasiWithVotes.names.length; i++) {
       lokasi.parents.push([
-        lokasi.id.substring(0, idLengths[i]), lokasiWithVotes.names[i]]);
+        lokasi.id.substring(0, idLengths[i]),
+        lokasiWithVotes.names[i],
+      ]);
     }
     lokasi.level = levelNames[lokasi.parents.length];
-    lokasi.children = Object.entries<AggregateVotes[]>(lokasiWithVotes.aggregated)
-      .map(a => ({ id: a[0], agg: a[1], userUploads: [] }));
+    lokasi.children = Object.entries<AggregateVotes[]>(
+      lokasiWithVotes.aggregated
+    ).map((a) => ({ id: a[0], agg: a[1], userUploads: [] }));
     lokasi.children.sort((a, b) => {
       if (a.agg[0].name === 'LUAR NEGERI') return 1;
       if (b.agg[0].name === 'LUAR NEGERI') return -1;
-      const aName = a.agg[0].name, bName = b.agg[0].name;
+      const aName = a.agg[0].name,
+        bName = b.agg[0].name;
       if (lokasi.id.length === 10) return +aName - +bName;
       return aName.localeCompare(bName);
     });
     lokasi.total = {
-      pas1: 0, pas2: 0, pas3: 0,
+      pas1: 0,
+      pas2: 0,
+      pas3: 0,
       totalCompletedTps: 0,
       totalPendingTps: 0,
       totalErrorTps: 0,
