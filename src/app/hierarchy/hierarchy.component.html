@@ -75,7 +75,7 @@
         <tr *ngIf="c.agg[0] as a" height="56">
             <td><div class="lokasi">
                 <a class="hierarchy" [routerLink]="['/h', c.id]">{{ a.name }}</a>
-                <a class="hierarchy pending" *ngIf="getNumPending(a) as p" [routerLink]="['/h', a.anyPendingTps]">
+                <a class="hierarchy pending" *ngIf="a.totalPendingTps as p" [routerLink]="['/h', a.anyPendingTps]">
                     {{ p }}
                 </a>
                 <a class="hierarchy error" *ngIf="a.totalErrorTps as e" [routerLink]="['/h', a.anyErrorTps]">

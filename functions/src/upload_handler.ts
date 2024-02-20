@@ -381,13 +381,27 @@ async function updateTps(firestore: admin.firestore.Firestore,
           upload.votes[0].uid ?? "")) return null;
         upload.votes.unshift(data.votes[0]);
         upload.status = data.votes[0].status;
+        let makeAcopy = false;
         if (data.votes[0].status == APPROVAL_STATUS.REJECTED) {
           const ouid = upload.votes[upload.votes.length - 1].uid;
           if (ouid == KPU_UID) {
             logger.warn('Attempt to reject KPU', data);
             return null;
           }
+        } else if (data.votes[0].status == APPROVAL_STATUS.APPROVED) {
+          const o = upload.votes[upload.votes.length - 1];
+          if (o.uid == KPU_UID) {
+            if (o.pas1 !== data.votes[0].pas1 ||
+                o.pas2 !== data.votes[0].pas2 ||
+                o.pas3 !== data.votes[0].pas3) {
+              logger.log('KPU digitization is different, make a copy', data);
+              makeAcopy = true;
+              agg.uid = data.votes[0].uid;
+              agg.ouid = data.votes[0].uid;
+            }
+          }
         }
+
         t.set(uploadRef, upload);
 
         if (!agg.pendingUploads) agg.pendingUploads = {};
@@ -401,7 +415,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
           agg.pas3 = data.votes[0].pas3;
           agg.uid = data.votes[0].uid;
           agg.ouid = upload.votes[upload.votes.length - 1].uid ?? "";
-          if (existingAggIdx > 0) {
+          if (!makeAcopy && existingAggIdx > 0) {
             c[existingAggIdx].pas1 = data.votes[0].pas1;
             c[existingAggIdx].pas2 = data.votes[0].pas2;
             c[existingAggIdx].pas3 = data.votes[0].pas3;
