@@ -771,12 +771,12 @@ export function recomputeAgg(lokasi: Lokasi) {
         a.pas2 = kpuData.chart['100026'];
         a.pas3 = kpuData.chart['100027'];
         if (a.pas1 === undefined || a.pas2 === undefined || a.pas3 === undefined) {
-          delete a.uploadedPhoto?.kpuData;
-        } else {
-          // Use KPU data from KPU, not SamBot.
-          agg[0].totalKpuTps++;
-          if (!a.updateTs) a.updateTs = Date.now();
+          agg.splice(i--, 1);
+          continue;
         }
+        // Use KPU data from KPU, not SamBot.
+        agg[0].totalKpuTps++;
+        if (!a.updateTs) a.updateTs = Date.now();
       }
 
       if (agg[0].totalCompletedTps) {
@@ -803,6 +803,12 @@ export function recomputeAgg(lokasi: Lokasi) {
 
     agg[0].totalPendingTps = Object.keys(agg[0].pendingUploads || {}).length ? 1 : 0;
     if (agg[0].totalKpuTps && !agg[0].totalCompletedTps) agg[0].totalPendingTps = 1;
+
+    if (agg[0].totalPendingTps > 0) {
+      agg[0].anyPendingTps = agg[0].idLokasi;
+    } else {
+      delete agg[0].anyPendingTps;
+    }
   }
   lokasi.lastRecomputedTs = Date.now();
 }

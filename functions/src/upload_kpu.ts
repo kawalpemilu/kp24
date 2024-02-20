@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { fetch, getServingUrl, writeToStream } from "./serving_url";
 import { LOKASI } from "./lokasi";
-import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, UploadRequest, recomputeAgg } from "./interfaces";
+import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, UploadRequest, aggregate, delayTime, recomputeAgg } from "./interfaces";
 import { uploadHandler } from "./upload_handler";
 
 const baseServingUrl = 'http://lh3.googleusercontent.com';
@@ -60,10 +60,17 @@ async function uploadKpuDesa(idDesa: string) {
                LOKASI.getPrestineLokasi(idDesa);
   // console.log(JSON.stringify(lokasi, null, 2));
 
-  let numUpdates = 0;
+  let numUpdates = 0, needRecompute = 0;
   if (!lokasi) throw new Error(idDesa);
   for (const [tpsNo, agg] of Object.entries(lokasi.aggregated)) {
-    if (agg[0].totalKpuTps) continue;
+    if (agg[0].totalKpuTps) {
+      if (agg[0].totalCompletedTps == 0) {
+        if (!agg[0].totalPendingTps) {
+          needRecompute = 1;
+        }
+      }
+      continue;
+    }
 
     // Fetch KPU data
     const kpuData = await fetchKpuData(idDesa + tpsNo.padStart(3, '0'));
@@ -132,6 +139,29 @@ async function uploadKpuDesa(idDesa: string) {
     console.log('TPS', res, idDesa, tpsNo);
     numUpdates++;
   }
+
+  if (needRecompute) {
+    // Recompute all values in the desa.
+    try {
+      await delayTime(2000);
+      const newLok = await firestore.runTransaction(async t => {
+        const lokDesa = (await t.get(hRef)).data() as Lokasi;
+        if (!lokDesa) throw new Error(idDesa);
+        recomputeAgg(lokDesa);
+        t.set(hRef, lokDesa);
+        return lokDesa;
+      });
+
+      await firestore
+        .collection("p")
+        .add(aggregate(newLok));
+  
+      console.log('Recommputed Desa', idDesa);
+    } catch (e) {
+      console.error('Desa', idDesa, e);
+    }
+  }
+
   return numUpdates;
 }
 
@@ -144,18 +174,7 @@ async function uploadKpuKec(idKec: string) {
 
   for (const [idDesa] of Object.entries(lokasi?.aggregated)) {
     if (debugIdDesa && !debugIdDesa.startsWith(idDesa)) continue;
-    const numUpdates = await uploadKpuDesa(idDesa);
-    totalNumUpdates += numUpdates;
-    if (numUpdates) continue;
-    // Recompute all values in the desa.
-    await firestore.runTransaction(async t => {
-      const dRef = firestore.doc(`h/i${idDesa}`);
-      const lokDesa = (await t.get(dRef)).data() as Lokasi;
-      if (!lokDesa) return;
-      recomputeAgg(lokDesa);
-      t.set(dRef, lokDesa);
-    });
-    console.log('Recommputed Desa', idDesa);
+    totalNumUpdates += await uploadKpuDesa(idDesa);
   }
 }
 
@@ -173,17 +192,15 @@ async function uploadKpuKab(idKab: string) {
 }
 
 async function uploadKpuProp(idProp: string) {
+  console.log('Processing prop', idProp);
   const snap = await firestore.doc(`h/i${idProp}`).get();
   const lokasi = snap.data() as Lokasi | null;
   if (!lokasi) throw new Error();
 
-  const promises = [];
   for (const [idKab] of Object.entries(lokasi?.aggregated)) {
     if (debugIdDesa && !debugIdDesa.startsWith(idKab)) continue;
-    promises.push(uploadKpuKab(idKab));
+    await uploadKpuKab(idKab);
   }
-  console.log('Processing prop', idProp, 'parallelism', promises.length);
-  await Promise.all(promises);
 }
 
 async function uploadKpuRoot() {

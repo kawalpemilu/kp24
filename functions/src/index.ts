@@ -60,7 +60,7 @@ function getCacheTimeoutMs(id: string) {
 }
 type HierarchyRequest = CallableRequest<{ id: string, uid?: string }>;
 export const h = onCall(
-  {cors: ALLOW_ORIGINS},
+  {cors: ALLOW_ORIGINS, memory: '512MiB'},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
     if (request.data.uid !== "kawalc1" &&
