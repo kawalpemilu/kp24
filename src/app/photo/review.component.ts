@@ -5,6 +5,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   APPROVAL_STATUS,
   ImageMetadata,
+  KPU_UID,
   PendingAggregateVotes,
   PrestineLokasi,
   Votes,
@@ -53,6 +54,8 @@ export class ReviewComponent {
   newTpsNo = '';
   roiImageUrl = '';
   roiImageUrl2 = '';
+
+  KPU_ID = KPU_UID;
 
   constructor(public service: AppService) {}
 

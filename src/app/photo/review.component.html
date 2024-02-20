@@ -157,7 +157,11 @@
       >
       </app-digitize>
       Uploader:
-      <app-profile-link *ngIf="votes.uid" [uid]="votes.uid"></app-profile-link>
+      @if (votes.uid == KPU_ID) {
+        [From KPU]
+      } @else {
+        <app-profile-link *ngIf="votes.uid" [uid]="votes.uid"></app-profile-link>
+      }
       }
     </td>
   </tr>

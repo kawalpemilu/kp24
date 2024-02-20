@@ -49,18 +49,18 @@
                 </div>
                 @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                     <br>
-                    <button *ngIf="a.totalPendingTps" [disabled]="isProcessing > 0"
-                        (click)="reviewNextPendingUpload();
+                    <button *ngIf="hasPending(c.agg)" [disabled]="isProcessing > 0"
+                        (click)="reviewNextPendingUpload(c.agg);
                                  isUploadDrawer = false;
                                  isLaporDrawer = false;
                                  isDrawerOpen = !drawer.opened;
                                  drawer.toggle()"
                         mat-raised-button color="accent">
                         <mat-icon>description</mat-icon>
-                         ({{ numPendingUploads(a) }})
+                         ({{ numPendingUploads(c.agg) }})
                     </button>
                 } @else {
-                    <span *ngIf="a.totalPendingTps">{{ numPendingUploads(a) }} Unreviewed</span>
+                    <span *ngIf="a.totalPendingTps">{{ numPendingUploads(c.agg) }} Unreviewed</span>
                 }
             </td>
     @if (c.agg.length > 1) {
@@ -92,9 +92,7 @@
                         </div>
                     }
                 </div>
-                @if (tps.uploadedPhoto?.kpuData) {
-                    <div><b><a [href]="service.getKpuLink(tps.idLokasi)" target="_blank">[KPU]</a></b></div>
-                } @else if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
+                @if ((userProfile?.role || 0) >= USER_ROLE.ADMIN) {
                     <div class="history">
                         @if (tps.uid) {
                             <div>
@@ -109,6 +107,8 @@
                             
                         }
                     </div>
+                } @else if (tps.uploadedPhoto?.kpuData) {
+                    <div><b><a [href]="service.getKpuLink(tps.idLokasi)" target="_blank">[KPU]</a></b></div>
                 }
                 @if (tps.updateTs === 0) {
                     <mat-spinner [diameter]="15" style="float: left; margin-right: 5px">

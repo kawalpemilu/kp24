@@ -14,6 +14,10 @@ import { LaporComponent } from '../lapor/lapor.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProfileLinkComponent } from '../user/link.component';
 
+function hasStandaloneKpu( agg : AggregateVotes[]){
+  return agg.length == 2 && agg[1].uid == KPU_UID;
+}
+
 @Component({
   selector: 'app-tps-row',
   standalone: true,
@@ -53,12 +57,18 @@ export class TpsRowComponent {
     });
   }
 
-  numPendingUploads(a: AggregateVotes) {
-    return Object.keys(a.pendingUploads || {}).length;
+  numPendingUploads(agg: AggregateVotes[]) {
+    return (Object.keys(agg[0].pendingUploads || {}).length || 0) +
+           (this.hasPending(agg) ? 1 : 0);
   }
 
-  async reviewNextPendingUpload() {
+  async reviewNextPendingUpload(agg: AggregateVotes[]) {
     this.reviewUploadRequest = await this.service.getNextPendingPhoto(this.tpsId);
+    if (this.reviewUploadRequest) return;
+    // Check if there's standalone KPU.
+    if (hasStandaloneKpu(agg)) {
+      this.reReview(agg[1]);
+    }
   }
 
   reReview(a: AggregateVotes) {
@@ -71,6 +81,7 @@ export class TpsRowComponent {
             pas1: a.pas1,
             pas2: a.pas2,
             pas3: a.pas3,
+            uid: a.ouid,
             updateTs: 0
         }],
         status: APPROVAL_STATUS.NEW
@@ -91,5 +102,10 @@ export class TpsRowComponent {
 
   async getUploadHistory() {
     this.uploadHistory = await this.service.getUploadHistory(this.tpsId);
+  }
+
+  hasPending(agg: AggregateVotes[]) {
+    if (agg[0].totalPendingTps) return true;
+    return hasStandaloneKpu(agg);
   }
 }

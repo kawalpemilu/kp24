@@ -742,13 +742,11 @@ export function recomputeAgg(lokasi: Lokasi) {
     agg[0].pas3 = 0;
     agg[0].totalCompletedTps = 0;
 
-    // Find the first approved upload from RELAWAN instead of KPU.
+    // Skip KPU photos that are not yet reviewed.
     let i = 1;
     for (; i < agg.length; i++) {
       const a = agg[i];
-      // TODO: simply remove this when we want to use KPU data.
-      if (a.ouid === KPU_UID) continue;
-      // Sets the TPS votes using the upload number from RELAWAN.
+      if (a.uid === KPU_UID) continue;
       agg[0].pas1 = a.pas1;
       agg[0].pas2 = a.pas2;
       agg[0].pas3 = a.pas3;
