@@ -382,13 +382,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
         upload.votes.unshift(data.votes[0]);
         upload.status = data.votes[0].status;
         let makeAcopy = false;
-        if (data.votes[0].status == APPROVAL_STATUS.REJECTED) {
-          const ouid = upload.votes[upload.votes.length - 1].uid;
-          if (ouid == KPU_UID) {
-            logger.warn('Attempt to reject KPU', data);
-            return null;
-          }
-        } else if (data.votes[0].status == APPROVAL_STATUS.APPROVED) {
+        if (data.votes[0].status == APPROVAL_STATUS.APPROVED) {
           const o = upload.votes[upload.votes.length - 1];
           if (o.uid == KPU_UID) {
             if (o.pas1 !== data.votes[0].pas1 ||
@@ -439,8 +433,16 @@ async function updateTps(firestore: admin.firestore.Firestore,
           isEdit = true;
         } else if (existingAggIdx > 0) {
           if (c[existingAggIdx].ouid == KPU_UID) {
-            logger.error('Attempt to reject KPU', data);
-            return null;
+            let theOnlyKpu = true;
+            for (let j = 1; j < c.length; j++) {
+              if (j != existingAggIdx && c[j].ouid == KPU_UID) {
+                theOnlyKpu = false;
+              }
+            }
+            if (theOnlyKpu) {
+              logger.error('Attempt to reject KPU', data);
+              return null;
+            }
           }
           // Delete the photo and the votes.
           c.splice(existingAggIdx, 1);
