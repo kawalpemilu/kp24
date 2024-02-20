@@ -381,6 +381,13 @@ async function updateTps(firestore: admin.firestore.Firestore,
           upload.votes[0].uid ?? "")) return null;
         upload.votes.unshift(data.votes[0]);
         upload.status = data.votes[0].status;
+        if (data.votes[0].status == APPROVAL_STATUS.REJECTED) {
+          const ouid = upload.votes[upload.votes.length - 1].uid;
+          if (ouid == KPU_UID) {
+            logger.warn('Attempt to reject KPU', data);
+            return null;
+          }
+        }
         t.set(uploadRef, upload);
 
         if (!agg.pendingUploads) agg.pendingUploads = {};
@@ -417,6 +424,10 @@ async function updateTps(firestore: admin.firestore.Firestore,
           }
           isEdit = true;
         } else if (existingAggIdx > 0) {
+          if (c[existingAggIdx].ouid == KPU_UID) {
+            logger.error('Attempt to reject KPU', data);
+            return null;
+          }
           // Delete the photo and the votes.
           c.splice(existingAggIdx, 1);
           // Use the next approved photo if any.
