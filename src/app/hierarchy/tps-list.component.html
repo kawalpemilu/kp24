@@ -15,6 +15,7 @@
         <mat-checkbox [(ngModel)]="service.isPendingTps" (change)="updateTpsList()">Pending</mat-checkbox>
         <mat-checkbox [(ngModel)]="service.isErrorTps" (change)="updateTpsList()">Error</mat-checkbox>
         <mat-checkbox [(ngModel)]="service.isCompleteTps" (change)="updateTpsList()">Complete</mat-checkbox>
+        <mat-checkbox [(ngModel)]="service.isLaporTps" (change)="updateTpsList()">Lapor</mat-checkbox>
     </div>
 </section>
 
@@ -79,6 +80,9 @@
             }
             @if (service.isCompleteTps) {
                 <li>Tidak ada TPS dengan status Complete.</li>
+            }
+            @if (service.isLaporTps) {
+                <li>Tidak ada TPS dengan laporan.</li>
             }
         </ul>
     }

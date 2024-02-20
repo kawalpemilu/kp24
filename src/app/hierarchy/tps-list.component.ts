@@ -41,7 +41,7 @@ export class TpsListComponent implements OnChanges {
   updateTpsList() {
     if (!this.tpsNo && !this.service.isPendingTps &&
       !this.service.isErrorTps &&
-      !this.service.isCompleteTps) {
+      !this.service.isCompleteTps && !this.service.isLaporTps) {
       this.tpsList = this.lokasi.children;
       return;
     }
@@ -52,6 +52,7 @@ export class TpsListComponent implements OnChanges {
       if (this.service.isPendingTps && (a.totalPendingTps || (a.totalCompletedTps < a.totalKpuTps))) return true;
       if (this.service.isErrorTps && a.totalErrorTps) return true;
       if (this.service.isCompleteTps && a.totalCompletedTps) return true;
+      if (this.service.isLaporTps && a.totalLaporTps) return true;
       return false;
     });
   }

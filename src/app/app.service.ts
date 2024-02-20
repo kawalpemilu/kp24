@@ -26,6 +26,7 @@ export class AppService {
   public isPendingTps = false;
   public isErrorTps = false;
   public isCompleteTps = false;
+  public isLaporTps = false;
 
   user$ = user(this.auth).pipe(shareReplay(1));
 
