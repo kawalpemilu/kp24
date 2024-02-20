@@ -767,12 +767,16 @@ export function recomputeAgg(lokasi: Lokasi) {
 
       const kpuData = a.uploadedPhoto?.kpuData;
       if (kpuData) {
-        // Use KPU data from KPU, not SamBot.
-        agg[0].totalKpuTps++;
-        if (!a.updateTs) a.updateTs = Date.now();
         a.pas1 = kpuData.chart['100025'];
         a.pas2 = kpuData.chart['100026'];
         a.pas3 = kpuData.chart['100027'];
+        if (a.pas1 === undefined || a.pas2 === undefined || a.pas3 === undefined) {
+          delete a.uploadedPhoto?.kpuData;
+        } else {
+          // Use KPU data from KPU, not SamBot.
+          agg[0].totalKpuTps++;
+          if (!a.updateTs) a.updateTs = Date.now();
+        }
       }
 
       if (agg[0].totalCompletedTps) {
@@ -796,6 +800,9 @@ export function recomputeAgg(lokasi: Lokasi) {
         a.totalSamBotErrorTps = 1;
       }
     }
+
+    agg[0].totalPendingTps = Object.keys(agg[0].pendingUploads || {}).length ? 1 : 0;
+    if (agg[0].totalKpuTps && !agg[0].totalCompletedTps) agg[0].totalPendingTps = 1;
   }
   lokasi.lastRecomputedTs = Date.now();
 }

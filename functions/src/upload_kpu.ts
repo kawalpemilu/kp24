@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { fetch, getServingUrl, writeToStream } from "./serving_url";
 import { LOKASI } from "./lokasi";
-import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, UploadRequest } from "./interfaces";
+import { APPROVAL_STATUS, ImageMetadata, KPU_UID, KpuData, Lokasi, UploadRequest, recomputeAgg } from "./interfaces";
 import { uploadHandler } from "./upload_handler";
 
 const baseServingUrl = 'http://lh3.googleusercontent.com';
@@ -147,15 +147,15 @@ async function uploadKpuKec(idKec: string) {
     const numUpdates = await uploadKpuDesa(idDesa);
     totalNumUpdates += numUpdates;
     if (numUpdates) continue;
-    // // Recompute all values in the desa.
-    // await firestore.runTransaction(async t => {
-    //   const dRef = firestore.doc(`h/i${idDesa}`);
-    //   const lokDesa = (await t.get(dRef)).data() as Lokasi;
-    //   if (!lokDesa) throw new Error();
-    //   recomputeAgg(lokDesa);
-    //   t.set(dRef, lokDesa);
-    // });
-    // console.log('Recommputed Desa', idDesa);
+    // Recompute all values in the desa.
+    await firestore.runTransaction(async t => {
+      const dRef = firestore.doc(`h/i${idDesa}`);
+      const lokDesa = (await t.get(dRef)).data() as Lokasi;
+      if (!lokDesa) return;
+      recomputeAgg(lokDesa);
+      t.set(dRef, lokDesa);
+    });
+    console.log('Recommputed Desa', idDesa);
   }
 }
 
