@@ -79,7 +79,7 @@
                         <div>Pas2: {{ tps.pas2 }}</div>
                         <div>Pas3: {{ tps.pas3 }}</div>
                     </div>
-                    @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR && tps.ouid != KPU_UID) {
+                    @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR && tps.uid != KPU_UID) {
                         <div class="paslon-edit">
                             <button mat-mini-fab color="basic" (click)="
                                 reReview(tps);

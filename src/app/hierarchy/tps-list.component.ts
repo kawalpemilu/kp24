@@ -49,7 +49,7 @@ export class TpsListComponent implements OnChanges {
     this.tpsList = this.lokasi.children.filter(c => {
       const a = c.agg[0];
       if (this.tpsNo && +c.id === +this.tpsNo) return true;
-      if (this.service.isPendingTps && a.totalPendingTps) return true;
+      if (this.service.isPendingTps && (a.totalPendingTps || (a.totalCompletedTps < a.totalKpuTps))) return true;
       if (this.service.isErrorTps && a.totalErrorTps) return true;
       if (this.service.isCompleteTps && a.totalCompletedTps) return true;
       return false;
