@@ -52,6 +52,16 @@ th.lokasi {
   width: 16rem;
 }
 
+th.lokasi div {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+th.lokasi .info {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+}
+
 th.paslon,
 th.cov,
 th.jaga {
@@ -189,7 +199,7 @@ header.sticky-header
   text-decoration: none;
 }
 
-.info-cakupan {
+.tippy-info {
   text-align: center;
   font-style: normal;
   color: #909090;
@@ -200,21 +210,45 @@ header.sticky-header
   gap: 8px;
 }
 
-.info-cakupan b {
+.tippy-info .capsule {
+  height: fit-content;
+  width: fit-content;
+  border-radius: 1rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.65rem;
+  vertical-align: middle;
+  color: white;
+  display: inline-block;
+}
+
+.tippy-info .capsule.pending {
+  background-color: #ffd54f; /* Amber 300 */
+  color: #000000de;
+}
+
+.tippy-info .capsule.error {
+  background-color: #d32f2f; /* Red 700 */
+}
+
+.tippy-info .capsule.lapor {
+  background-color: #9c27b0; /* Purple 500 */
+}
+
+.tippy-info b {
   color: #dedede;
   font-style: normal;
 }
 
-.info-cakupan em {
+.tippy-info em {
   color: #dedede;
 }
 
-.info-cakupan .title {
+.tippy-info .title {
   font-size: 16px;
   font-weight: bold;
 }
 
-.info-cakupan .subtitle {
+.tippy-info .subtitle {
   font-size: 12px;
 }
 
