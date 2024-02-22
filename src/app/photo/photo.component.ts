@@ -1,14 +1,14 @@
-import { Component, EventEmitter, Input, Output, Inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialog,
   MatDialogModule,
-  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxTippyModule, NgxTippyInstance } from 'ngx-tippy-wrapper';
 import { MatIconModule } from '@angular/material/icon';
+import { PhotoDialog } from './photo-dialog.component';
 
 interface TippyInstanceWithLoading extends NgxTippyInstance {
   _isFetching: boolean;
@@ -131,38 +131,13 @@ export class PhotoComponent {
 
   openDialog() {
     this.dialog.open(PhotoDialog, {
-      height: '90vh',
-      width: '90vw',
+      height: '95vh',
+      width: '95vh',
       data: {
         largePhoto: this.largePhoto,
       },
     });
 
     return false;
-  }
-}
-
-export interface PhotoDialogData {
-  largePhoto: string;
-}
-
-@Component({
-  selector: 'app-photo-dialog',
-  templateUrl: './photo-dialog.component.html',
-  styleUrl: './photo.component.css',
-  standalone: true,
-  imports: [MatDialogModule, MatButtonModule],
-})
-export class PhotoDialog {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: PhotoDialogData) {}
-
-  rotation: number = 0;
-
-  rotateLeft() {
-    this.rotation = (this.rotation - 90) % 360;
-  }
-
-  rotateRight() {
-    this.rotation = (this.rotation + 90) % 360;
   }
 }
