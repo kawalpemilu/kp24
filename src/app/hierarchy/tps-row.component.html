@@ -99,13 +99,13 @@
                             <div>
                                 R:<app-profile-link [uid]="tps.uid"></app-profile-link><br>
                             </div>
-                            
+
                         }
                         @if (tps.ouid) {
                             <div>
                                 U:<app-profile-link [uid]="tps.ouid"></app-profile-link><br>
                             </div>
-                            
+
                         }
                     </div>
                 } @else if (tps.uploadedPhoto?.kpuData) {
@@ -125,7 +125,7 @@
                     } @else if (tps.status === APPROVAL_STATUS.LAPOR) {
                         Laporing ...
                     }
-                } @else if (userProfile) {
+                } @else if (userProfile && !tps.uploadedPhoto?.kpuData) {
                     <button class="lapor" mat-raised-button color="basic" (click)="
                         lapor(tps);
                         isUploadDrawer = false;
@@ -188,7 +188,7 @@
                                     <div>Pas2: {{ v.pas2 }}</div>
                                     <div>Pas3: {{ v.pas3 }}</div>
                                 </div>
-                            }        
+                            }
                             <div>
                                 <button mat-mini-fab color="basic" (click)="
                                     reviewUploadRequest = u;
@@ -228,7 +228,7 @@
                             }
                         </div>
                     </div>
-                    
+
                 </td>
             }
         </td>
