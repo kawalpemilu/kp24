@@ -6,7 +6,7 @@ import {
 } from '@angular/material/dialog';
 
 export interface PhotoDialogData {
-  largePhoto: string;
+  photo: string;
 }
 
 @Component({

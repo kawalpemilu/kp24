@@ -2,7 +2,7 @@
   <tr>
     <td align="center">
       <div *ngIf="roiImageUrl2">
-        <a [href]="roiImageUrl2" target="_blank" rel="noopener noreferrer">
+        <a [href]="roiImageUrl2" target="_blank" rel="noopener noreferrer" (contextmenu)="openDialog(roiImageUrl2)">
           <div class="photo-img-container-roi2">
             <img
               [src]="roiImageUrl2"
@@ -11,7 +11,7 @@
               onerror="this.style.display='none'"
             />
             <div class="overlay">
-              <div class="zoom-icon">
+              <div class="zoom-icon" title="Right-click to zoom and rotate">
                 <mat-icon class="icon">zoom_in</mat-icon>
               </div>
             </div>
@@ -31,7 +31,7 @@
         >
         </app-photo>
         <div *ngIf="roiImageUrl">
-          <a [href]="roiImageUrl2" target="_blank" rel="noopener noreferrer">
+          <a [href]="roiImageUrl" target="_blank" rel="noopener noreferrer" (contextmenu)="openDialog(roiImageUrl)">
             <div class="photo-img-container">
               <img
                 [src]="roiImageUrl"
@@ -40,7 +40,7 @@
                 onerror="this.style.display='none'"
               />
               <div class="overlay">
-                <div class="zoom-icon">
+                <div class="zoom-icon" title="Right-click to zoom and rotate">
                   <mat-icon class="icon">zoom_in</mat-icon>
                 </div>
               </div>

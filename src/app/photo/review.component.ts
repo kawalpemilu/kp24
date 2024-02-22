@@ -1,6 +1,10 @@
 import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import {
+  MatDialog,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   APPROVAL_STATUS,
@@ -17,6 +21,7 @@ import { DigitizeComponent } from '../upload/digitize.component';
 import { FormsModule } from '@angular/forms';
 import { ProfileLinkComponent } from '../user/link.component';
 import { MatIconModule } from '@angular/material/icon';
+import { PhotoDialog } from './photo-dialog.component';
 
 interface OptionLokasi {
   id: string;
@@ -59,7 +64,10 @@ export class ReviewComponent {
 
   KPU_ID = KPU_UID;
 
-  constructor(public service: AppService) {}
+  constructor(
+    public service: AppService,
+    public dialog: MatDialog
+  ) { }
 
   approve(votes: Votes) {
     let onSubmitted!: Promise<string>;
@@ -205,5 +213,17 @@ export class ReviewComponent {
       status: APPROVAL_STATUS.MOVED,
     });
     this.approve({ ...this.votes, status: APPROVAL_STATUS.MOVED });
+  }
+
+  openDialog(imageUrl: string) {
+    this.dialog.open(PhotoDialog, {
+      height: '95vh',
+      width: '95vh',
+      data: {
+        photo: imageUrl,
+      },
+    });
+
+    return false;
   }
 }

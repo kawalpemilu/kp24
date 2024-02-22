@@ -134,7 +134,7 @@ export class PhotoComponent {
       height: '95vh',
       width: '95vh',
       data: {
-        largePhoto: this.largePhoto,
+        photo: this.largePhoto,
       },
     });
 
