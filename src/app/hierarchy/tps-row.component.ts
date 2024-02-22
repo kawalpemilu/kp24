@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { ChildLokasi } from './hierarchy.component';
 import { AppService } from '../app.service';
 import { APPROVAL_STATUS, AggregateVotes, USER_ROLE, PendingAggregateVotes, UserProfile,
-  UploadRequest, ImageMetadata, LaporRequest, KPU_UID } from '../../../functions/src/interfaces';
+  UploadRequest, ImageMetadata, LaporRequest, KPU_UID, Votes } from '../../../functions/src/interfaces';
 import { UploadComponent } from '../upload/upload.component';
 import { ReviewComponent } from '../photo/review.component';
 import { PhotoComponent } from '../photo/photo.component';
@@ -58,8 +58,7 @@ export class TpsRowComponent {
   }
 
   numPendingUploads(agg: AggregateVotes[]) {
-    return (Object.keys(agg[0].pendingUploads || {}).length || 0) +
-           (this.hasPending(agg) ? 1 : 0);
+    return Object.keys(agg[0].pendingUploads || {}).length;
   }
 
   async reviewNextPendingUpload(agg: AggregateVotes[]) {
@@ -78,6 +77,12 @@ export class TpsRowComponent {
         imageMetadata: {} as ImageMetadata,
         servingUrl: a.uploadedPhoto?.photoUrl ?? '',
         votes: [{
+            pas1: a.pas1,
+            pas2: a.pas2,
+            pas3: a.pas3,
+            uid: a.ouid,
+            updateTs: 0
+        },{
             pas1: a.pas1,
             pas2: a.pas2,
             pas3: a.pas3,
@@ -102,10 +107,5 @@ export class TpsRowComponent {
 
   async getUploadHistory() {
     this.uploadHistory = await this.service.getUploadHistory(this.tpsId);
-  }
-
-  hasPending(agg: AggregateVotes[]) {
-    if (agg[0].totalPendingTps) return true;
-    return hasStandaloneKpu(agg);
   }
 }

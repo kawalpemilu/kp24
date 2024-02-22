@@ -787,6 +787,9 @@ export function recomputeAgg(lokasi: Lokasi) {
         }
       }
 
+      if (!a.uploadedPhoto?.kpuData) {
+        delete a.uploadedPhoto?.kpuData;
+      }
       const samBot = a.uploadedPhoto?.samBot;
       if (!samBot || !samBot.outcome) {
         delete a.uploadedPhoto?.samBot;

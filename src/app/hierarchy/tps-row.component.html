@@ -23,6 +23,7 @@
                     [imageId]="reviewUploadRequest.imageId"
                     [servingUrl]="reviewUploadRequest.servingUrl"
                     [votes]="reviewUploadRequest.votes[0]"
+                    [originalVotes]="reviewUploadRequest.votes[1]"
                     (onReview)="updateAggregate($event);
                                 isDrawerOpen = false;
                                 drawer.close()">
@@ -49,7 +50,7 @@
                 </div>
                 @if (userProfile && userProfile.role >= USER_ROLE.MODERATOR) {
                     <br>
-                    <button *ngIf="hasPending(c.agg)" [disabled]="isProcessing > 0"
+                    <button *ngIf="a.totalPendingTps" [disabled]="isProcessing > 0"
                         (click)="reviewNextPendingUpload(c.agg);
                                  isUploadDrawer = false;
                                  isLaporDrawer = false;

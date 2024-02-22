@@ -50,6 +50,9 @@ export class DigitizeComponent implements OnChanges {
                 return false;
             }
         }
+        this.votes.pas1 = this.votes.pas1 || 0;
+        this.votes.pas2 = this.votes.pas2 || 0;
+        this.votes.pas3 = this.votes.pas3 || 0;
         this.votes.status = this.status;
         this.onSubmit.emit(this.votes);
         return true;

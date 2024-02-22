@@ -2,7 +2,7 @@ import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {
   ALLOW_ORIGINS, APPROVAL_STATUS, DEFAULT_MAX_LAPORS, DEFAULT_MAX_UPLOADS,
-  ImageMetadata, LaporRequest, Lokasi,
+  ImageMetadata, KPU_UID, LaporRequest, Lokasi,
   LruCache, USER_ROLE, UploadRequest, UserProfile, Votes,
   isValidVoteNumbers, shouldRateLimit,
 } from "./interfaces";
@@ -289,6 +289,7 @@ export const upload = onCall(
 
     const status = request.data.status;
     if (status !== APPROVAL_STATUS.NEW &&
+        status !== APPROVAL_STATUS.APPROVED &&
         status !== APPROVAL_STATUS.MOVED) return false;
 
     const m = request.data.imageMetadata;
@@ -300,7 +301,8 @@ export const upload = onCall(
     if (m.x) imageMetadata.x = Number(m.x);
 
     // Use the default image for local testing.
-    const servingUrl = status === APPROVAL_STATUS.MOVED ?
+    const servingUrl = (status === APPROVAL_STATUS.MOVED ||
+                        status === APPROVAL_STATUS.APPROVED) ?
       request.data.servingUrl :
       ((process.env.FUNCTIONS_EMULATOR === "true") ?
         "https://kp24.web.app/assets/kp.png" :
@@ -317,6 +319,9 @@ export const upload = onCall(
       }],
       status,
     };
+    if (vs[0].uid == KPU_UID) {
+      sanitized.votes.push(vs[0]);
+    }
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {
         delete lokasiCache[request.data.idLokasi.substring(0, 10)];

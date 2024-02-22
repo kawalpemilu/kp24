@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -9,6 +9,7 @@ import {
   PendingAggregateVotes,
   PrestineLokasi,
   Votes,
+  autoId,
 } from '../../../functions/src/interfaces';
 import { AppService } from '../app.service';
 import { PhotoComponent } from './photo.component';
@@ -41,6 +42,7 @@ interface OptionLokasi {
 export class ReviewComponent {
   @Input({ required: true }) id!: string;
   @Input({ required: true }) votes!: Votes;
+  @Input({ required: true }) originalVotes!: Votes;
   @Input({ required: true }) imageId!: string;
   @Input({ required: true }) servingUrl!: string;
   @Output() onReview = new EventEmitter<PendingAggregateVotes>();
@@ -60,20 +62,47 @@ export class ReviewComponent {
   constructor(public service: AppService) {}
 
   approve(votes: Votes) {
-    const onSubmitted = this.service
-      .review(this.id, this.imageId, votes)
-      .then((v) => {
-        if (!v.data) {
-          alert('Fail to submit the review');
+    let onSubmitted!: Promise<string>;
+
+    if (this.originalVotes?.uid == KPU_UID) {
+      if (this.originalVotes.pas1 != votes.pas1 ||
+        this.originalVotes.pas2 != votes.pas2 ||
+        this.originalVotes.pas3 != votes.pas3) {
+        console.log('Make a copy', this.originalVotes);
+        onSubmitted = this.service
+          .upload({
+            idLokasi: this.id,
+            imageId: autoId(),
+            imageMetadata: {} as ImageMetadata,
+            servingUrl: this.servingUrl,
+            votes: [votes],
+            status: APPROVAL_STATUS.APPROVED,
+          })
+          .then(res => {
+            if (!res.data) {
+              alert('Fail to submit votes');
+              return '';
+            }
+            return 'gotit';
+          });
+      }
+    }
+    if (!onSubmitted) {
+      onSubmitted = this.service
+        .review(this.id, this.imageId, votes)
+        .then((v) => {
+          if (!v.data) {
+            alert('Fail to submit the review');
+            return '';
+          }
+          return 'ok';
+        })
+        .catch((e) => {
+          alert('Unable to review votes');
+          console.error('Unable review votes', e);
           return '';
-        }
-        return 'ok';
-      })
-      .catch((e) => {
-        alert('Unable to review votes');
-        console.error('Unable review votes', e);
-        return '';
-      });
+        });
+    }
     this.onReview.emit({
       idLokasi: this.id,
       name: '',

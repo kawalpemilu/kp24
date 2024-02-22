@@ -290,7 +290,7 @@ async function updateTps(firestore: admin.firestore.Firestore,
   data: UploadRequest): Promise<Lokasi | null> {
   // logger.log(`Update TPS t/${data.idLokasi}/p/${data.imageId}:${data.status}`, data);
 
-  if (!data.votes || data.votes.length !== 1) {
+  if (!data.votes || !data.votes.length) {
     logger.error("Invalid votes", JSON.stringify(data, null, 2));
     return null;
   }
@@ -339,11 +339,16 @@ async function updateTps(firestore: admin.firestore.Firestore,
         if (!await addDataToUserProfile(firestore, t, data)) return null;
         if (!agg.pendingUploads) agg.pendingUploads = {};
         if (data.votes[0].uid != KPU_UID) {
-          data.status = data.votes[0].status = APPROVAL_STATUS.NEW;
-          agg.pendingUploads[data.imageId] = data.servingUrl;
+          if (data.votes.length == 1 || data.votes[1].uid != KPU_UID) {
+            data.status = data.votes[0].status = APPROVAL_STATUS.NEW;
+            agg.pendingUploads[data.imageId] = data.servingUrl;
+          }
         }
         t.set(uploadRef, data);
-        if (data.votes[0].uid == KPU_UID) {
+        if (data.votes[0].uid == KPU_UID || (
+              data.votes.length > 1 &&
+              data.votes[1].uid == KPU_UID &&
+              data.votes[1].status == APPROVAL_STATUS.APPROVED)) {
           // Auto approve and publish KPU data.
           const existingAggIdx = c.findIndex(
             (a) => a.uploadedPhoto?.imageId === data.imageId);
