@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import {
   APPROVAL_STATUS, DEFAULT_MAX_LAPORS, DEFAULT_MAX_UPLOADS, ImageMetadata, Lokasi,
-  TESTER_UID, UploadRequest, UserProfile
+  TESTER_UID, UploadRequest, UserProfile, autoId
 } from "./interfaces";
 import { uploadHandler } from "./upload_handler";
 
@@ -175,14 +175,36 @@ async function clearUserStats() {
   }
 }
 
+async function trimUserStats() {
+  const qRef = firestore.collection(`/u`).orderBy('size', 'desc').limit(10);
+  const snapshots = await qRef.get();
+  const uids: string[] = [];
+  snapshots.forEach(snap => {
+    uids.push((snap.data() as UserProfile).uid);
+  });
+  for (const uid of uids) {
+    const res = await firestore.runTransaction(async t => {
+      const uRef = firestore.doc(`/u/${uid}`);
+      const u = (await t.get(uRef)).data() as UserProfile;
+      const trimRef = firestore.doc(`/u/${uid}/t/${autoId()}`);
+      t.set(trimRef, JSON.parse(JSON.stringify(u)));
+      u.uploads = {};
+      u.uploadMaxCount = 10000;
+      u.size = JSON.stringify(u).length;
+      t.set(uRef, u);
+      return u;
+    })
+    console.log(res.name, res.size);
+  }
+}
+
 /**
  * Run administrative function.
  */
 async function run() {
   if (false) await clearAll();
-
-  await clearUserStats();
-
+  if (false) await clearUserStats();
+  await trimUserStats();
 }
 
 run();
