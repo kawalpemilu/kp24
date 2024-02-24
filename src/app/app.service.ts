@@ -237,11 +237,14 @@ export class AppService {
 
   async getHierarchy(id: string) {
     this.rpcIsRunning = true;
-    const result: any = await firstValueFrom(this.http.get(
-      `https://kp24-fd486.et.r.appspot.com/h?id=${id}`));
-    console.log('RPC hierarchy: ', id, result);
-    this.rpcIsRunning = false;
-    return result.result as Lokasi | null;
+    try {
+      const result: any = await firstValueFrom(this.http.get(
+        `https://kp24-fd486.et.r.appspot.com/h?id=${id}`));
+      console.log('RPC hierarchy: ', id, result);
+      return result.result as Lokasi | null;
+    } finally {
+      this.rpcIsRunning = false;
+    }
   }
 
   upload(request: UploadRequest) {

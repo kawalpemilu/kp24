@@ -113,6 +113,7 @@ export class PrestineLokasi {
       names: this.getParentNames(id),
       aggregated: {},
       numWrites: 0,
+      size: 0,
     };
     if (id.length === 10 && id.startsWith("99")) {
       // TPS luar negeri.
@@ -442,6 +443,9 @@ export declare interface Lokasi {
 
   // Used for backfill.
   lastRecomputedTs?: number;
+
+  // The size in JSON length.
+  size: number;
 }
 
 export declare interface KpuData {
@@ -790,8 +794,31 @@ export function recomputeAgg(lokasi: Lokasi) {
       if (!a.uploadedPhoto?.kpuData) {
         delete a.uploadedPhoto?.kpuData;
       }
+
+      // @ts-ignore
+      delete a.totalTps;
+      // @ts-ignore
+      delete a.totalPendingTps;
+      // @ts-ignore
+      delete a.totalErrorTps;
+      // @ts-ignore
+      delete a.totalSamBotErrorTps;
+      // @ts-ignore
+      delete a.totalLaporTps;
+      // @ts-ignore
+      delete a.totalCompletedTps;
+      // @ts-ignore
+      delete a.totalJagaTps;
+      // @ts-ignore
+      delete a.totalKpuTps;
+      delete a.pendingUploads;
+      delete a.dpt;
+      delete a.anyPendingTps;
+      delete a.anyErrorTps;
+      delete a.anyLaporTps;
+    
       const samBot = a.uploadedPhoto?.samBot;
-      if (!samBot || !samBot.outcome) {
+      if (!samBot || !samBot.outcome || lokasi.id == '3173011005') {
         delete a.uploadedPhoto?.samBot;
         continue;
       }
@@ -814,4 +841,5 @@ export function recomputeAgg(lokasi: Lokasi) {
     }
   }
   lokasi.lastRecomputedTs = Date.now();
+  lokasi.size = JSON.stringify(lokasi).length;
 }
