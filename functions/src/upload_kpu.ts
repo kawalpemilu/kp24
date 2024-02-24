@@ -63,6 +63,11 @@ async function uploadKpuDesa(idDesa: string) {
   let numUpdates = 0, needRecompute = 0;
   if (!lokasi) throw new Error(idDesa);
   for (const [tpsNo, agg] of Object.entries(lokasi.aggregated)) {
+    let numKpu = 0;
+    for (let i = 1; i < agg.length; i++) 
+      if (agg[i].ouid == KPU_UID) numKpu++;
+    if (numKpu > 1) needRecompute = 1;
+
     if (agg[0].totalKpuTps) {
       if (agg[0].totalCompletedTps == 0) {
         if (!agg[0].totalPendingTps) {
@@ -70,7 +75,8 @@ async function uploadKpuDesa(idDesa: string) {
           throw new Error(idDesa + ' ' + tpsNo);
         }
       }
-      continue;
+      // Recrawl KPU on error.
+      if (!agg[0].totalErrorTps) continue;
     }
 
     // Fetch KPU data
@@ -175,7 +181,11 @@ async function uploadKpuKec(idKec: string) {
 
   for (const [idDesa] of Object.entries(lokasi?.aggregated)) {
     if (debugIdDesa && !debugIdDesa.startsWith(idDesa)) continue;
-    totalNumUpdates += await uploadKpuDesa(idDesa);
+    try {
+      totalNumUpdates += await uploadKpuDesa(idDesa);
+    } catch (e) {
+      console.error('Fail', idDesa, e);
+    }
   }
 }
 

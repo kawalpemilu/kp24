@@ -393,8 +393,10 @@ async function updateTps(firestore: admin.firestore.Firestore,
             if (o.pas1 !== data.votes[0].pas1 ||
                 o.pas2 !== data.votes[0].pas2 ||
                 o.pas3 !== data.votes[0].pas3) {
-              logger.log('KPU digitization is different, make a copy', data);
-              makeAcopy = true;
+              makeAcopy = data.votes[0].uid != KPU_UID;
+              if (makeAcopy) {
+                logger.log('KPU digitization is different, make a copy', data);
+              }
               agg.uid = data.votes[0].uid;
               agg.ouid = data.votes[0].uid;
             }

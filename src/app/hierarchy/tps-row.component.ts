@@ -58,7 +58,7 @@ export class TpsRowComponent {
   }
 
   numPendingUploads(agg: AggregateVotes[]) {
-    return Object.keys(agg[0].pendingUploads || {}).length;
+    return Math.max(1, Object.keys(agg[0].pendingUploads || {}).length);
   }
 
   async reviewNextPendingUpload(agg: AggregateVotes[]) {

@@ -747,8 +747,7 @@ export function recomputeAgg(lokasi: Lokasi) {
     agg[0].totalCompletedTps = 0;
 
     // Skip KPU photos that are not yet reviewed.
-    let i = 1;
-    for (; i < agg.length; i++) {
+    for (let i = 1; i < agg.length; i++) {
       const a = agg[i];
       if (a.uid === KPU_UID) continue;
       agg[0].pas1 = a.pas1;
@@ -766,7 +765,7 @@ export function recomputeAgg(lokasi: Lokasi) {
 
     agg[0].totalKpuTps = 0;
     agg[0].totalSamBotErrorTps = 0;
-    for (i = 1; i < agg.length; i++) {
+    for (let i = 1; i < agg.length; i++) {
       const a = agg[i];
 
       const kpuData = a.uploadedPhoto?.kpuData;
@@ -774,13 +773,17 @@ export function recomputeAgg(lokasi: Lokasi) {
         a.pas1 = kpuData.chart['100025'];
         a.pas2 = kpuData.chart['100026'];
         a.pas3 = kpuData.chart['100027'];
-        if (a.pas1 === undefined || a.pas2 === undefined || a.pas3 === undefined) {
+        if (agg[0].totalKpuTps || a.pas1 === undefined || a.pas2 === undefined || a.pas3 === undefined) {
           agg.splice(i--, 1);
           continue;
         }
         // Use KPU data from KPU, not SamBot.
         agg[0].totalKpuTps++;
         if (!a.updateTs) a.updateTs = Date.now();
+      } else if (a.uid == KPU_UID || a.ouid == KPU_UID) {
+        console.log('deleted KPU', agg[0].idLokasi);
+        agg.splice(i--, 1);
+        continue;
       }
 
       if (agg[0].totalCompletedTps) {
