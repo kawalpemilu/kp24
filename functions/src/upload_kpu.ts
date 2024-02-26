@@ -72,7 +72,7 @@ async function uploadKpuDesa(idDesa: string) {
       if (agg[0].totalCompletedTps == 0) {
         if (!agg[0].totalPendingTps) {
           needRecompute = 1;
-          throw new Error(idDesa + ' ' + tpsNo);
+          // throw new Error(idDesa + ' ' + tpsNo);
         }
       }
       // Recrawl KPU on error.
