@@ -781,9 +781,11 @@ export function recomputeAgg(lokasi: Lokasi) {
         agg[0].totalKpuTps++;
         if (!a.updateTs) a.updateTs = Date.now();
       } else if (a.uid == KPU_UID || a.ouid == KPU_UID) {
-        console.log('deleted KPU', agg[0].idLokasi);
-        agg.splice(i--, 1);
-        continue;
+        if (agg[0].totalKpuTps) {
+          console.log('deleted KPU', agg[0].idLokasi);
+          agg.splice(i--, 1);
+          continue;
+        }
       }
 
       if (agg[0].totalCompletedTps) {

@@ -215,7 +215,7 @@ export class AppService {
     console.log('Firestore RejectedPhotos', tpsId);
     this.rpcIsRunning = true;
     const tRef = collection(this.firestore, `/t/${tpsId}/p`);
-    const qRef = query(tRef, where('status', '>', APPROVAL_STATUS.APPROVED), limit(10));
+    const qRef = query(tRef, where('status', '>=', APPROVAL_STATUS.APPROVED), limit(10));
     const snapshots = await firstValueFrom(collectionSnapshots(qRef));
     const history: UploadRequest[] = [];
     snapshots.forEach(s => history.push(s.data() as UploadRequest));
