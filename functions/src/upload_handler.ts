@@ -113,6 +113,10 @@ async function addDataToUserProfile(
       logger.error("User cannot move", uid);
       return false;
     }
+    if (p.role < USER_ROLE.MODERATOR &&
+        await shouldLockTps(firestore, t, data)) {
+      return null;
+    }
     if (!p.uploads) p.uploads = {};
     if (!p.uploads[data.idLokasi]) p.uploads[data.idLokasi] = {};
     // Check if the imageId has been used before.
@@ -311,7 +315,6 @@ async function updateTps(firestore: admin.firestore.Firestore,
   const hRef = firestore.doc(`h/i${idDesa}`);
   return firestore
     .runTransaction(async (t) => {
-      if (await shouldLockTps(firestore, t, data)) return null;
       let lokasi = (await t.get(hRef)).data() as Lokasi | null;
       if (!lokasi) lokasi = LOKASI.getPrestineLokasi(idDesa);
       if (!lokasi) {
