@@ -125,7 +125,7 @@
                     } @else if (tps.status === APPROVAL_STATUS.LAPOR) {
                         Laporing ...
                     }
-                } @else if (userProfile && !tps.uploadedPhoto?.kpuData) {
+                } @else if (userProfile && (!tps.uploadedPhoto?.kpuData || userProfile.role >= USER_ROLE.MODERATOR)) {
                     <button class="lapor" mat-raised-button color="basic" (click)="
                         lapor(tps);
                         isUploadDrawer = false;
