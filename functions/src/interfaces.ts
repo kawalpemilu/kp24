@@ -600,6 +600,14 @@ export class LruCache<K, V> {
     this.map.set(key, value);
     return value;
   }
+
+  /**
+   * Deletes the key from this cache.
+   * @param {K} key the cache key.
+   */
+  delete(key: K) {
+    this.map.delete(key);
+  }
 }
 
 /**

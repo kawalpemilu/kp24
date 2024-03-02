@@ -47,7 +47,7 @@ export const pending = onDocumentCreated({
   skippedDueToLocked = 0;
 });
 
-const lokasiCache: Record<string, Lokasi> = {};
+const lokasiCache = new LruCache<string, Lokasi>(10000);
 /**
  * @param {string} id the lokasi id.
  * @return {number} how long should the id be cached in ms.
@@ -60,7 +60,7 @@ function getCacheTimeoutMs(id: string) {
 }
 type HierarchyRequest = CallableRequest<{ id: string, uid?: string }>;
 export const h = onCall(
-  {cors: ALLOW_ORIGINS, memory: '1GiB'},
+  {cors: ALLOW_ORIGINS, memory: '512MiB'},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
     if (request.data.uid !== "kawalc1" &&
@@ -74,7 +74,7 @@ export const h = onCall(
       return {} as Lokasi; // Invalid lokasi id.
     }
 
-    const cachedLokasi = lokasiCache[id];
+    const cachedLokasi = lokasiCache.get(id);
     if (cachedLokasi?.lastCachedTs) {
       const elapsed = now - cachedLokasi.lastCachedTs;
       if (elapsed < getCacheTimeoutMs(id)) return cachedLokasi;
@@ -85,7 +85,8 @@ export const h = onCall(
     const latest = (await hRef.get()).data() as Lokasi | undefined;
 
     // If not exists, use the hard-coded hierarchy without any votes.
-    const lokasi = lokasiCache[id] = latest ? latest : prestineLokasi;
+    const lokasi = latest ? latest : prestineLokasi;
+    lokasiCache.set(id, lokasi);
     lokasi.lastCachedTs = now;
     return lokasi;
   });
@@ -199,7 +200,7 @@ export const jagaTps = onCall(
     return jagaTpsHandler(firestore, request.data.tpsId, request.auth.uid)
       .then((success) => {
         if (success) {
-          delete lokasiCache[request.data.tpsId.substring(0, 10)];
+          lokasiCache.delete(request.data.tpsId.substring(0, 10));
         }
         return success;
       });
@@ -250,7 +251,7 @@ export const review = onCall(
     };
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {
-        delete lokasiCache[request.data.tpsId.substring(0, 10)];
+        lokasiCache.delete(request.data.tpsId.substring(0, 10));
       }
       return success;
     });
@@ -324,7 +325,7 @@ export const upload = onCall(
     }
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {
-        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
+        lokasiCache.delete(request.data.idLokasi.substring(0, 10));
       }
       return success;
     }).catch(e => {
@@ -383,7 +384,7 @@ export const lapor = onCall(
     };
     return laporHandler(firestore, sanitized).then((success) => {
       if (success) {
-        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
+        lokasiCache.delete(request.data.idLokasi.substring(0, 10));
       }
       return success;
     }).catch(e => {
