@@ -60,7 +60,7 @@ function getCacheTimeoutMs(id: string) {
 }
 type HierarchyRequest = CallableRequest<{ id: string, uid?: string }>;
 export const h = onCall(
-  {cors: ALLOW_ORIGINS, memory: '512MiB'},
+  {cors: ALLOW_ORIGINS, memory: '1GiB'},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
     if (request.data.uid !== "kawalc1" &&
@@ -327,6 +327,9 @@ export const upload = onCall(
         delete lokasiCache[request.data.idLokasi.substring(0, 10)];
       }
       return success;
+    }).catch(e => {
+      console.error('Unable to upload', sanitized, e);
+      return false;
     });
   });
 
@@ -383,5 +386,8 @@ export const lapor = onCall(
         delete lokasiCache[request.data.idLokasi.substring(0, 10)];
       }
       return success;
+    }).catch(e => {
+      console.error('Unable to review', sanitized, e);
+      return false;
     });
   });

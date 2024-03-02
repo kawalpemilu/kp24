@@ -129,7 +129,7 @@ async function addDataToUserProfile(
     p.uploadApprovedCount = getNumberOfApprovedPhotos(p);
     s.uploadCount++;
 
-    if (s.uploadCount > s.uploadMaxCount) {
+    if (p.role < USER_ROLE.MODERATOR && s.uploadCount > s.uploadMaxCount) {
       if (s.uploadCount <= 10 * p.uploadApprovedCount) {
         logger.warn("Uploads less than 10x approved",
           uid, s.uploadCount, p.uploadApprovedCount);
