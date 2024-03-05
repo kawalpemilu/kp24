@@ -189,6 +189,7 @@ async function trimUserStats() {
       const trimRef = firestore.doc(`/u/${uid}/t/${autoId()}`);
       t.set(trimRef, JSON.parse(JSON.stringify(u)));
       u.uploads = {};
+      u.reviews = {};
       u.uploadMaxCount = 10000;
       u.size = JSON.stringify(u).length;
       t.set(uRef, u);
