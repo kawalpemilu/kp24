@@ -47,7 +47,7 @@ def hierarchy():
 
         jsonTxt = response.content
         headers['X-Cache'] = 'HIT-D'
-        t = random.randint(1 * 60 * 60, 4 * 60 * 60) if len(id) >= 6 else 30 * 60 if len(id) >= 4 else 10 * 60 if len(id) >= 2 else 5 * 60
+        t = random.randint(12 * 60 * 60, 24 * 60 * 60) if len(id) >= 6 else 30 * 60 if len(id) >= 4 else 10 * 60 if len(id) >= 2 else 5 * 60
         memcache.set(id, jsonTxt, t)
         return jsonTxt, 200, headers
 

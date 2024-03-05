@@ -47,7 +47,7 @@ export const pending = onDocumentCreated({
   skippedDueToLocked = 0;
 });
 
-const lokasiCache = new LruCache<string, Lokasi>(10000);
+const lokasiCache: {[id: string]: Lokasi} = {};
 /**
  * @param {string} id the lokasi id.
  * @return {number} how long should the id be cached in ms.
@@ -56,15 +56,14 @@ function getCacheTimeoutMs(id: string) {
   if (id.length <= 2) return 60 * 1000; // 1 minute, about 1 QPS.
   if (id.length <= 4) return 5 * 60 * 1000; // 5 minutes, about 2 QPS,
   if (id.length <= 6) return 30 * 60 * 1000; // 30 minutes, about 5 QPS.
-  return 60 * 60 * 1000; // 1 hour, about 24 QPS.
+  return 12 * 60 * 60 * 1000; // 12 hour, about 2 QPS.
 }
 type HierarchyRequest = CallableRequest<{ id: string, uid?: string }>;
 export const h = onCall(
-  {cors: ALLOW_ORIGINS, memory: '512MiB'},
+  {cors: ALLOW_ORIGINS, memory: '2GiB'},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
-    if (request.data.uid !== "kawalc1" &&
-        request.data.uid !== "gae") return {} as Lokasi;
+    if (request.data.uid !== "gae") return {} as Lokasi;
 
     let id = request.data.id;
     if (!(/^\d{0,13}$/.test(id))) id = "";
@@ -74,7 +73,7 @@ export const h = onCall(
       return {} as Lokasi; // Invalid lokasi id.
     }
 
-    const cachedLokasi = lokasiCache.get(id);
+    const cachedLokasi = lokasiCache[id];
     if (cachedLokasi?.lastCachedTs) {
       const elapsed = now - cachedLokasi.lastCachedTs;
       if (elapsed < getCacheTimeoutMs(id)) return cachedLokasi;
@@ -86,7 +85,7 @@ export const h = onCall(
 
     // If not exists, use the hard-coded hierarchy without any votes.
     const lokasi = latest ? latest : prestineLokasi;
-    lokasiCache.set(id, lokasi);
+    lokasiCache[id] = lokasi;
     lokasi.lastCachedTs = now;
     return lokasi;
   });
@@ -200,7 +199,7 @@ export const jagaTps = onCall(
     return jagaTpsHandler(firestore, request.data.tpsId, request.auth.uid)
       .then((success) => {
         if (success) {
-          lokasiCache.delete(request.data.tpsId.substring(0, 10));
+          delete lokasiCache[request.data.tpsId.substring(0, 10)];
         }
         return success;
       });
@@ -251,7 +250,7 @@ export const review = onCall(
     };
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {
-        lokasiCache.delete(request.data.tpsId.substring(0, 10));
+        delete lokasiCache[request.data.tpsId.substring(0, 10)];
       }
       return success;
     });
@@ -325,7 +324,7 @@ export const upload = onCall(
     }
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {
-        lokasiCache.delete(request.data.idLokasi.substring(0, 10));
+        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
       }
       return success;
     }).catch(e => {
@@ -384,7 +383,7 @@ export const lapor = onCall(
     };
     return laporHandler(firestore, sanitized).then((success) => {
       if (success) {
-        lokasiCache.delete(request.data.idLokasi.substring(0, 10));
+        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
       }
       return success;
     }).catch(e => {
