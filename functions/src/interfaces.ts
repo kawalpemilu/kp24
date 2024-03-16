@@ -6,6 +6,7 @@ export const DEFAULT_MAX_LAPORS = 100;
 
 export const TESTER_UID = "tester_uid";
 export const KPU_UID = "kpu_uid";
+export const LOCK_DOWN = true;
 
 export const ALLOW_ORIGINS = [
   "https://kawalpemilu.org",

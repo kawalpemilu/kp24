@@ -2,7 +2,7 @@ import {onCall, CallableRequest} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {
   ALLOW_ORIGINS, APPROVAL_STATUS, DEFAULT_MAX_LAPORS, DEFAULT_MAX_UPLOADS,
-  ImageMetadata, KPU_UID, LaporRequest, Lokasi,
+  ImageMetadata, KPU_UID, LOCK_DOWN, LaporRequest, Lokasi,
   LruCache, USER_ROLE, UploadRequest, UserProfile, Votes,
   isValidVoteNumbers, shouldRateLimit,
 } from "./interfaces";
@@ -47,7 +47,7 @@ export const pending = onDocumentCreated({
   skippedDueToLocked = 0;
 });
 
-const lokasiCache: {[id: string]: Lokasi} = {};
+const lokasiCache = new LruCache<string, Lokasi>(1000);
 /**
  * @param {string} id the lokasi id.
  * @return {number} how long should the id be cached in ms.
@@ -60,7 +60,7 @@ function getCacheTimeoutMs(id: string) {
 }
 type HierarchyRequest = CallableRequest<{ id: string, uid?: string }>;
 export const h = onCall(
-  {cors: ALLOW_ORIGINS, memory: '2GiB'},
+  {cors: ALLOW_ORIGINS, memory: '256MiB'},
   async (request: HierarchyRequest): Promise<Lokasi> => {
     const now = Date.now();
     if (request.data.uid !== "gae") return {} as Lokasi;
@@ -73,7 +73,7 @@ export const h = onCall(
       return {} as Lokasi; // Invalid lokasi id.
     }
 
-    const cachedLokasi = lokasiCache[id];
+    const cachedLokasi = lokasiCache.get(id);
     if (cachedLokasi?.lastCachedTs) {
       const elapsed = now - cachedLokasi.lastCachedTs;
       if (elapsed < getCacheTimeoutMs(id)) return cachedLokasi;
@@ -85,7 +85,7 @@ export const h = onCall(
 
     // If not exists, use the hard-coded hierarchy without any votes.
     const lokasi = latest ? latest : prestineLokasi;
-    lokasiCache[id] = lokasi;
+    lokasiCache.set(id, lokasi);
     lokasi.lastCachedTs = now;
     return lokasi;
   });
@@ -95,6 +95,7 @@ export const register = onCall(
   {cors: ALLOW_ORIGINS},
   async (request: CallableRequest<void>): Promise<boolean> => {
     logger.log("register", request.auth, request.data);
+    if (LOCK_DOWN) return false;
 
     if (!request.auth) return false;
     if (request.auth.token?.firebase?.sign_in_provider == "anonymous") {
@@ -158,6 +159,7 @@ export const changeRole = onCall(
   async (request: CallableRequest<{ uid: string, role: USER_ROLE }>)
     : Promise<string> => {
     logger.log("changeRole", request.auth, request.data);
+    if (LOCK_DOWN) return "Locked down";
     if (!request.auth?.uid) return "Not logged in";
 
     const now = Date.now();
@@ -186,6 +188,7 @@ export const jagaTps = onCall(
   async (request: CallableRequest<{ tpsId: string }>)
       : Promise<boolean> => {
     logger.log("jagaTps", request.auth, request.data);
+    if (LOCK_DOWN) return false;
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
@@ -199,7 +202,7 @@ export const jagaTps = onCall(
     return jagaTpsHandler(firestore, request.data.tpsId, request.auth.uid)
       .then((success) => {
         if (success) {
-          delete lokasiCache[request.data.tpsId.substring(0, 10)];
+          lokasiCache.delete(request.data.tpsId.substring(0, 10));
         }
         return success;
       });
@@ -212,6 +215,7 @@ export const review = onCall(
   }>)
     : Promise<boolean> => {
     logger.log("review", request.auth, request.data);
+    if (LOCK_DOWN) return false;
 
     if (!request.auth?.uid) return false;
 
@@ -250,7 +254,7 @@ export const review = onCall(
     };
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {
-        delete lokasiCache[request.data.tpsId.substring(0, 10)];
+        lokasiCache.delete(request.data.tpsId.substring(0, 10));
       }
       return success;
     });
@@ -262,6 +266,7 @@ export const upload = onCall(
   async (request: CallableRequest<UploadRequest>) => {
     logger.log("upload", request.auth, request.data);
 
+    if (LOCK_DOWN) return false;
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
@@ -324,7 +329,7 @@ export const upload = onCall(
     }
     return uploadHandler(firestore, sanitized).then((success) => {
       if (success) {
-        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
+        lokasiCache.delete(request.data.idLokasi.substring(0, 10));
       }
       return success;
     }).catch(e => {
@@ -338,6 +343,7 @@ export const lapor = onCall(
   async (request: CallableRequest<LaporRequest>) : Promise<boolean> => {
     logger.log("lapor", request.auth, request.data);
 
+    if (LOCK_DOWN) return false;
     if (!request.auth?.uid) return false;
 
     const now = Date.now();
@@ -383,7 +389,7 @@ export const lapor = onCall(
     };
     return laporHandler(firestore, sanitized).then((success) => {
       if (success) {
-        delete lokasiCache[request.data.idLokasi.substring(0, 10)];
+        lokasiCache.delete(request.data.idLokasi.substring(0, 10));
       }
       return success;
     }).catch(e => {
